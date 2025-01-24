@@ -1,0 +1,1510 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	font-family: "Nunito", sans-serif;
+}
+
+
+body {
+  background: 
+      linear-gradient(to bottom, rgba(28, 68, 93, 0.8), rgba(28, 68, 93, 0.8)),
+      linear-gradient(to bottom, rgba(42, 88, 114, 0.6), rgba(42, 88, 114, 0.6)),
+      linear-gradient(to bottom, rgba(249, 250, 250, 0.4), rgba(46, 98, 129, 0.4));
+  background-blend-mode: multiply;
+}
+/* Navigation Styles */ 
+   nav {
+        background: rgba(26, 32, 44, 0.3);
+        backdrop-filter: blur(12px) saturate(180%);
+        -webkit-backdrop-filter: blur(12px) saturate(180%);
+        border-radius: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        position: fixed;
+        top: 0;
+        z-index: 50;
+        width: 99%;
+    }
+
+    .nav-content {
+        width: 100%;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .logo {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.5rem;
+        font-weight: bold;
+        text-decoration: none;
+        text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        margin-right: 2rem;
+    }
+
+    .menu-toggle {
+        display: none;
+        color: #cbd5e0;
+        background: none;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+
+    .nav-links {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3rem;
+    }
+
+    .nav-links a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.2s;
+        text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-links a:hover {
+        color: #ffffff;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-left: auto;
+        padding-left: 2rem;
+    }
+
+    .login-btn, .register-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .login-btn {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .register-btn {
+        background: rgba(102, 126, 234, 0.6);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        color: #ffffff;
+    }
+
+    .login-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .register-btn:hover {
+        background: rgba(102, 126, 234, 0.8);
+    }
+
+    main {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    @media (max-width: 768px) {
+        .menu-toggle {
+            display: block;
+        }
+
+        .nav-content {
+            padding: 1rem;
+        }
+
+        .nav-links {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            gap: 1rem;
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(12px) saturate(180%);
+            -webkit-backdrop-filter: blur(12px) saturate(180%);
+        }
+
+        .nav-links.open {
+            display: flex;
+        }
+
+        .auth-buttons {
+            margin: 1rem 0 0 0;
+            width: 100%;
+        }
+
+        .login-btn, .register-btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+/* Image Slider Section */
+.slider-section {
+  width: 100%;
+  height: 100vh;
+  margin-top: 5px; /* Space for navigation */
+  position: relative;
+  overflow: hidden;
+}
+
+.slider-image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.slider-image.active {
+  opacity: 1;
+}
+
+
+.container {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1s ease-in-out;
+}
+
+.card {
+  width: 400px;
+  min-height: 250px;
+  background: rgba( 255, 255, 255, 0.15 );
+  box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+  backdrop-filter: blur( 18px );
+  -webkit-backdrop-filter: blur( 18px );
+  border: 1px solid rgba( 255, 255, 255, 0.18 );
+  border-radius: 1rem;
+  padding: 1.5rem;
+  z-index: 10;
+  color: whitesmoke;
+}
+
+.title {
+  font-size: 2.2rem;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.btn {
+  background: none;
+  border: none;
+  text-align: center;
+  font-size: 1rem;
+  color: whitesmoke;
+  background-color: #fa709a;
+  padding: 0.8rem 1.8rem;
+  border-radius: 2rem;
+  cursor: pointer;
+}
+
+.blob {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(
+    180deg,
+    rgba(47, 184, 255,0.42) 31.77%,
+    #5c9df1 100%
+  );
+  mix-blend-mode: color-dodge;
+  -webkit-animation: move 25s infinite alternate;
+          animation: move 25s infinite alternate;
+  transition: 1s cubic-bezier(0.07, 0.8, 0.16, 1);
+}
+
+.blob:hover {
+  width: 520px;
+  height: 520px;
+  -webkit-filter: blur(30px);
+          filter: blur(30px);
+  box-shadow:
+    inset 0 0 0 5px rgba(255,255,255, 0.6),
+    inset 100px 100px 0 0px #fa709a,
+    inset 200px 200px 0 0px #784ba8,
+    inset 300px 300px 0 0px #2b86c5;
+}
+
+@-webkit-keyframes move {
+  from {
+    transform: translate(-100px, -50px) rotate(-90deg);
+    border-radius: 24% 76% 35% 65% / 27% 36% 64% 73%;
+  }
+
+  to {
+    transform: translate(500px, 100px) rotate(-10deg);
+    border-radius: 76% 24% 33% 67% / 68% 55% 45% 32%;
+  }
+}
+
+@keyframes move {
+  from {
+    transform: translate(-100px, -50px) rotate(-90deg);
+    border-radius: 24% 76% 35% 65% / 27% 36% 64% 73%;
+  }
+
+  to {
+    transform: translate(500px, 100px) rotate(-10deg);
+    border-radius: 76% 24% 33% 67% / 68% 55% 45% 32%;
+  }
+}
+
+
+
+/* Doctors Section */
+.doctors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.doctor-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.doctor-card:hover {
+  transform: translateY(-5px);
+}
+
+.doctor-image {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+}
+
+.doctor-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doctor-info {
+  padding: 1.5rem;
+  color: whitesmoke;
+  text-align: center;
+}
+
+.doctor-info h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.specialty {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.5rem;
+}
+
+.experience {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.rating {
+  margin-bottom: 1rem;
+}
+
+.book-btn {
+  background-color: #4CAF50;
+  transition: background-color 0.3s ease;
+}
+
+.book-btn:hover {
+  background-color: #45a049;
+}
+
+/* Service List Styling */
+.service-list {
+  list-style: none;
+  margin: 1rem 0;
+  text-align: left;
+}
+
+.service-list li {
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.service-list li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #4CAF50;
+}
+
+/* Form Select Styling */
+.form-group select {
+  width: 100%;
+  padding: 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  color: whitesmoke;
+  cursor: pointer;
+}
+
+.form-group select option {
+  background: rgba(26, 32, 44, 0.95);
+  color: whitesmoke;
+}
+
+/* Emergency Contact Highlight */
+.footer-section p:first-of-type {
+  color: #fa709a;
+  font-weight: bold;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .doctors-grid {
+      grid-template-columns: 1fr;
+  }
+  
+  .doctor-card {
+      max-width: 350px;
+      margin: 0 auto;
+  }
+  
+  .service-list {
+      text-align: center;
+  }
+}
+
+
+
+
+
+
+
+-----------doctor work----------
+<script>
+  import { onMount } from 'svelte';
+  let doctors = [];
+  let loading = true;
+  let error = '';
+  onMount(async () => {
+    try {
+      const response = await fetch('http://localhost:8888/api/doctors');
+      if (!response.ok) {
+        throw new Error('Failed to fetch doctors');
+      }
+      doctors = await response.json();
+    } catch (e) {
+      error = e.message;
+    } finally {
+      loading = false;
+    }
+  });
+</script>
+
+<div class="max-w-7xl mx-auto p-6">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Doctors</h1>
+    <a
+      href="/doctors/register"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Register New Doctor
+    </a>
+  </div>
+
+  {#if error}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      {error}
+    </div>
+  {/if}
+
+  {#if loading}
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    </div>
+  {:else}
+    <!-- Grid with spacing -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+      {#each doctors as doctor}
+        <div class="glass-card">
+          <div class="p-6">
+            <div class="flex items-center mb-4">
+              <img
+                src={doctor.profile_picture_url || 'https://via.placeholder.com/150'}
+                alt={doctor.name}
+                class="w-16 h-16 rounded-full object-cover mr-4"
+              />
+              <div>
+                <h2 class="text-xl font-semibold">{doctor.name}</h2>
+                <p class="text-gray-600">{doctor.specialty}</p>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="text-gray-700 line-clamp-3">{doctor.bio}</p>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-blue-600 font-semibold">
+                ${doctor.consultation_fee}/consultation
+              </span>
+              <span class={`px-2 py-1 rounded text-sm ${doctor.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {doctor.is_available ? 'Available' : 'Unavailable'}
+              </span>
+            </div>
+            <div class="mt-4 flex space-x-2">
+              <button class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                View Profile
+              </button>
+              <button class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                Book Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
+</div>
+
+<style>
+  .glass-card {
+    margin: 5px;
+    width: 400px;
+    min-height: 250px;
+    background: rgba( 255, 255, 255, 0.15 );
+    box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+    backdrop-filter: blur( 18px );
+    -webkit-backdrop-filter: blur( 18px );
+    border: 1px solid rgba( 255, 255, 255, 0.18 );
+    border-radius: 1rem;
+    padding: 1.5rem;
+    z-index: 10;
+    color: whitesmoke;
+  }
+  .glass-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  }
+</style>
+
+-==------------------work2
+
+<script>
+  import { onMount } from 'svelte';
+  let doctors = [];
+  let loading = true;
+  let error = '';
+
+  const bookAppointment = async (doctorId) => {
+    try {
+      const appointment = {
+        doctor_id: doctorId,
+        patient_id: 1, // Replace this with the actual patient ID
+        provider_type: 'Doctor',
+        appointment_date: new Date().toISOString(), // Replace with the actual date
+        start_time: "10:00:00", // Replace with the chosen time
+        end_time: "10:30:00", // Replace with the chosen end time
+        status: 'Scheduled'
+      };
+
+      const response = await fetch('http://localhost:8888/api/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(appointment),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to book the appointment');
+      }
+
+      alert('Appointment booked successfully!');
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    }
+  };
+
+  onMount(async () => {
+    try {
+      const response = await fetch('http://localhost:8888/api/doctors');
+      if (!response.ok) {
+        throw new Error('Failed to fetch doctors');
+      }
+      doctors = await response.json();
+    } catch (e) {
+      error = e.message;
+    } finally {
+      loading = false;
+    }
+  });
+</script>
+
+<div class="max-w-7xl mx-auto p-6">
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold">Doctors</h1>
+    <a
+      href="/doctors/register"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Register New Doctor
+    </a>
+  </div>
+
+  {#if error}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+      {error}
+    </div>
+  {/if}
+
+  {#if loading}
+    <div class="flex justify-center items-center h-64">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    </div>
+  {:else}
+    <!-- Horizontal scrolling container -->
+    <div class="flex overflow-x-auto space-x-6 pb-4">
+      {#each doctors as doctor}
+        <div class="glass-card flex-shrink-0 w-64">
+          <div class="p-6">
+            <div class="flex items-center mb-4">
+              <img
+                src={doctor.profile_picture_url || 'https://via.placeholder.com/150'}
+                alt={doctor.name}
+                class="w-16 h-16 rounded-full object-cover mr-4"
+              />
+              <div>
+                <h2 class="text-xl font-semibold">{doctor.name}</h2>
+                <p class="text-gray-600">{doctor.specialty}</p>
+              </div>
+            </div>
+            <div class="mb-4">
+              <p class="text-gray-700 line-clamp-3">{doctor.bio}</p>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-blue-600 font-semibold">
+                ${doctor.consultation_fee}/consultation
+              </span>
+              <span class={`px-2 py-1 rounded text-sm ${doctor.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                {doctor.is_available ? 'Available' : 'Unavailable'}
+              </span>
+            </div>
+            <div class="mt-4 flex space-x-2">
+              <button class="flex-1 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                View Profile
+              </button>
+              <button 
+                class="flex-1 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                on:click={() => bookAppointment(doctor.id)}
+              >
+                Book Appointment
+              </button>
+            </div>
+          </div>
+        </div>
+      {/each}
+    </div>
+  {/if}
+</div>
+
+<style>
+  .glass-card {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    color: whitesmoke;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+  }
+</style>
+-----------------
+
+<!-- src/routes/+page.svelte -->
+<script>
+  import { onMount } from 'svelte';
+  import { fade, fly, scale } from 'svelte/transition';
+  import { spring } from 'svelte/motion';
+  import { quintOut } from 'svelte/easing';
+
+  let featuredDoctors = [];
+  let featuredProviders = [];
+  let loading = true;
+  let currentIndex = 0;
+  let isIntersecting = false;
+  let scrollY;
+
+  // Image slider configuration
+  const images = [
+    'src/images/1.jpg',
+    'src/images/2.jpg',
+    'src/images/3.jpg',
+    'src/images/4.jpg'
+  ];
+
+  // Doctor specialties
+  const doctorSpecialties = [
+    { name: 'Cardiology', icon: 'heart', count: 24 },
+    { name: 'Neurology', icon: 'brain', count: 18 },
+    { name: 'Pediatrics', icon: 'baby', count: 32 },
+    { name: 'Orthopedics', icon: 'bone', count: 15 },
+    { name: 'Dentistry', icon: 'tooth', count: 28 },
+    { name: 'Ophthalmology', icon: 'eye', count: 20 }
+  ];
+
+  // Home care service types
+  const careServices = [
+    { name: 'Elderly Care', icon: 'users', count: 45 },
+    { name: 'Rehabilitation', icon: 'activity', count: 30 },
+    { name: 'Personal Care', icon: 'heart', count: 25 },
+    { name: 'Skilled Nursing', icon: 'plus', count: 20 }
+  ];
+
+  // Testimonials data
+  const testimonials = [
+    {
+      name: 'Sarah Johnson',
+      location: 'New York',
+      quote: 'The healthcare professionals here are amazing. They provided excellent care for my mother.',
+      avatar: 'src/images/avatar1.jpg'
+    },
+    {
+      name: 'Michael Chen',
+      location: 'California',
+      quote: 'Finding a specialist was so easy through this platform. Highly recommended!',
+      avatar: 'src/images/avatar2.jpg'
+    },
+    {
+      name: 'Emily Davis',
+      location: 'Texas',
+      quote: 'The home care services exceeded my expectations. Professional and caring staff.',
+      avatar: 'src/images/avatar3.jpg'
+    }
+  ];
+
+  // Animate count on scroll
+  const animateValue = (obj, start, end, duration) => {
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      obj.set(Math.floor(progress * (end - start) + start));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  };
+
+  // Animated stats
+  const stats = [
+    { label: 'Registered Doctors', value: spring(0), target: 500 },
+    { label: 'Care Providers', value: spring(0), target: 300 },
+    { label: 'Happy Patients', value: spring(0), target: 10000 },
+    { label: 'Specialties', value: spring(0), target: 50 }
+  ];
+
+  // Intersection Observer for animations
+  let observer;
+  onMount(async () => {
+    try {
+      // Fetch featured doctors and providers in parallel
+      const [doctorsResponse, providersResponse] = await Promise.all([
+        fetch('http://localhost:8888/api/doctors?featured=true'),
+        fetch('http://localhost:8888/api/providers?featured=true')
+      ]);
+
+      if (!doctorsResponse.ok) throw new Error('Failed to fetch featured doctors');
+      if (!providersResponse.ok) throw new Error('Failed to fetch featured providers');
+
+      featuredDoctors = (await doctorsResponse.json()).slice(0, 4);
+      featuredProviders = (await providersResponse.json()).slice(0, 4);
+
+      // Image slider interval
+      const interval = setInterval(() => {
+        currentIndex = (currentIndex + 1) % images.length;
+      }, 5000);
+
+      // Initialize intersection observer
+      observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              isIntersecting = true;
+              // Animate stats when they come into view
+              stats.forEach(stat => {
+                animateValue(stat.value, 0, stat.target, 2000);
+              });
+              observer.disconnect();
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      return () => {
+        clearInterval(interval);
+        if (observer) observer.disconnect();
+      };
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      loading = false;
+    }
+  });
+</script>
+
+<div class="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+  <!-- Animated Background Shapes -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden">
+    {#each Array(20) as _, i}
+      <div
+        class="absolute rounded-full mix-blend-multiply filter blur-xl opacity-70"
+        style="
+          background: {['#60A5FA', '#93C5FD', '#3B82F6'][i % 3]};
+          width: {Math.random() * 400 + 100}px;
+          height: {Math.random() * 400 + 100}px;
+          left: {Math.random() * 100}vw;
+          top: {Math.random() * 100}vh;
+          animation: float-{i} {20 + Math.random() * 10}s infinite linear;
+        "
+      ></div>
+    {/each}
+  </div>
+
+  <!-- Hero Section -->
+  <section class="relative h-screen">
+    <!-- Image Slider with fade transitions -->
+    {#each images as image, index}
+      {#if index === currentIndex}
+        <div
+          in:fade={{ duration: 1000 }}
+          out:fade={{ duration: 1000 }}
+          class="absolute inset-0 bg-cover bg-center"
+          style="background-image: url('{image}');"
+        ></div>
+      {/if}
+    {/each}
+
+    <!-- Gradient Overlay -->
+    <div class="absolute inset-0 z-10 bg-gradient-to-b from-blue-900/60 to-blue-800/40"></div>
+
+    <!-- Wave Animation -->
+    <div class="absolute bottom-0 left-0 right-0 h-32 overflow-hidden">
+      <svg class="absolute bottom-0 w-full h-full" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path
+          class="wave-1"
+          d="M0,32L48,37.3C96,43,192,53,288,80C384,107,480,149,576,154.7C672,160,768,128,864,112C960,96,1056,96,1152,106.7C1248,117,1344,139,1392,149.3L1440,160L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          fill="rgba(255, 255, 255, 0.2)"
+        />
+        <path
+          class="wave-2"
+          d="M0,192L48,181.3C96,171,192,149,288,154.7C384,160,480,192,576,197.3C672,203,768,181,864,170.7C960,160,1056,160,1152,165.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          fill="rgba(255, 255, 255, 0.3)"
+        />
+      </svg>
+    </div>
+
+    <!-- Hero Content -->
+    <div class="relative z-20 h-full w-full px-4 lg:px-8">
+      <div class="flex flex-col justify-center h-full max-w-7xl mx-auto">
+        <div class="max-w-3xl" in:fly={{ y: 50, duration: 1000, delay: 300 }}>
+          <h1 class="text-5xl md:text-6xl font-bold text-white leading-tight mb-6">
+            Complete Healthcare Solutions
+          </h1>
+          <p class="text-xl md:text-2xl text-blue-100 mb-8">
+            Connect with top healthcare professionals and home care providers for comprehensive care.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <a
+              href="/doctors"
+              class="inline-block bg-white text-blue-900 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition duration-300 text-lg text-center transform hover:scale-105"
+            >
+              Find a Doctor
+            </a>
+            <a
+              href="/providers"
+              class="inline-block bg-blue-800 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 text-lg text-center transform hover:scale-105"
+            >
+              Find Home Care
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="absolute bottom-0 left-0 right-0 z-20 transform translate-y-1/2 w-full px-4 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white rounded-xl shadow-xl p-8">
+          {#each stats as stat}
+            <div class="text-center" in:scale={{ duration: 1000, delay: 500 }}>
+              <h3 class="text-3xl font-bold text-blue-900">
+                {#if $stat.value >= 1000}
+                  {Math.floor($stat.value / 1000)}k+
+                {:else}
+                  {$stat.value}+
+                {/if}
+              </h3>
+              <p class="text-gray-600 mt-1">{stat.label}</p>
+            </div>
+          {/each}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-24 bg-white relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="text-4xl font-bold text-blue-900">Why Choose Us</h2>
+        <p class="mt-4 text-xl text-gray-600">Experience healthcare excellence with our unique features</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {#each [
+          {
+            title: '24/7 Support',
+            description: 'Round-the-clock medical assistance and consultation',
+            icon: '🏥'
+          },
+          {
+            title: 'Verified Professionals',
+            description: 'All healthcare providers are thoroughly vetted',
+            icon: '✓'
+          },
+          {
+            title: 'Secure Platform',
+            description: 'Your health data is protected with enterprise-grade security',
+            icon: '🔒'
+          }
+        ] as feature, i}
+          <div
+            class="relative p-8 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+            in:fly={{ y: 50, duration: 800, delay: i * 200 }}
+          >
+            <div class="absolute -top-6 left-1/2 transform -translate-x-1/2">
+              <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-2xl">
+                {feature.icon}
+              </div>
+            </div>
+            <h3 class="mt-8 text-xl font-semibold text-blue-900 text-center">{feature.title}</h3>
+            <p class="mt-4 text-gray-600 text-center">{feature.description}</p>
+          </div>
+        {/each}
+      </div>
+    </div>
+  </section>
+
+  <!-- Doctors Section -->
+  <section class="py-32 bg-white w-full">
+    <div class="w-full px-4 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-blue-900">Medical Professionals</h2>
+          <p class="mt-4 text-xl text-gray-600">Expert healthcare from qualified doctors</p>
+        </div>
+
+        <!-- Doctor Specialties -->
+        <div class="mb-20">
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Our Medical Specialties</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {#each doctorSpecialties as specialty, i}
+              <div
+                class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition duration-300 border border-blue-50 transform hover:scale-105"
+                in:fly={{ y: 50, duration: 800, delay: i * 100 }}
+              >
+                <div class="flex items-center space-x-4">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <span class="text-blue-600">{specialty.icon}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-semibold text-blue-900">{specialty.name}</h3>
+                    <p class="text-gray-600">{specialty.count} Doctors</p>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+        <!-- Featured Doctors -->
+        {#if !loading}
+          <div>
+            <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Doctors</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {#each featuredDoctors as doctor, i}
+                <div
+                  class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-blue-50 transform hover:-translate-y-2"
+                  in:fly={{ y: 50, duration: 800, delay: i * 150 }}
+                >
+                  <div class="relative">
+                    <img
+                      src={doctor.profile_picture_url || 'src/images/avatar.jpg'}
+                      alt={doctor.name}
+                      class="w-full h-48 object-cover"
+                    />
+                    <div class="absolute top-0 right-0 m-2 bg-blue-500 text-white px-2 py-1 rounded-full text-sm">
+                      Available
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-semibold text-blue-900">{doctor.name}</h3>
+                    <p class="text-gray-600">{doctor.specialty}</p>
+                    <div class="mt-4 flex items-center justify-between">
+                      <div class="flex items-center">
+                        <span class="text-yellow-400">★</span>
+                        <span class="ml-1 text-sm text-gray-600">{doctor.rating || '4.8'}</span>
+                      </div>
+                      <a
+                        href={`/doctors/${doctor.user_id}`}
+                        class="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-300"
+                      >
+                        View Profile
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <section class="py-24 bg-gray-50 relative overflow-hidden">
+    <!-- Animated Background Circles -->
+    <div class="absolute inset-0 pointer-events-none">
+      {#each Array(5) as _, i}
+        <div
+          class="absolute rounded-full opacity-10"
+          style="
+            background: #3B82F6;
+            width: {200 + i * 100}px;
+            height: {200 + i * 100}px;
+            left: {Math.random() * 100}%;
+            top: {Math.random() * 100}%;
+            animation: pulse-{i} {4 + i}s infinite ease-in-out;
+          "
+        ></div>
+      {/each}
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+      <h2 class="text-4xl font-bold text-blue-900 text-center mb-16">What Our Patients Say</h2>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {#each testimonials as testimonial, i}
+          <div
+            class="flip-card"
+            in:fly={{ y: 50, duration: 800, delay: i * 200 }}
+          >
+            <div class="flip-card-inner">
+              <div class="flip-card-front">
+                <div class="p-8 bg-white rounded-xl shadow-lg h-full">
+                  <div class="flex items-center mb-4">
+                    <img
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      class="w-12 h-12 rounded-full"
+                    />
+                    <div class="ml-4">
+                      <h4 class="font-semibold text-blue-900">{testimonial.name}</h4>
+                      <p class="text-sm text-gray-600">{testimonial.location}</p>
+                    </div>
+                  </div>
+                  <p class="text-gray-600">{testimonial.quote}</p>
+                </div>
+              </div>
+              <div class="flip-card-back">
+                <div class="p-8 bg-blue-900 rounded-xl shadow-lg h-full flex items-center justify-center text-center">
+                  <div>
+                    <div class="text-4xl mb-4">⭐</div>
+                    <p class="text-white font-medium">Exceptional Experience</p>
+                    <p class="text-blue-200 mt-2">Verified Patient</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {/each}
+      </div>
+    </div>
+  </section>
+
+  <!-- Home Care Providers Section -->
+  <section class="py-32 bg-gradient-to-b from-blue-50 to-white w-full">
+    <div class="w-full px-4 lg:px-8">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-blue-900">Home Care Services</h2>
+          <p class="mt-4 text-xl text-gray-600">Professional care in the comfort of your home</p>
+        </div>
+
+        <!-- Care Services -->
+        <div class="mb-20">
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Our Care Services</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {#each careServices as service, i}
+              <div
+                class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-all duration-300 border border-blue-50 transform hover:scale-105"
+                in:fly={{ y: 50, duration: 800, delay: i * 100 }}
+              >
+                <div class="flex items-center space-x-4">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <span class="text-blue-600">{service.icon}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 class="text-xl font-semibold text-blue-900">{service.name}</h3>
+                    <p class="text-gray-600">{service.count} Providers</p>
+                  </div>
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Featured Providers -->
+        {#if !loading}
+          <div>
+            <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Care Providers</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {#each featuredProviders as provider, i}
+                <div
+                  class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-blue-50 transform hover:-translate-y-2"
+                  in:fly={{ y: 50, duration: 800, delay: i * 150 }}
+                >
+                  <div class="relative">
+                    <img
+                      src={provider.profile_picture_url || 'src/images/avatar.jpg'}
+                      alt={provider.name}
+                      class="w-full h-48 object-cover"
+                    />
+                    <div class="absolute top-0 right-0 m-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm">
+                      Available Now
+                    </div>
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-semibold text-blue-900">{provider.name}</h3>
+                    <p class="text-gray-600">Home Care Provider</p>
+                    <p class="text-sm text-gray-500 mt-1">${provider.hourly_rate}/hour</p>
+                    <div class="mt-4 flex items-center justify-between">
+                      <div class="flex items-center">
+                        <span class="text-yellow-400">★</span>
+                        <span class="ml-1 text-sm text-gray-600">{provider.rating || '4.8'}</span>
+                      </div>
+                      <a
+                        href={`/providers/${provider.user_id}`}
+                        class="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-300"
+                      >
+                        View Profile
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter Section -->
+  <section class="py-24 bg-blue-900 relative overflow-hidden">
+    <div class="absolute inset-0 pointer-events-none opacity-10">
+      <svg class="absolute w-40 h-40 text-white transform rotate-12" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/>
+      </svg>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 relative z-10">
+      <div class="text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">Stay Updated</h2>
+        <p class="text-blue-200 mb-8 max-w-2xl mx-auto">
+          Subscribe to our newsletter for the latest healthcare insights and updates about our services.
+        </p>
+        <form class="max-w-md mx-auto">
+          <div class="flex flex-col sm:flex-row gap-4">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              class="flex-1 px-6 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              class="bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300 transform hover:scale-105"
+            >
+              Subscribe
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-16 bg-white w-full">
+    <div class="w-full px-4 lg:px-8">
+      <div class="max-w-7xl mx-auto text-center">
+        <h2 class="text-3xl font-bold text-blue-900 mb-8">Ready to Get Started?</h2>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a
+            href="/search"
+            class="inline-block bg-blue-900 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-800 transition duration-300 transform hover:scale-105"
+          >
+            Search Professionals
+          </a>
+          <a
+            href="/register"
+            class="inline-block bg-blue-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-600 transition duration-300 transform hover:scale-105"
+          >
+            Join Our Network
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  /* Floating animation for background shapes */
+  @keyframes float-0 { 
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(100px, 100px) rotate(360deg); }
+  }
+
+  /* Generate similar keyframes for other shapes */
+  @keyframes float-1 {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    100% { transform: translate(-100px, 100px) rotate(-360deg); }
+  }
+
+  /* Wave animation */
+  .wave-1 {
+    animation: wave 12s linear infinite;
+  }
+  .wave-2 {
+    animation: wave 8s linear infinite;
+  }
+  @keyframes wave {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-25%); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* Pulse animation for background circles */
+  @keyframes pulse-0 {
+    0% { transform: scale(1); opacity: 0.1; }
+    50% { transform: scale(1.1); opacity: 0.2; }
+    100% { transform: scale(1); opacity: 0.1; }
+  }
+
+  /* Card flip animation */
+  .flip-card {
+    perspective: 1000px;
+    height: 300px;
+  }
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+  }
+  .flip-card-back {
+    transform: rotateY(180deg);
+  }
+
+  /* Add smooth scroll behavior */
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
+  /* Improve mobile responsiveness */
+  @media (max-width: 640px) {
+    .flip-card {
+      height: 250px;
+    }
+  }
+</style>
+
+
+
+
+Modal with glass-morphism design
+Form validation
+Date and time selection
+Duration selection
+Special requirements input
+Loading state handling
+Error display
+Success callback
+Responsive design
+Backdrop blur effect
+
+
+
+<script lang="ts">
+    import { enhance } from '$app/forms';
+    import { goto } from '$app/navigation';
+    export let form;
+
+    function handleLoginSuccess(result: { type: string; status?: number; data?: any; error?: any }) {
+        // Debug log the raw result
+        console.log('Raw login result:', result);
+
+        if (result.type === 'success') {
+            try {
+                // Handle both string and object data formats
+                let userData;
+                if (typeof result.data === 'string') {
+                    // If data is already parsed by the server
+                    userData = {
+                        id: result.data[2]?.id || result.data[3],
+                        email: result.data[4],
+                        name: result.data[5],
+                        role: result.data[6]
+                    };
+                } else {
+                    // If data is an object
+                    userData = {
+                        id: result.data.user?.id || result.data[2]?.id || result.data[3],
+                        email: result.data.user?.email || result.data[4],
+                        name: result.data.user?.name || result.data[5],
+                        role: (result.data.user?.role || result.data[6] || '').toLowerCase()
+                    };
+                }
+
+                console.log('Final user data:', userData);
+
+                // Validate user data
+                if (!userData.id || !userData.role) {
+                    throw new Error('Invalid user data received');
+                }
+
+                // Store in localStorage
+                localStorage.setItem('user', JSON.stringify(userData));
+                localStorage.setItem('isLoggedIn', 'true');
+
+                // Redirect based on role
+                switch (userData.role) {
+                    case 'patient':
+                        window.location.href = `/patients/${userData.id}`;
+                        break;
+                    case 'doctor':
+                        window.location.href = `/doctors/${userData.id}`;
+                        break;
+                    case 'admin':
+                        window.location.href = '/admin/dashboard';
+                        break;
+                    case 'home_care_provider':
+                        window.location.href = '/providers';
+                        break;
+                    default:
+                        console.error('Unknown role:', userData.role);
+                        window.location.href = '/';
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                console.error('Result data:', result.data);
+                alert('Login failed: Please try again');
+            }
+        } else {
+            console.error('Login failed:', result);
+            alert('Login failed');
+        }
+    }
+</script>
+
+<style>
+     .login-container {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 2rem;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        margin: 2rem auto;
+    }
+
+    h2 {
+        color: white;
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2em;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    label {
+        color: white;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    input {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.25);
+        border: none;
+        border-radius: 10px;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+    }
+
+    button:hover {
+        background: rgba(255, 255, 255, 0.35);
+        transform: translateY(-2px);
+    }
+
+    .error-message {
+        background: rgba(255, 0, 0, 0.2);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .links {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+    .links a {
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        opacity: 0.8;
+    }
+</style>
+
+<div class="login-container">
+    <div class="blob"></div>
+    <h2>Login</h2>
+    <form 
+        method="POST" 
+        use:enhance={() => {
+            return async ({ result }) => {
+                handleLoginSuccess(result);
+            };
+        }}
+    >
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+                type="email" 
+                id="email"
+                name="email"
+                placeholder="Enter your email"
+                required
+            />
+        </div>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+                type="password" 
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                required
+                minlength="8"
+            />
+        </div>
+        {#if form?.error}
+            <div class="error-message">{form.error}</div>
+        {/if}
+        <button type="submit">Login</button>
+        <div class="links">
+            <a href="/register">Create an account</a>
+            <a href="/forgot-password">Forgot Password?</a>
+        </div>
+    </form>
+</div>
