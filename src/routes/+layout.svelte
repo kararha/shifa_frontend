@@ -55,7 +55,7 @@
         if (!user) return '/dashboard';
         switch (user.role) {
             case 'admin': return '/admin-dashboard';
-            case 'doctor': return '/doctor-dashboard';
+            case 'doctor': return '/doctors/dashboard';
             case 'provider': return '/provider-dashboard';
             default: return '/dashboard';
         }
@@ -169,24 +169,22 @@
 
     .user-menu {
         display: flex;
-        flex-direction: column;
         gap: 0.5rem;
     }
 
     .dashboard-btn {
         padding: 0.5rem 1rem;
-        background: rgba(59, 130, 246, 0.5);
-        border: 1px solid rgba(59, 130, 246, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 4px;
-        color: white;
+        color: rgba(255, 255, 255, 0.9);
         font-size: 0.875rem;
-        text-decoration: none;
-        text-align: center;
-        transition: all 0.2s;
+        cursor: pointer;
+        transition: all 0.2s;    
     }
 
     .dashboard-btn:hover {
-        background: rgba(59, 130, 246, 0.7);
+        background: rgba(255, 255, 255, 0.2);
         transform: translateY(-1px);
     }
 </style>

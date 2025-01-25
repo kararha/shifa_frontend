@@ -26,6 +26,7 @@ export const actions = {
                 return fail(400, { error: 'Missing email or password' });
             }
 
+            // Process login request
             const response = await fetch(`${PUBLIC_API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
@@ -40,7 +41,7 @@ export const actions = {
                 return fail(response.status, { error: result.error || 'Login failed' });
             }
 
-            // Set cookies on successful login
+            // Set cookies on success
             cookies.set('token', result.token, {
                 path: '/',
                 httpOnly: true,

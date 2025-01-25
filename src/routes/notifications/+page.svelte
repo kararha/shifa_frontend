@@ -1,4 +1,4 @@
-// src/routes/notifications/+page.svelte
+<!-- // src/routes/notifications/+page.svelte -->
 <script lang="ts">
     import { onMount } from 'svelte';
     import type { Notification } from '$lib/types';
@@ -42,16 +42,7 @@
     </div>
 {/if}
 
-// src/lib/types.ts (add to existing file)
-export interface Notification {
-    id?: number;
-    userId: number;
-    message: string;
-    isRead: boolean;
-    timestamp: string;
-}
-
-// src/lib/stores/notificationStore.ts
+<!-- // src/lib/stores/notificationStore.ts -->
 import { writable } from 'svelte/store';
 import type { Notification } from '$lib/types';
 import { api } from '$lib/api';
