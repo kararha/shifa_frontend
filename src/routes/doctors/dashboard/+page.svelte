@@ -3,6 +3,7 @@
     import { fade } from 'svelte/transition';
     import { BACKEND_URL } from '$lib/constants';
     import DoctorAvailability from '$lib/components/DoctorAvailability.svelte';
+    import { goto } from '$app/navigation';
 
     interface Appointment {
         id: number;
@@ -24,6 +25,21 @@
     // Get doctor ID from stored user data
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const doctorId = userData.id;
+
+    onMount(() => {
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user') || 'null');
+        
+        if (!token || !user) {
+            goto('/login');
+            return;
+        }
+    
+        if (user.role !== 'doctor') {
+            goto('/login');
+            return;
+        }
+    });
 
     onMount(async () => {
         await loadAppointments();

@@ -1,7 +1,10 @@
 <script lang="ts">
     import { enhance } from '$app/forms';
     import { goto } from '$app/navigation';
-    export let form;
+    import { authStore } from '$lib/stores/authStore';
+    
+    // Change from export let to export const
+    export const form = null;
 
     // Diagnostic state
     let diagnosticLogs: string[] = [];
@@ -17,65 +20,43 @@
         logDiagnostic('Login result received');
         logDiagnostic(`Result type: ${result.type}`);
         logDiagnostic(`Status: ${result.status}`);
+        logDiagnostic(`Full result: ${JSON.stringify(result)}`); // Add this line for debugging
 
         if (result.type === 'success') {
-            try {
-                // Get the user data from cookies
-                const cookieUser = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('user='))
-                    ?.split('=')[1];
+            // Access nested data correctly
+            const userData = result.data?.data;
+            logDiagnostic(`User data: ${JSON.stringify(userData)}`);
 
-                logDiagnostic(`Cookie user data: ${cookieUser}`);
-
-                if (!cookieUser) {
-                    throw new Error('No user data found in cookies');
-                }
-
-                // Parse the user data
-                const userData = JSON.parse(decodeURIComponent(cookieUser));
-                logDiagnostic(`Parsed user data: ${JSON.stringify(userData)}`);
-
-                // Store in localStorage
-                localStorage.setItem('user', JSON.stringify(userData));
-                localStorage.setItem('isLoggedIn', 'true');
-
-                // Get token from cookies
-                const token = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('token='))
-                    ?.split('=')[1];
-
-                if (token) {
-                    localStorage.setItem('token', token);
-                    logDiagnostic('Token stored in localStorage');
-                }
-
-                // Determine redirect path
-                let path;
-                switch (userData.role?.toLowerCase()) {
-                    case 'patient':
-                        path = `/patients/${userData.id}`;
-                        break;
-                    case 'doctor':
-                        path = `/doctors/${userData.id}`;
-                        break;
-                    case 'admin':
-                        path = '/admin/dashboard';
-                        break;
-                    default:
-                        path = '/';
-                }
-
-                logDiagnostic(`Redirecting to: ${path}`);
-                // Force navigation
-                window.location.href = path;
-
-            } catch (err) {
-                logDiagnostic(`Login error: ${(err as Error).message}`);
-                console.error('Login error:', err);
+            if (!userData?.user) {
+                logDiagnostic('Error: No user data in response');
                 showDiagnostics = true;
+                return;
             }
+
+            const { user, token } = userData;
+
+            // Store in localStorage
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('token', token);
+            localStorage.setItem('isLoggedIn', 'true');
+
+            // Store user data using the auth store
+            authStore.setUser(user);
+
+            // Normalize role to lowercase for comparison
+            const userRole = user.role.toLowerCase();
+            logDiagnostic(`User role: ${userRole}`);
+
+            const redirectPaths = {
+                'patient': `/patients/${user.id}`,
+                'doctor': `/doctors/${user.id}`,
+                'admin': '/admin/dashboard',
+                'home_care_provider': `/providers/${user.id}`
+            };
+
+            const redirectPath = redirectPaths[userRole] || '/';
+            logDiagnostic(`Redirecting to: ${redirectPath}`);
+            goto(redirectPath);
         } else {
             logDiagnostic('Login was not successful');
             showDiagnostics = true;

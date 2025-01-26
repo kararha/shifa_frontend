@@ -1,42 +1,37 @@
 <script lang="ts">
+    import { authStore } from '$lib/stores/authStore';
     import '../app.css';
     import { onMount } from 'svelte';
     import { DEFAULT_AVATAR, BACKEND_URL } from '$lib/constants';
     
-    interface User {
-        name: string;
-        profile_picture_url?: string;
-        id?: string;
-        role?: string;
-    }
-
     let isMenuOpen = false;
-    let user: User | null = null;
-    let isAuthenticated = false;
     let isLoading = false;
-
-    const toggleMenu = () => isMenuOpen = !isMenuOpen;
+    
+    $: user = $authStore.user;
+    $: isAuthenticated = $authStore.isAuthenticated;
 
     onMount(() => {
-        // Check for user data in cookies
-        const userCookie = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('user='));
-        
-        if (userCookie) {
-            user = JSON.parse(decodeURIComponent(userCookie.split('=')[1]));
-            isAuthenticated = true;
+        try {
+            const userCookie = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('user='));
+            
+            if (userCookie) {
+                const userData = decodeURIComponent(userCookie.split('=')[1]);
+                const parsedUser = JSON.parse(userData);
+                if (parsedUser) {
+                    authStore.setUser(parsedUser);
+                }
+            }
+        } catch (e) {
+            console.error('Error in onMount:', e);
         }
     });
 
     async function logout() {
         isLoading = true;
         try {
-            // Add logout API call here
-            document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            document.cookie = 'user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            user = null;
-            isAuthenticated = false;
+            authStore.logout();
             window.location.href = '/login';
         } finally {
             isLoading = false;
@@ -59,6 +54,12 @@
             case 'provider': return '/provider-dashboard';
             default: return '/dashboard';
         }
+    }
+
+    // Add toggleMenu function
+    function toggleMenu() {
+        isMenuOpen = !isMenuOpen;
+        console.log('Menu toggled:', isMenuOpen); // Add logging for debugging
     }
 </script>
 

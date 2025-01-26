@@ -16,7 +16,7 @@ interface LoginResponse {
 }
 
 export const actions = {
-    default: async ({ request, fetch, cookies }) => {
+    default: async ({ request, fetch }) => {
         try {
             const data = await request.formData();
             const email = data.get('email')?.toString();
@@ -26,7 +26,8 @@ export const actions = {
                 return fail(400, { error: 'Missing email or password' });
             }
 
-            // Process login request
+            console.log('Making login request to:', `${PUBLIC_API_URL}/api/auth/login`);
+
             const response = await fetch(`${PUBLIC_API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
@@ -35,36 +36,29 @@ export const actions = {
                 body: JSON.stringify({ email, password })
             });
 
-            const result: LoginResponse = await response.json();
+            const result = await response.json();
+            console.log('Login response:', result);
 
             if (!response.ok) {
+                console.error('Login failed:', result.error);
                 return fail(response.status, { error: result.error || 'Login failed' });
             }
 
-            // Set cookies on success
-            cookies.set('token', result.token, {
-                path: '/',
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 60 * 60 * 24 * 7 // 7 days
-            });
+            // Validate response structure
+            if (!result.user || !result.token) {
+                console.error('Invalid response structure:', result);
+                return fail(500, { error: 'Invalid server response' });
+            }
 
-            cookies.set('user', JSON.stringify(result.user), {
-                path: '/',
-                httpOnly: false // Allow JS access
-            });
-
-            console.log('Cookies set:', {
-                token: result.token,
-                user: result.user
-            });
-
-            // Return success with user data for client-side redirect
             return {
                 success: true,
-                user: result.user
+                data: {
+                    user: result.user,
+                    token: result.token
+                }
             };
         } catch (error) {
+            console.error('Server error:', error);
             return fail(500, { error: 'Server error occurred' });
         }
     }
