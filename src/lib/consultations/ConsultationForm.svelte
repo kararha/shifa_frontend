@@ -68,7 +68,7 @@
   <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50" transition:fade>
     <div class="bg-white/10 backdrop-blur-md rounded-xl max-w-lg w-full p-8 shadow-xl border border-white/20">
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-white">Book Consultation</h2>
+        <h2 class="text-2xl font-bold text-white">Book Consultation with Dr. {doctorName}</h2>
         <button 
           class="text-gray-400 hover:text-white transition-colors"
           on:click={() => show = false}

@@ -14,6 +14,7 @@
         status: 'scheduled' | 'completed' | 'cancelled' | 'pending';
         type: 'consultation' | 'appointment';
         notes?: string;
+        [key: string]: any;
     }
 
     let appointments: Appointment[] = [];
@@ -45,23 +46,73 @@
         await loadAppointments();
     });
 
+    // Format date for API requests
+    function formatDateForApi(date: string): string {
+        return new Date(date).toISOString().split('T')[0];
+    }
+
     async function loadAppointments() {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                window.location.href = '/login';
+                error = 'Authentication token not found';
+                goto('/login');
                 return;
             }
 
-            const response = await fetch(`${BACKEND_URL}/api/doctors/appointments`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const formattedDate = formatDateForApi(selectedDate);
+            console.log('Loading appointments for:', {
+                doctorId,
+                date: formattedDate,
+                providerType: 'doctor',
+                url: `${BACKEND_URL}/api/appointments/provider/${doctorId}`
             });
 
-            if (!response.ok) throw new Error('Failed to load appointments');
-            appointments = await response.json();
+            // Add provider_type as query parameter
+            const response = await fetch(
+                `${BACKEND_URL}/api/appointments/provider/${doctorId}?date=${formattedDate}&provider_type=doctor`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'X-Provider-Type': 'doctor' // Add provider type header
+                    }
+                }
+            );
+
+            const responseText = await response.text();
+            console.log('Raw appointments response:', responseText);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.log('No appointments found');
+                    appointments = [];
+                    return;
+                }
+                throw new Error(responseText || 'Failed to load appointments');
+            }
+
+            try {
+                const data = JSON.parse(responseText);
+                console.log('Parsed appointments data:', data);
+
+                // Handle response data structure with null checks
+                appointments = (Array.isArray(data) ? data : data.appointments || [])
+                    .map((apt: Appointment) => ({
+                        ...apt,
+                        start_time: apt.start_time?.substring(0, 5) || '',
+                        end_time: apt.end_time?.substring(0, 5) || '',
+                        appointment_date: formatDateForApi(apt.appointment_date)
+                    }));
+
+                error = null;
+            } catch (e) {
+                console.error('Failed to parse appointments:', e);
+                appointments = [];
+                error = e instanceof Error ? e.message : 'Failed to parse appointments';
+            }
         } catch (err) {
+            console.error('Load appointments error:', err);
             error = err instanceof Error ? err.message : 'Failed to load appointments';
         } finally {
             loading = false;
@@ -72,18 +123,35 @@
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(`${BACKEND_URL}/api/appointments/${appointmentId}`, {
-                method: 'PATCH',
+                method: 'PUT', // Changed from PATCH to PUT to match backend
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-Provider-Type': 'doctor' // Add provider type header
                 },
-                body: JSON.stringify({ status: newStatus })
+                body: JSON.stringify({ 
+                    status: newStatus,
+                    provider_type: 'doctor' // Add provider type to payload
+                })
             });
 
-            if (!response.ok) throw new Error('Failed to update appointment');
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Failed to update appointment');
+            }
+
             await loadAppointments();
         } catch (err) {
+            console.error('Update appointment error:', err);
             error = err instanceof Error ? err.message : 'Failed to update appointment';
+        }
+    }
+
+    // Reload appointments when date changes
+    $: {
+        if (selectedDate) {
+            console.log('Date changed, reloading appointments:', selectedDate);
+            loadAppointments();
         }
     }
 

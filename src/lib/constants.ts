@@ -4,6 +4,16 @@ export const DEFAULT_DOCTOR_AVATAR = 'https://cdn-icons-png.flaticon.com/512/377
 // Backend URL for profile images
 export const BACKEND_URL = 'http://localhost:8888';
 
+export const API_VERSION = 'v1';
+export const API_ENDPOINTS = {
+    DOCTORS: '/v1/doctors',
+    PATIENTS: '/v1/patients',
+    APPOINTMENTS: '/v1/appointments',
+    TRANSACTIONS: '/v1/transactions',
+    AUTH: '/v1/auth',
+    USERS: '/v1/users'
+} as const;
+
 // Add better fetch with timeout and error handling
 export async function fetchWithTimeout(url: string, options: RequestInit = {}) {
   const timeout = 10000;

@@ -2,6 +2,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
+  import * as THREE from 'three';
 
   type Provider = {
     user_id: string;
@@ -84,51 +85,203 @@
     activeQuestion = activeQuestion === index ? -1 : index;
   }
 
+  let scrollY: number;
+  let innerHeight: number;
+  let documentHeight: number;
+  let showScrollTop = false;
+
+  // Scroll progress calculation
+  $: scrollProgress = (scrollY / (documentHeight - innerHeight)) * 100;
+
+  let container: HTMLDivElement;
+  let mounted = false;
+  let isMobile: boolean;
+
+  // Add resize observer to check for mobile viewport
+  function checkMobile() {
+    isMobile = window.innerWidth < 768;
+  }
+
   onMount(() => {
-    let interval: NodeJS.Timeout;
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    // Three.js setup
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ 
+      alpha: true,
+      antialias: true 
+    });
     
-    async function initialize() {
-      try {
-        // Fetch featured doctors and providers in parallel
-        const [doctorsResponse, providersResponse] = await Promise.all([
-          fetch('http://localhost:8888/api/doctors?featured=true'),
-          fetch('http://localhost:8888/api/providers?featured=true')
-        ]);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setClearColor(0x000000, 0);
+    container.appendChild(renderer.domElement);
 
-        if (!doctorsResponse.ok) throw new Error('Failed to fetch featured doctors');
-        if (!providersResponse.ok) throw new Error('Failed to fetch featured providers');
-
-        featuredDoctors = (await doctorsResponse.json()).slice(0, 4);
-        featuredProviders = (await providersResponse.json()).slice(0, 4);
-
-        // Image slider interval
-        interval = setInterval(() => {
-          currentIndex = (currentIndex + 1) % images.length;
-        }, 3000);
-      } catch (error) {
-        console.error('Error:', error);
-      } finally {
-        loading = false;
+    // Adjust sphere size and position for mobile
+    const sphereSize = isMobile ? 3 : 5;
+    const geometry = new THREE.SphereGeometry(sphereSize, 64, 64);
+    const material = new THREE.MeshPhongMaterial({
+      color: 0x4a90e2,
+      transparent: true,
+      opacity: 0.8,
+      shininess: 100,
+    });
+    const sphere = new THREE.Mesh(geometry, material);
+    
+    // Adjust sphere position for mobile
+    function updateSpherePosition() {
+      if (isMobile) {
+        sphere.position.set(0, 2, -5);
+      } else {
+        sphere.position.set(5, 2, -10);
       }
     }
-
-    // Add image preloading for slider
-    images.forEach(src => {
-      const img = new Image();
-      img.src = src;
-    });
-
-    initialize();
     
+    updateSpherePosition();
+    
+    // Add lights
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
+    
+    scene.add(sphere);
+    scene.add(light);
+    scene.add(ambientLight);
+
+    camera.position.z = isMobile ? 10 : 15;
+
+    // Animation function with smoother rotation
+    function animate() {
+      requestAnimationFrame(animate);
+      sphere.rotation.x += 0.003;
+      sphere.rotation.y += 0.003;
+      renderer.render(scene, camera);
+    }
+
+    // Start animation
+    animate();
+
+    // Handle window resize
+    function handleResize() {
+      checkMobile();
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      updateSpherePosition();
+    }
+
+    window.addEventListener('resize', handleResize);
+
+    // Add dummy data since API is not available
+    featuredDoctors = [
+      {
+        user_id: "1",
+        name: "Dr. John Doe",
+        specialty: "Cardiology",
+        rating: 4.8
+      },
+      {
+        user_id: "2",
+        name: "Dr. Jane Smith",
+        specialty: "Neurology",
+        rating: 4.9
+      }
+    ];
+
+    featuredProviders = [
+      {
+        user_id: "1",
+        name: "Sarah Johnson",
+        hourly_rate: 25,
+        rating: 4.9
+      },
+      {
+        user_id: "2",
+        name: "Mike Wilson",
+        hourly_rate: 30,
+        rating: 4.7
+      }
+    ];
+
+    // Set loading to false
+    loading = false;
+    mounted = true;
+
+    // Image slider interval
+    const sliderInterval = setInterval(() => {
+      currentIndex = (currentIndex + 1) % images.length;
+    }, 3000);
+
     return () => {
-      if (interval) clearInterval(interval);
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('resize', handleResize);
+      clearInterval(sliderInterval);
+      if (container && container.contains(renderer.domElement)) {
+        container.removeChild(renderer.domElement);
+      }
     };
   });
+
+  // Scroll to top function
+  function scrollToTop() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+
+  // Update scroll position
+  function handleScroll() {
+    showScrollTop = window.scrollY > window.innerHeight / 2;
+  }
 </script>
 
-<div class="min-h-screen bg-gradient-to-b from-blue-50 to-white mt-10">
+<svelte:window
+  bind:scrollY
+  bind:innerHeight
+  on:scroll={handleScroll}
+/>
+
+<!-- Add scroll progress bar -->
+<div
+  class="scroll-progress"
+  style="transform: scaleX({scrollProgress / 100})"
+></div>
+
+<!-- Add scroll to top button -->
+{#if showScrollTop}
+  <button
+    class="scroll-to-top {showScrollTop ? 'visible' : ''}"
+    on:click={scrollToTop}
+    aria-label="Scroll to top"
+  >
+    <svg
+      class="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        d="M5 10l7-7m0 0l7 7m-7-7v18"
+      />
+    </svg>
+  </button>
+{/if}
+
+<!-- Add smooth-scroll class to main container -->
+<div class="min-h-screen smooth-scroll">
   <!-- Hero Section -->
   <section class="relative h-screen">
+    <!-- Add canvas before other content -->
+    <div
+      bind:this={container}
+      class="absolute inset-0 w-full h-full pointer-events-none opacity-70"
+    ></div>
+    
     <!-- Image Slider -->
     {#each images as image, index}
       <div
@@ -138,28 +291,28 @@
     {/each}
 
     <!-- Gradient Overlay -->
-    <div class="absolute inset-0 z-10 bg-gradient-to-b from-blue-900/60 to-blue-800/40"></div>
+    <div class="absolute inset-0 z-10 hero-gradient"></div>
 
     <!-- Hero Content -->
     <div class="relative z-20 h-full w-full px-4 lg:px-8">
       <div class="flex flex-col justify-center h-full max-w-7xl mx-auto">
-        <div class="max-w-3xl">
-          <h1 class="text-5xl md:text-6xl font-bold text-white leading-tight mb-6">
+        <div class="max-w-3xl {isMobile ? 'text-center' : ''}">
+          <h1 class="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
             Complete Healthcare Solutions
           </h1>
-          <p class="text-xl md:text-2xl text-blue-100 mb-8">
+          <p class="text-lg md:text-2xl text-blue-100 mb-8">
             Connect with top healthcare professionals and home care providers for comprehensive care.
           </p>
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex flex-col sm:flex-row gap-4 {isMobile ? 'items-center' : ''}">
             <a
               href="/doctors"
-              class="inline-block bg-white text-blue-900 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition duration-300 text-lg text-center"
+              class="btn-secondary text-lg text-center"
             >
               Find a Doctor
             </a>
             <a
               href="/providers"
-              class="inline-block bg-blue-800 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition duration-300 text-lg text-center"
+              class="btn-primary text-lg text-center"
             >
               Find Home Care
             </a>
@@ -171,7 +324,7 @@
     <!-- Stats Section -->
     <div class="absolute bottom-0 left-0 right-0 z-20 transform translate-y-1/2 w-full px-4 lg:px-8">
       <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white rounded-xl shadow-xl p-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 stats-card">
           {#each [
             { label: 'Registered Doctors', value: '500+' },
             { label: 'Care Providers', value: '300+' },
@@ -202,7 +355,7 @@
           <h3 class="text-2xl font-semibold text-blue-900 mb-8">Our Medical Specialties</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {#each doctorSpecialties as specialty}
-              <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition duration-300 border border-blue-50">
+              <div class="modern-card p-6">
                 <div class="flex items-center space-x-4">
                   <div class="flex-shrink-0">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -220,18 +373,24 @@
         </div>
 
         <!-- Featured Doctors -->
-        {#if !loading}
-          <div>
-            <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Doctors</h3>
+        <div>
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Doctors</h3>
+          {#if loading}
+            <div class="text-center py-8">Loading...</div>
+          {:else if featuredDoctors.length === 0}
+            <div class="text-center py-8">No featured doctors available</div>
+          {:else}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {#each featuredDoctors as doctor}
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition duration-300 border border-blue-50">
-                  <img
-                    use:lazyLoadImage
-                    src={doctor.profile_picture_url || 'src/images/avatar.jpg'}
-                    alt={doctor.name}
-                    class="w-full h-48 object-cover"
-                  />
+                <div class="modern-card overflow-hidden">
+                  <div class="img-container">
+                    <img
+                      use:lazyLoadImage
+                      src={doctor.profile_picture_url || 'src/images/avatar.jpg'}
+                      alt={doctor.name}
+                      class="w-full h-48 object-cover"
+                    />
+                  </div>
                   <div class="p-6">
                     <h3 class="text-xl font-semibold text-blue-900">{doctor.name}</h3>
                     <p class="text-gray-600">{doctor.specialty}</p>
@@ -251,14 +410,14 @@
                 </div>
               {/each}
             </div>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Home Care Providers Section -->
-  <section class="py-32 bg-gradient-to-b from-blue-50 to-white w-full">
+  <section class="py-32 section-gradient w-full">
     <div class="w-full px-4 lg:px-8">
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
@@ -271,7 +430,7 @@
           <h3 class="text-2xl font-semibold text-blue-900 mb-8">Our Care Services</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {#each careServices as service}
-              <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition duration-300 border border-blue-50">
+              <div class="modern-card p-6">
                 <div class="flex items-center space-x-4">
                   <div class="flex-shrink-0">
                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -289,18 +448,24 @@
         </div>
 
         <!-- Featured Providers -->
-        {#if !loading}
-          <div>
-            <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Care Providers</h3>
+        <div>
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Care Providers</h3>
+          {#if loading}
+            <div class="text-center py-8">Loading...</div>
+          {:else if featuredProviders.length === 0}
+            <div class="text-center py-8">No featured providers available</div>
+          {:else}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {#each featuredProviders as provider}
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition duration-300 border border-blue-50">
-                  <img
-                    use:lazyLoadImage
-                    src={provider.profile_picture_url || 'src/images/avatar.jpg'}
-                    alt={provider.name}
-                    class="w-full h-48 object-cover"
-                  />
+                <div class="modern-card overflow-hidden">
+                  <div class="img-container">
+                    <img
+                      use:lazyLoadImage
+                      src={provider.profile_picture_url || 'src/images/avatar.jpg'}
+                      alt={provider.name}
+                      class="w-full h-48 object-cover"
+                    />
+                  </div>
                   <div class="p-6">
                     <h3 class="text-xl font-semibold text-blue-900">{provider.name}</h3>
                     <p class="text-gray-600">Home Care Provider</p>
@@ -321,8 +486,8 @@
                 </div>
               {/each}
             </div>
-          </div>
-        {/if}
+          {/if}
+        </div>
       </div>
     </div>
   </section>
@@ -340,7 +505,7 @@
           {#each faqs as faq, index}
             <div class="bg-white rounded-xl shadow-sm overflow-hidden">
               <button
-                class="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-blue-50 transition-colors duration-200"
+                class="w-full px-6 py-4 text-left flex items-center justify-between faq-item"
                 on:click={() => toggleQuestion(index)}
               >
                 <span class="text-lg font-semibold text-blue-900">{faq.question}</span>
@@ -376,13 +541,13 @@
         <div class="flex flex-col sm:flex-row justify-center gap-4">
           <a
             href="/search"
-            class="inline-block bg-white text-blue-900 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition duration-300"
+            class="btn-secondary"
           >
             Search Professionals
           </a>
           <a
             href="/register"
-            class="inline-block bg-blue-800 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-300"
+            class="btn-primary"
           >
             Join Our Network
           </a>
@@ -395,34 +560,163 @@
 <style>
   :global(body) {
     @apply antialiased;
+    background: linear-gradient(135deg, #0e1538 0%, #1a237e 100%);
   }
 
-  /* Add smooth transition for FAQ items */
-  button {
-    transition: all 0.2s ease-in-out;
+  /* Modern card with glassmorphism */
+  :global(.modern-card) {
+    @apply rounded-2xl transition-all duration-300 hover:-translate-y-1;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
   }
 
-  /* Add hover effects for cards */
-  :global(.card-hover) {
-    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  :global(.modern-card:hover) {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.5);
   }
 
-  :global(.card-hover:hover) {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px -10px rgba(0, 0, 0, 0.1);
+  /* Enhanced gradients */
+  :global(.hero-gradient) {
+    background: linear-gradient(135deg, 
+      rgba(14, 21, 56, 0.8) 0%,
+      rgba(26, 35, 126, 0.7) 100%
+    );
+    backdrop-filter: blur(5px);
   }
 
-  /* Enhance section transitions */
-  section {
-    scroll-margin-top: 100px;
+  /* Stats card with glassmorphism */
+  :global(.stats-card) {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    @apply rounded-2xl p-8;
   }
 
-  /* Improve spacing and typography */
-  h2 {
-    letter-spacing: -0.02em;
+  /* Button styles with glassmorphism */
+  :global(.btn-primary) {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    background: rgba(59, 130, 246, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
-  .hero-gradient {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.1) 100%);
+  :global(.btn-primary:hover) {
+    background: rgba(59, 130, 246, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+  }
+
+  :global(.btn-secondary) {
+    @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+
+  :global(.btn-secondary:hover) {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.3);
+  }
+
+  /* FAQ item with glassmorphism */
+  :global(.faq-item) {
+    @apply transition-all duration-300;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  :global(.faq-item:hover) {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Section backgrounds */
+  :global(.section-gradient) {
+    background: linear-gradient(180deg, 
+      rgba(14, 21, 56, 0.7) 0%,
+      rgba(26, 35, 126, 0.8) 100%
+    );
+    backdrop-filter: blur(5px);
+  }
+
+  /* Add any additional component-specific scroll styles here */
+  :global(.smooth-scroll) {
+    scroll-padding-top: 80px; /* Match navigation height */
+  }
+
+  /* Scroll progress bar */
+  :global(.scroll-progress) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #1a237e);
+    transform-origin: left;
+    z-index: 50;
+  }
+
+  /* Scroll to top button */
+  :global(.scroll-to-top) {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(59, 130, 246, 0.8);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: none;
+    border-radius: 50%;
+    padding: 10px;
+    cursor: pointer;
+    transition: opacity 0.3s, transform 0.3s;
+    opacity: 0;
+    transform: translateY(20px);
+    z-index: 50;
+  }
+
+  :global(.scroll-to-top.visible) {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Spline canvas styles */
+  canvas {
+    touch-action: none;
+    pointer-events: none; /* Allow clicking through to content */
+    opacity: 0.7; /* Adjust opacity to blend with background */
+  }
+
+  /* Update mobile-specific styles */
+  @media (max-width: 768px) {
+    :global(.modern-card) {
+      @apply p-4;
+    }
+
+    :global(.stats-card) {
+      @apply p-4;
+      font-size: 0.875rem;
+    }
+
+    :global(.hero-gradient) {
+      background: linear-gradient(135deg, 
+        rgba(14, 21, 56, 0.9) 0%,
+        rgba(26, 35, 126, 0.8) 100%
+      );
+    }
   }
 </style>

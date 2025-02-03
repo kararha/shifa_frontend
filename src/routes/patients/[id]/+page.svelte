@@ -133,14 +133,17 @@
 
 <style>
     .glass-card {
-        @apply p-6 rounded-xl;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
         background: rgba(255, 255, 255, 0.1);
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .glass-panel {
-        @apply p-4 rounded-lg mb-4;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(5px);
         border: 1px solid rgba(255, 255, 255, 0.1);

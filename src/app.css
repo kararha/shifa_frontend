@@ -1,127 +1,184 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Use postcss-import if you want to keep the @tailwind directives */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 :root {
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
+  --perspective: 1000px;
+  --transition-speed: 0.6s;
+  --transition-ease: cubic-bezier(0.23, 1, 0.32, 1);
+  --nav-blur: 12px;
+  --nav-bg: rgba(13, 15, 48, 0.85);
+  --accent-glow: rgba(123, 157, 255, 0.5);
+  --nav-border: rgba(123, 157, 255, 0.2);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-blur: 10px;
 }
 
+/* Rest of your styles without @apply */
 body {
-  @apply antialiased min-h-screen;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
   background: 
-      linear-gradient(to bottom, rgba(28, 68, 93, 0.8), rgba(28, 68, 93, 0.8)),
-      linear-gradient(to bottom, rgba(42, 88, 114, 0.6), rgba(42, 88, 114, 0.6)),
-      linear-gradient(to bottom, rgba(249, 250, 250, 0.4), rgba(46, 98, 129, 0.4));
-  background-blend-mode: multiply;
+    linear-gradient(to bottom, rgba(13, 15, 48, 0.95), rgba(13, 15, 48, 0.85)),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 30L60 60M30 30L0 60M30 30L60 0M30 30L0 0' stroke='rgba(123, 157, 255, 0.1)' stroke-width='0.5'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='1.5' fill='rgba(123, 157, 255, 0.1)'/%3E%3C/svg%3E");
+  background-size: cover, 60px 60px, 100px 100px;
+  background-position: center, center, center;
+  background-blend-mode: normal, overlay, overlay;
 }
 
-/* Navigation Styles */ 
+/* Enhanced Navigation Styles */ 
 nav {
-    background: rgba(26, 32, 44, 0.3);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border-radius: 15px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    position: fixed;
-    top: 0;
-    z-index: 50;
-    width: 100%;
-    margin-bottom: 20px;
+  background: rgba(13, 15, 48, 0.7);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 0 0 20px 20px;
+  border-top: none;
+  position: fixed;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  margin-bottom: 20px;
+  transform: translateZ(0);
+  will-change: transform;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  height: 80px; /* Fixed height for nav */
+}
+
+/* Add nav shadow on scroll */
+nav.scrolled {
+  box-shadow: 0 10px 30px -10px rgba(13, 15, 48, 0.7);
+  border-color: rgba(123, 157, 255, 0.3);
 }
 
 .nav-content {
-    width: 100%;
-    padding: 1rem 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .logo {
-    color: rgba(255, 255, 255, 0.95);
-    font-size: 1.5rem;
-    font-weight: bold;
-    text-decoration: none;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-    margin-right: 2rem;
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+  position: relative;
+  text-shadow: 0 0 15px var(--accent-glow);
+  transition: all 0.3s ease;
+}
+
+.logo::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.logo:hover::after {
+  opacity: 0.5;
 }
 
 .menu-toggle {
-    display: none;
-    color: #cbd5e0;
-    background: none;
-    border: none;
-    padding: 0.5rem;
-    cursor: pointer;
+  display: none;
+  color: #cbd5e0;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
 }
 
 .nav-links {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 3rem;
+  display: flex;
+  gap: 3rem;
+  align-items: center;
+  margin: 0 auto;
 }
 
 .nav-links a {
-    color: rgba(255, 255, 255, 0.8);
-    text-decoration: none;
-    font-size: 0.875rem;
-    transition: color 0.2s;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, var(--accent-glow) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
 }
 
 .nav-links a:hover {
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  color: #fff;
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+.nav-links a:hover::before {
+  opacity: 0.3;
 }
 
 .auth-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-left: auto;
-    padding-left: 2rem;
+  display: flex;
+  gap: 1rem;
+  margin-left: auto;
+  padding-left: 2rem;
 }
 
 .login-btn, .register-btn {
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    transition: all 0.2s;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .login-btn {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.9);
+  background: rgba(123, 157, 255, 0.1);
+  color: #fff;
+  border-color: var(--nav-border);
 }
 
 .register-btn {
-    background: rgba(102, 126, 234, 0.6);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border: 1px solid rgba(102, 126, 234, 0.3);
-    color: #ffffff;
+  background: linear-gradient(135deg, rgba(123, 157, 255, 0.8), rgba(123, 157, 255, 0.6));
+  color: #fff;
 }
 
 .login-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(123, 157, 255, 0.2);
+  border-color: rgba(123, 157, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .register-btn:hover {
-    background: rgba(102, 126, 234, 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px -3px rgba(123, 157, 255, 0.4);
 }
 
 main {
-    /* max-width: 1200px; */
-    margin: 0 auto;
-    margin-bottom: 10px;
-    padding: 2rem 1rem;
+  padding-top: 80px; /* Height of nav + some spacing */
+  min-height: calc(100vh - 80px);
+  width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -147,10 +204,22 @@ main {
         background: rgba(26, 32, 44, 0.95);
         backdrop-filter: blur(12px) saturate(180%);
         -webkit-backdrop-filter: blur(12px) saturate(180%);
+        transform: none !important;
+        perspective: none;
     }
 
     .nav-links.open {
         display: flex;
+    }
+
+    .nav-links a {
+        transform: none !important;
+        padding: 12px 16px;
+    }
+
+    .nav-links a::before,
+    .nav-links a::after {
+        display: none;
     }
 
     .auth-buttons {
@@ -181,13 +250,11 @@ main {
     width: 100%;
     max-width: 400px;
     min-height: 300px;
-    background: rgba(255, 255, 255, 0.2);
-
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: var(--glass-bg);
+    box-shadow: var(--glass-shadow);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
     border-radius: 0.75rem;
     padding: 1.25rem;
 
@@ -313,12 +380,11 @@ h1, h2, h3, h4 {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.05) 100%);
 }
 
-/* Enhanced Focus States */
 button:focus-visible,
 a:focus-visible {
   outline: 2px solid #4f46e5;
   outline-offset: 2px;
-  @apply ring-2 ring-offset-2 ring-blue-500;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3b82f6;
 }
 
 /* Improved Mobile Spacing */
@@ -332,4 +398,409 @@ a:focus-visible {
     padding-left: 1rem;
     padding-right: 1rem;
   }
+}
+
+.perspective-1000 {
+  perspective: var(--perspective);
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Add fallback for browsers that don't support 3D transforms */
+@supports not (transform-style: preserve-3d) {
+    .nav-links a:hover {
+        transform: translateY(-2px);
+    }
+    
+    .nav-links a::before {
+        display: none;
+    }
+}
+
+/* Add new utilities */
+.nav-blur {
+  backdrop-filter: blur(var(--nav-blur));
+  -webkit-backdrop-filter: blur(var(--nav-blur));
+}
+
+.glow-hover {
+  transition: all 0.3s ease;
+}
+
+.glow-hover:hover {
+  text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Add JavaScript hook for scroll detection */
+@media (min-width: 768px) {
+  nav {
+    transform: translateY(0);
+    transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  nav.nav-hidden {
+    transform: translateY(-100%);
+  }
+}
+
+/* Provider and Doctor Card Styles */
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem 0;
+  margin-top: 2rem;
+}
+
+.provider-card {
+  background: rgba(13, 15, 48, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(123, 157, 255, 0.2);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: all 0.3s var(--transition-ease);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.provider-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: rgba(123, 157, 255, 0.4);
+  box-shadow: 
+    0 10px 30px -10px rgba(13, 15, 48, 0.7),
+    0 0 20px rgba(123, 157, 255, 0.3);
+}
+
+.provider-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.provider-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s var(--transition-ease);
+}
+
+.provider-card:hover .provider-image img {
+  transform: scale(1.05);
+}
+
+.provider-status {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transform: translateZ(20px);
+}
+
+.status-available {
+  background: rgba(16, 185, 129, 0.2);
+  color: rgb(16, 185, 129);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-unavailable {
+  background: rgba(239, 68, 68, 0.2);
+  color: rgb(239, 68, 68);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.provider-content {
+  padding: 1.5rem;
+}
+
+.provider-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 10px rgba(123, 157, 255, 0.3);
+}
+
+.provider-specialty {
+  color: rgba(123, 157, 255, 0.9);
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+
+.provider-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rating-stars {
+  color: rgb(250, 204, 21);
+}
+
+.provider-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+}
+
+.price-amount {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.price-period {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.875rem;
+}
+
+.provider-actions {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.action-button {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+  transition: all 0.2s var(--transition-ease);
+  border: 1px solid transparent;
+}
+
+.action-primary {
+  background: rgba(123, 157, 255, 0.2);
+  color: white;
+  border-color: rgba(123, 157, 255, 0.3);
+}
+
+.action-primary:hover {
+  background: rgba(123, 157, 255, 0.3);
+  border-color: rgba(123, 157, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(123, 157, 255, 0.2);
+}
+
+/* Filter and Search Styles */
+.filter-section {
+  background: rgba(13, 15, 48, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(123, 157, 255, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 90px; /* nav height + 10px */
+  z-index: 10;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.filter-input {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(123, 157, 255, 0.2);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.filter-input:focus {
+  border-color: rgba(123, 157, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+
+/* Page Layout Fixes */
+.page-container {
+  padding: 2rem 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Provider and Doctor Page Specific */
+.provider-layout {
+  padding-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  main {
+    padding-top: 70px;
+  }
+
+  nav {
+    height: 70px;
+  }
+
+  .page-container {
+    padding: 1rem;
+  }
+
+  .filter-section {
+    top: 80px;
+    margin: 0 -1rem 2rem -1rem;
+    border-radius: 0;
+  }
+}
+
+/* SVG Shape Animations */
+.shape {
+  filter: blur(1px);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
+}
+
+.shape:hover {
+  filter: blur(0);
+}
+
+/* Add support for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .shape {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .shape-path {
+    animation: none !important;
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Adjust decorative elements size and positioning */
+.spline-element {
+  position: absolute;
+  width: 150px; /* Increased from 120px but still smaller than original 200px */
+  height: 150px;
+  opacity: 0.12; /* Slightly increased opacity */
+}
+
+.spline-element.top-left {
+  top: 120px;
+  left: 5%;
+  transform: scale(0.9);
+}
+
+.spline-element.top-right {
+  top: 120px;
+  right: 5%;
+  transform: scale(0.9);
+}
+
+.spline-element.center-left {
+  top: 50%;
+  left: 3%;
+  transform: translateY(-50%) scale(0.85);
+}
+
+.spline-element.center-right {
+  top: 50%;
+  right: 3%;
+  transform: translateY(-50%) scale(0.85);
+}
+
+.spline-element.bottom-left {
+  bottom: 120px;
+  left: 5%;
+  transform: scale(0.8);
+}
+
+.spline-element.bottom-right {
+  bottom: 120px;
+  right: 5%;
+  transform: scale(0.8);
+}
+
+/* Healthcare specific icons */
+.bg-icon {
+  position: absolute;
+  width: 120px; /* Increased from 100px */
+  height: 120px;
+  stroke-width: 1.5;
+  opacity: 0.15; /* Added opacity */
+}
+
+.stethoscope {
+  top: 25%;
+  left: 8%;
+  transform: scale(0.75);
+}
+
+.heartbeat {
+  width: 180px; /* Increased from 150px */
+  height: 40px;
+  bottom: 15%;
+  right: 8%;
+}
+
+.floating-plus {
+  font-size: 32px; /* Increased from 24px */
+  opacity: 0.15;
+}
+
+.floating-plus.delay-1 {
+  top: 35%;
+  right: 15%;
+}
+
+.floating-plus.delay-2 {
+  bottom: 30%;
+  left: 12%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .spline-element {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .bg-icon {
+    transform: scale(0.7);
+  }
+}
+
+@media (max-width: 768px) {
+  .spline-element {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .bg-icon {
+    transform: scale(0.6);
+  }
+  
+  .floating-plus {
+    font-size: 24px;
+  }
+
+  .heartbeat {
+    width: 140px;
+    height: 30px;
+  }
+}
+
+/* Add this glass utility class */
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
 }

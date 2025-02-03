@@ -1,108 +1,141 @@
-// src/lib/components/reviews/ReviewList.svelte
+<!-- // src/lib/components/reviews/ReviewList.svelte -->
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { fade } from 'svelte/transition';
-  import ReviewForm from './ReviewForm.svelte';
+    import { onMount } from 'svelte';
+    import { fade } from 'svelte/transition';
+    import { BACKEND_URL } from '$lib/constants';
+    import ReviewForm from './ReviewForm.svelte';
 
-  interface Review {
-    id: number;
-    patient_id: number;
-    review_type: string;
-    doctor_id?: number;
-    rating: number;
-    comment: string;
-    created_at: string;
-  }
+    export let doctorId: string;
+    let showReviewForm = false;
+    let reviews = [];
+    let loading = true;
+    let error = null;
 
-  export let doctorId: string;
-  export let canReview: boolean = false;
-  
-  let reviews: Review[] = [];
-  let loading = true;
-  let error = '';
-  let showReviewForm = false;
+    // Check if user is a patient
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const isPatient = userData.role === 'patient';
 
-  onMount(async () => {
-    if (!doctorId) {
-      error = 'Doctor ID is required';
-      loading = false;
-      return;
+    // Debug log
+    console.log('ReviewList init:', { doctorId, isPatient, userRole: userData.role });
+
+    async function loadReviews() {
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/reviews/doctor/${doctorId}`);
+            console.log('Reviews endpoint:', `${BACKEND_URL}/api/reviews/doctor/${doctorId}`);
+            
+            const text = await response.text();
+            console.log('Raw response:', text);
+            
+            if (!response.ok) {
+                throw new Error(text);
+            }
+            
+            reviews = text ? JSON.parse(text) : [];
+        } catch (err) {
+            console.error('Reviews error:', err);
+            error = 'Failed to load reviews';
+        } finally {
+            loading = false;
+        }
     }
-    await loadReviews();
-  });
 
-  async function loadReviews() {
-    if (!doctorId) return;
-    
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/reviews/doctor/${doctorId}`);
-      if (!response.ok) throw new Error('Failed to fetch reviews');
-      reviews = await response.json();
-    } catch (e) {
-      error = (e as Error).message;
-    } finally {
-      loading = false;
+    function handleReviewSubmitted() {
+        showReviewForm = false;
+        loadReviews();
     }
-  }
 
-  function formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString();
-  }
-
-  function handleReviewSubmitted() {
-    showReviewForm = false;
-    loadReviews();
-  }
+    onMount(loadReviews);
 </script>
 
-<div class="glass-panel mt-8">
-  <div class="flex justify-between items-center mb-6">
-    <h2 class="text-xl font-semibold text-white">Reviews</h2>
-    {#if canReview}
-      <button
-        class="glass-button"
-        on:click={() => showReviewForm = true}
-      >
-        Write Review
-      </button>
-    {/if}
-  </div>
+<!-- Simplified review section -->
+<div class="review-section glass-panel mt-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-semibold text-white">Reviews</h2>
+        {#if isPatient}
+            <button
+                type="button"
+                class="review-button px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
+                on:click={() => showReviewForm = true}
+            >
+                Write Review
+            </button>
+        {/if}
+    </div>
 
-  {#if loading}
-    <div class="flex justify-center py-4">
-      <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
-    </div>
-  {:else if error}
-    <div class="text-red-400 text-center py-4">{error}</div>
-  {:else if reviews.length === 0}
-    <p class="text-gray-400 text-center py-4">No reviews yet</p>
-  {:else}
-    <div class="space-y-6">
-      {#each reviews as review (review.id)}
-        <div class="bg-white/5 rounded-lg p-4" transition:fade>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-              <div class="flex">
-                {#each Array(5) as _, i}
-                  <span class={i < review.rating ? 'text-yellow-400' : 'text-gray-600'}>★</span>
-                {/each}
-              </div>
-              <span class="text-gray-400 text-sm">
-                {formatDate(review.created_at)}
-              </span>
-            </div>
-          </div>
-          <p class="text-white mt-3">{review.comment}</p>
+    <!-- Display reviews -->
+    {#if loading}
+        <div class="flex justify-center py-4">
+            <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
-      {/each}
-    </div>
-  {/if}
+    {:else if error}
+        <div class="text-red-400 text-center py-4">{error}</div>
+    {:else if reviews.length === 0}
+        <p class="text-gray-400 text-center py-4">No reviews yet</p>
+    {:else}
+        <div class="space-y-4">
+            {#each reviews as review (review.id)}
+                <div class="bg-white/5 rounded-lg p-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="flex">
+                            {#each Array(5) as _, i}
+                                <span class={i < review.rating ? 'text-yellow-400' : 'text-gray-600'}>★</span>
+                            {/each}
+                        </div>
+                        <span class="text-gray-400 text-sm">
+                            {new Date(review.created_at).toLocaleDateString()}
+                        </span>
+                    </div>
+                    <p class="text-white mt-2">{review.comment}</p>
+                </div>
+            {/each}
+        </div>
+    {/if}
 </div>
 
+<!-- Update ReviewForm usage -->
 {#if showReviewForm}
-  <ReviewForm
-    {doctorId}
-    on:submitted={handleReviewSubmitted}
-    on:cancel={() => showReviewForm = false}
-  />
+    <ReviewForm
+        {doctorId}
+        on:submit={() => {
+            showReviewForm = false;
+            loadReviews();
+        }}
+        on:close={() => showReviewForm = false}
+    />
 {/if}
+
+<style>
+    .glass-panel {
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    button {
+        background: rgba(37, 99, 235, 0.8);
+        border: 1px solid rgba(59, 130, 246, 0.5);
+        transition: all 0.2s ease-in-out;
+    }
+
+    button:hover {
+        background: rgba(37, 99, 235, 0.9);
+        transform: translateY(-1px);
+    }
+
+    .review-button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        min-width: 120px !important;
+        font-weight: 600 !important;
+    }
+
+    .review-section :global(button) {
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+</style>

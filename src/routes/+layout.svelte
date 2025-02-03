@@ -3,10 +3,13 @@
     import '../app.css';
     import { onMount } from 'svelte';
     import { DEFAULT_AVATAR, BACKEND_URL } from '$lib/constants';
+    import { goto } from '$app/navigation';
+    import { page } from '$app/stores';
     
     let isMenuOpen = false;
     let isLoading = false;
-    
+    let user: any = null;
+
     $: user = $authStore.user;
     $: isAuthenticated = $authStore.isAuthenticated;
 
@@ -20,11 +23,34 @@
                 const userData = decodeURIComponent(userCookie.split('=')[1]);
                 const parsedUser = JSON.parse(userData);
                 if (parsedUser) {
-                    authStore.setUser(parsedUser);
+                    authStore.updateUser(parsedUser);
                 }
             }
         } catch (e) {
             console.error('Error in onMount:', e);
+        }
+
+        // Check for existing auth
+        const storedUser = localStorage.getItem('user');
+        const token = localStorage.getItem('token');
+        
+        if (storedUser && token) {
+            try {
+                user = JSON.parse(storedUser);
+                console.log('Restored user session:', user);
+            } catch (e) {
+                console.error('Error parsing stored user:', e);
+                // Clear invalid data
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                localStorage.removeItem('refresh_token');
+            }
+        }
+
+        // Redirect if not authenticated
+        const publicRoutes = ['/login', '/register', '/', '/about'];
+        if (!user && !publicRoutes.includes($page.url.pathname)) {
+            goto('/login');
         }
     });
 
@@ -36,6 +62,14 @@
         } finally {
             isLoading = false;
         }
+    }
+
+    function handleLogout() {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        localStorage.removeItem('refresh_token');
+        user = null;
+        goto('/login');
     }
 
     // Helper function to get complete image URL
@@ -61,6 +95,38 @@
         isMenuOpen = !isMenuOpen;
         console.log('Menu toggled:', isMenuOpen); // Add logging for debugging
     }
+
+    let lastScroll = 0;
+    let nav: HTMLElement;
+
+    function handleScroll() {
+        const currentScroll = window.pageYOffset;
+        
+        // Add scrolled class for shadow
+        if (currentScroll > 20) {
+            nav.classList.add('scrolled');
+        } else {
+            nav.classList.remove('scrolled');
+        }
+        
+        // Hide nav when scrolling down, show when scrolling up
+        if (currentScroll > lastScroll && currentScroll > 100) {
+            nav.classList.add('nav-hidden');
+        } else {
+            nav.classList.remove('nav-hidden');
+        }
+        
+        lastScroll = currentScroll;
+    }
+
+    onMount(() => {
+        nav = document.querySelector('nav');
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    });
 </script>
 
 <div class="layout">
@@ -79,7 +145,7 @@
                 <a href="/doctors">Doctors</a>
                 <a href="/AI">AI</a>
                 <a href="/about">About</a>
-                <a href="/contact">Contact</a>
+                <!-- <a href="/contact">Contact</a> -->
                 
                 {#if isAuthenticated && user}
                     <a href="/payments">Payments</a>

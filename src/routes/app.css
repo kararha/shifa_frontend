@@ -1,0 +1,69 @@
+/* Smooth Scrolling Styles */
+.smooth-scroll {
+  scroll-behavior: smooth;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(123, 157, 255, 0.3) rgba(13, 15, 48, 0.1);
+}
+
+/* Custom Scrollbar */
+.smooth-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.smooth-scroll::-webkit-scrollbar-track {
+  background: rgba(13, 15, 48, 0.1);
+  border-radius: 4px;
+}
+
+.smooth-scroll::-webkit-scrollbar-thumb {
+  background: rgba(123, 157, 255, 0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.smooth-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(123, 157, 255, 0.5);
+}
+
+/* Scroll Progress Indicator */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, rgba(123, 157, 255, 0.5), rgba(123, 157, 255, 0.8));
+  transform-origin: 0 50%;
+  z-index: 1000;
+}
+
+/* Scroll to top button */
+.scroll-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: rgba(123, 157, 255, 0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem;
+  border-radius: 50%;
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.scroll-to-top.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-to-top:hover {
+  background: rgba(123, 157, 255, 0.3);
+  transform: translateY(-2px);
+}

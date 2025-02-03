@@ -4,11 +4,11 @@ module.exports = {
         autoprefixer: {},
     },
 };
-// module.exports = {
-//     plugins: {
-//         tailwindcss: {},
-//         autoprefixer: {},
-//         'postcss-preset-env': {},
-//         cssnano: {}
-//     },
-// };
+module.exports = {
+    plugins: {
+        tailwindcss: {},
+        autoprefixer: {},
+        'postcss-preset-env': {},
+        cssnano: {}
+    },
+};

@@ -32,6 +32,8 @@
       Name: string;
       Description: string;
     };
+    average_rating?: number;
+    total_reviews?: number;
   }
 
   let doctor: Doctor | null = null;
@@ -40,7 +42,6 @@
   let showAppointmentModal = false;
   let showConsultationModal = false;
   let imageError = false;
-  let canReview = false; // This should be determined based on user auth state and consultation history
   let isOwnProfile = false;
 
   onMount(async () => {
@@ -79,8 +80,15 @@
 
       // Check if this is the doctor's own profile
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      isOwnProfile = userData.role?.toLowerCase() === 'doctor' && 
-                    userData.id?.toString() === $page.params.id;
+      const token = localStorage.getItem('token');
+
+      console.log('Doctor profile loaded:', {
+        doctorId: $page.params.id,
+        userData: localStorage.getItem('user')
+      });
+
+      // Set isOwnProfile
+      isOwnProfile = userData.role === 'doctor' && userData.id === doctor?.user_id;
 
     } catch (e) {
       error = (e as Error).message;
@@ -139,10 +147,18 @@
           <div class="ml-6">
             <h1 class="text-3xl font-bold text-white">Dr. {doctor.name}</h1>
             <p class="text-xl text-blue-300">{doctor.specialty}</p>
-            <div class="flex items-center mt-2">
-              <span class="text-yellow-400 mr-1">★</span>
-              <span class="text-white">{doctor.rating?.toFixed(1) || 'N/A'}</span>
-            </div>
+            {#if doctor.average_rating}
+              <div class="flex items-center mt-2">
+                <div class="flex">
+                  {#each Array(5) as _, i}
+                    <span class={i < Math.round(doctor.average_rating) ? 'text-yellow-400' : 'text-gray-600'}>★</span>
+                  {/each}
+                </div>
+                <span class="text-white ml-2">
+                  {doctor.average_rating.toFixed(1)} ({doctor.total_reviews} reviews)
+                </span>
+              </div>
+            {/if}
           </div>
         </div>
         <div class="mt-4 md:mt-0 flex flex-col items-end">
@@ -186,17 +202,13 @@
             </div>
 
             <!-- Add ReviewList component with null check -->
-            {#if doctor.id}
-              <ReviewList 
-                entityId={doctor?.id?.toString() || ''}
-                entityType="doctor"
-              />
+            {#if doctor?.id}
+              <div class="review-section">
+                <ReviewList 
+                  doctorId={doctor.id.toString()}
+                />
+              </div>
             {/if}
-            
-            <ReviewList 
-                entityId={doctor?.id?.toString() || ''}
-                entityType="doctor"
-            />
           </div>
         {/if}
 
@@ -355,5 +367,20 @@
   .glass-button-primary:hover {
     background: rgba(37, 99, 235, 0.9);
     transform: translateY(-1px);
+  }
+
+  :global(.review-section button) {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: block !important;
+  }
+
+  :global(.review-button) {
+    display: inline-block !important;
+    background-color: rgb(37, 99, 235) !important;
+    color: white !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
   }
 </style>
