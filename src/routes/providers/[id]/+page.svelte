@@ -4,14 +4,24 @@
   import { fade } from 'svelte/transition';
   import { DEFAULT_DOCTOR_AVATAR } from '$lib/constants';
   import HomeCareVisitModal from '$lib/components/HomeCareVisitModal.svelte';
-  import ReviewList from '$lib/components/ReviewList.svelte';
+  import ReviewList from '$lib/reviews/ReviewList.svelte';
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-  const providerId = $page.params.id;
   let provider: any = null;
   let loading = true;
   let error: string | null = null;
   let showBookingModal = false;
+
+  // Get the ID from the URL params and ensure it's not undefined
+  $: providerId = $page.params.id;
+  
+  // Add validation and logging
+  $: {
+      console.log('Provider page - ID from URL:', providerId);
+      if (!providerId) {
+          console.error('Provider ID is undefined in URL params');
+      }
+  }
 
   onMount(async () => {
     try {
@@ -148,10 +158,14 @@
             on:success={handleBookingSuccess}
           />
 
-          <ReviewList 
-            entityId={provider?.id?.toString() || ''} 
-            entityType="home-care-provider"
-          />
+          {#if provider?.user_id}
+            <div class="mt-8">
+              <ReviewList 
+                entityId={provider.user_id.toString()}
+                entityType="home-care-provider"
+              />
+            </div>
+          {/if}
         </div>
       </div>
     {/if}

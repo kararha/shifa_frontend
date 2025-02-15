@@ -1,23 +1,15 @@
-# Use a Node.js base image
 FROM node:18-alpine
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
-
 # Install dependencies
+COPY package*.json ./
 RUN npm install
 
-# Copy the rest of the application code
+# Copy all source files
 COPY . .
 
-# Build the SvelteKit app
-RUN npm run build
+EXPOSE 3000
 
-# Expose the port the app runs on
-EXPOSE 5173
-
-# Command to start the app
-CMD ["npm", "run", "preview"]
+# Changed host to 0.0.0.0 to allow external connections
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

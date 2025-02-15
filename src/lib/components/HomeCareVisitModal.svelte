@@ -2,8 +2,10 @@
   import { createEventDispatcher } from 'svelte';
   import { fade } from 'svelte/transition';
   import { authStore } from '$lib/stores/authStore';
-  import { api } from '$lib/api/index';
+  import { apiRequest } from '$lib/utils/api';
+  import { API_CONFIG } from '$lib/config/api';
   import type { User } from '$lib/types';
+  import type { HomeCareVisit } from '$lib/types/homeCareVisit';
 
   export let providerId: number;
   export let show = false;
@@ -20,6 +22,112 @@
     visitTime: ''
   };
 
+  async function getCoordinatesFromAddress(address: string): Promise<{ lat: number; lng: number }> {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+      );
+      const data = await response.json();
+
+      if (data && data[0]) {
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon)
+        };
+      }
+      throw new Error('Could not find coordinates for this address');
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      throw new Error('Failed to get location coordinates');
+    }
+  }
+
+  async function checkLocationPermission(): Promise<boolean> {
+    try {
+      const result = await navigator.permissions.query({ name: 'geolocation' });
+      return result.state === 'granted';
+    } catch (error) {
+      console.error('Permission check failed:', error);
+      return false;
+    }
+  }
+
+  async function getCurrentLocation(): Promise<void> {
+    try {
+      const hasPermission = await checkLocationPermission();
+      if (!hasPermission) {
+        const userResponse = confirm(
+          'This app needs your location to provide accurate service. Would you like to:\n\n' +
+          '1. Enable location services in your browser\n' +
+          '2. Enter your address manually\n\n' +
+          'Click OK to enable location or Cancel to enter manually.'
+        );
+        
+        if (!userResponse) {
+          return;
+        }
+      }
+
+      const position: GeolocationPosition = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          (error) => {
+            console.error('Geolocation error:', error);
+            let errorMessage = 'Unable to get your location. ';
+            
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                errorMessage += 'Please enable location services in your browser settings.';
+                break;
+              case error.POSITION_UNAVAILABLE:
+                errorMessage += 'Location information is unavailable.';
+                break;
+              case error.TIMEOUT:
+                errorMessage += 'Request timed out. Please try again.';
+                break;
+              default:
+                errorMessage += 'Please enter your address manually.';
+            }
+            reject(new Error(errorMessage));
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      });
+      
+      formData.latitude = position.coords.latitude;
+      formData.longitude = position.coords.longitude;
+
+      // Reverse geocode to get address
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${position.coords.latitude}&lon=${position.coords.longitude}`
+      );
+      const data = await response.json();
+      
+      if (data && data.display_name) {
+        formData.address = data.display_name;
+      }
+    } catch (error) {
+      error = error instanceof Error ? error.message : 'Location services are not available';
+      console.error('Location error:', error);
+    }
+  }
+
+  async function handleAddressChange() {
+    if (formData.address.trim()) {
+      try {
+        const coords = await getCoordinatesFromAddress(formData.address);
+        formData.latitude = coords.lat;
+        formData.longitude = coords.lng;
+      } catch (error) {
+        console.error('Error getting coordinates:', error);
+      }
+    }
+  }
+
   let loading = false;
   let error: string | null = null;
   let currentUser: User | null = null;
@@ -28,49 +136,6 @@
   authStore.subscribe(state => {
     currentUser = state.user as User | null;
   });
-
-  async function createAppointment(visitDateTime: Date) {
-    try {
-      // Format date and time in UTC ISO format
-      const startTimeUTC = new Date(visitDateTime).toISOString();
-      const endTimeUTC = new Date(visitDateTime.getTime() + (formData.durationHours * 60 * 60 * 1000)).toISOString();
-
-      const appointmentPayload = {
-        patient_id: currentUser?.id,
-        provider_type: 'home_care_provider',
-        home_care_provider_id: providerId,
-        appointment_date: startTimeUTC,
-        start_time: startTimeUTC,
-        end_time: endTimeUTC,
-        status: 'scheduled'
-      };
-
-      console.log('Appointment payload:', appointmentPayload);
-
-      // Update the endpoint URL to match the backend route
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/appointments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(appointmentPayload)
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Appointment creation failed:', errorText);
-        throw new Error('Failed to create appointment: ' + errorText);
-      }
-
-      const data = await response.json();
-      console.log('Appointment created:', data);
-      return data.id;
-    } catch (err) {
-      console.error('Appointment creation error:', err);
-      throw err;
-    }
-  }
 
   function closeModal() {
     formData = {
@@ -95,27 +160,21 @@
         throw new Error('Please login to schedule a visit');
       }
 
+      // Validate inputs
       if (!formData.address.trim()) {
         throw new Error('Address is required');
       }
 
-      if (!formData.visitDate || !formData.visitTime) {
-        throw new Error('Visit date and time are required');
+      // Get coordinates if not already set
+      if (!formData.latitude || !formData.longitude) {
+        const coords = await getCoordinatesFromAddress(formData.address);
+        formData.latitude = coords.lat;
+        formData.longitude = coords.lng;
       }
 
-      const visitDateTime = new Date(`${formData.visitDate}T${formData.visitTime}`);
-      if (isNaN(visitDateTime.getTime())) {
-        throw new Error('Invalid date or time');
-      }
-
-      if (visitDateTime < new Date()) {
-        throw new Error('Visit time cannot be in the past');
-      }
-
-      const appointmentId = await createAppointment(visitDateTime);
-
-      const payload = {
-        appointment_id: appointmentId,
+      const payload: HomeCareVisit = {
+        patient_id: currentUser.id,
+        provider_id: providerId,
         address: formData.address.trim(),
         latitude: Number(formData.latitude.toFixed(8)),
         longitude: Number(formData.longitude.toFixed(8)),
@@ -124,15 +183,17 @@
         status: 'scheduled'
       };
 
-      const response: Response = await api.post('/home-care-visits', payload);
+      console.log('Submitting home care visit:', payload);
 
-      if (!response.ok) {
-        throw new Error('Failed to schedule visit');
-      }
+      const data = await apiRequest<HomeCareVisit>(API_CONFIG.endpoints.homeCareVisits, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
 
-      dispatch('success');
+      console.log('Home care visit created:', data);
+      dispatch('success', data);
       closeModal();
-    } catch (err) {
+    } catch (err: any) {
       error = err instanceof Error ? err.message : 'Failed to schedule visit';
       console.error('Scheduling error:', err);
     } finally {
@@ -155,7 +216,48 @@
         <form on:submit|preventDefault={handleSubmit} class="space-y-4">
           <div>
             <label class="block text-gray-300 mb-1" for="address">Address *</label>
-            <input type="text" id="address" bind:value={formData.address} required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white" placeholder="Enter your full address" />
+            <div class="relative">
+              <input
+                type="text"
+                id="address"
+                bind:value={formData.address}
+                on:change={handleAddressChange}
+                required
+                class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white pr-24"
+                placeholder="Enter your full address"
+              />
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 flex space-x-2">
+                <button
+                  type="button"
+                  class="text-gray-400 hover:text-white px-2 py-1 rounded"
+                  on:click={() => {
+                    getCurrentLocation().catch(err => {
+                      error = err.message;
+                    });
+                  }}
+                  title="Use current location"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  class="text-gray-400 hover:text-white px-2 py-1 rounded text-xs"
+                  on:click={() => {
+                    window.open('https://www.openstreetmap.org/search', '_blank');
+                  }}
+                  title="Open map"
+                >
+                  Map
+                </button>
+              </div>
+            </div>
+            {#if formData.latitude && formData.longitude}
+              <p class="text-xs text-gray-400 mt-1">
+                Location: {formData.latitude.toFixed(6)}, {formData.longitude.toFixed(6)}
+              </p>
+            {/if}
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
