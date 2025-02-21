@@ -6,6 +6,7 @@
   import AppointmentForm from '$lib/components/appointments/AppointmentForm.svelte';
   import ReviewList from '$lib/reviews/ReviewList.svelte'; // Fix import path
   import ConsultationForm from '$lib/consultations/ConsultationForm.svelte';
+  import ReviewForm from '$lib/reviews/ReviewForm.svelte';
   import 'tailwindcss/tailwind.css';
   import { DEFAULT_DOCTOR_AVATAR, BACKEND_URL } from '$lib/constants';
 
@@ -41,6 +42,7 @@
   let error = '';
   let showAppointmentModal = false;
   let showConsultationModal = false;
+  let showReviewModal = false;
   let imageError = false;
   let isOwnProfile = false;
 
@@ -200,15 +202,6 @@
               <h2 class="text-xl font-semibold text-white mb-4">Achievements</h2>
               <p class="text-gray-300">{doctor.achievements}</p>
             </div>
-
-            <!-- Add ReviewList component with null check -->
-            {#if doctor?.id}
-              <div class="review-section">
-                <ReviewList 
-                  doctorId={doctor.id.toString()}
-                />
-              </div>
-            {/if}
           </div>
         {/if}
 
@@ -251,6 +244,28 @@
           </button>
         </div>
       </div>
+
+      <!-- Reviews Section -->
+      {#if doctor?.id}
+        <div class="mt-8 glass-panel">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-semibold text-white">Reviews</h2>
+            {#if !isOwnProfile}
+              <button
+                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 font-semibold"
+                on:click={() => showReviewModal = true}
+              >
+                Write a Review
+              </button>
+            {/if}
+          </div>
+          <ReviewList 
+            entityId={doctor.id.toString()}
+            entityType="doctor"
+          />
+        </div>
+      {/if}
+
     </div>
 
     <AppointmentForm
@@ -271,6 +286,14 @@
         showConsultationModal = false;
       }}
     />
+
+    {#if showReviewModal}
+      <ReviewForm
+        doctorId={doctor.id.toString()}
+        on:submit={() => showReviewModal = false}
+        on:close={() => showReviewModal = false}
+      />
+    {/if}
   {/if}
 </div>
 
