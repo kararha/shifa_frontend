@@ -46,6 +46,24 @@
   let imageError = false;
   let isOwnProfile = false;
 
+  function handleReviewClick() {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || 'null');
+      if (!user || !user.id) {
+        alert('Please login to write a review');
+        return;
+      }
+      if (user.role !== 'patient') {
+        alert('Only patients can write reviews');
+        return;
+      }
+      showReviewModal = true;
+    } catch (error) {
+      console.error('Error handling review click:', error);
+      alert('Please login to write a review');
+    }
+  }
+
   onMount(async () => {
     try {
       console.log('Fetching doctor with ID:', $page.params.id);
@@ -246,23 +264,28 @@
       </div>
 
       <!-- Reviews Section -->
-      {#if doctor?.id}
-        <div class="mt-8 glass-panel">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-semibold text-white">Reviews</h2>
-            {#if !isOwnProfile}
-              <button
-                class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors duration-200 font-semibold"
-                on:click={() => showReviewModal = true}
-              >
-                Write a Review
-              </button>
-            {/if}
-          </div>
+      {#if doctor?.user_id}
+        <div class="mt-8">
           <ReviewList 
-            entityId={doctor.id.toString()}
+            entityId={doctor.user_id.toString()}
             entityType="doctor"
           />
+        </div>
+      {/if}
+
+      <!-- Move the ReviewForm outside the main container but keep it within the main if block -->
+      {#if showReviewModal && doctor}
+        <div class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center" transition:fade>
+          <div class="w-full max-w-lg">
+            <ReviewForm
+              doctorId={doctor.id.toString()}
+              on:submit={() => {
+                showReviewModal = false;
+                window.location.reload();
+              }}
+              on:close={() => showReviewModal = false}
+            />
+          </div>
         </div>
       {/if}
 
@@ -286,14 +309,6 @@
         showConsultationModal = false;
       }}
     />
-
-    {#if showReviewModal}
-      <ReviewForm
-        doctorId={doctor.id.toString()}
-        on:submit={() => showReviewModal = false}
-        on:close={() => showReviewModal = false}
-      />
-    {/if}
   {/if}
 </div>
 

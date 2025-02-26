@@ -7,14 +7,17 @@
 
     interface Appointment {
         id: number;
-        patient_name: string;
+        patient_id: number;
+        provider_type: string;
         appointment_date: string;
         start_time: string;
         end_time: string;
-        status: 'scheduled' | 'completed' | 'cancelled' | 'pending';
-        type: 'consultation' | 'appointment';
-        notes?: string;
-        [key: string]: any;
+        status: string;
+        cancellation_reason?: string;
+        created_at: string;
+        updated_at: string;
+        doctor_id?: number;
+        home_care_provider_id?: number;
     }
 
     let appointments: Appointment[] = [];
@@ -64,53 +67,34 @@
             console.log('Loading appointments for:', {
                 doctorId,
                 date: formattedDate,
-                providerType: 'doctor',
-                url: `${BACKEND_URL}/api/appointments/provider/${doctorId}`
             });
 
-            // Add provider_type as query parameter
+            // Updated URL to use the correct endpoint
             const response = await fetch(
-                `${BACKEND_URL}/api/appointments/provider/${doctorId}?date=${formattedDate}&provider_type=doctor`,
+                `${BACKEND_URL}/api/appointments?provider_type=doctor&doctor_id=${doctorId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                        'X-Provider-Type': 'doctor' // Add provider type header
+                        'Content-Type': 'application/json'
                     }
                 }
             );
 
-            const responseText = await response.text();
-            console.log('Raw appointments response:', responseText);
-
             if (!response.ok) {
-                if (response.status === 404) {
-                    console.log('No appointments found');
-                    appointments = [];
-                    return;
-                }
-                throw new Error(responseText || 'Failed to load appointments');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            try {
-                const data = JSON.parse(responseText);
-                console.log('Parsed appointments data:', data);
+            const data = await response.json();
+            console.log('Received appointments:', data);
 
-                // Handle response data structure with null checks
-                appointments = (Array.isArray(data) ? data : data.appointments || [])
-                    .map((apt: Appointment) => ({
-                        ...apt,
-                        start_time: apt.start_time?.substring(0, 5) || '',
-                        end_time: apt.end_time?.substring(0, 5) || '',
-                        appointment_date: formatDateForApi(apt.appointment_date)
-                    }));
+            appointments = data.map((apt: Appointment) => ({
+                ...apt,
+                start_time: apt.start_time?.substring(0, 5) || '',
+                end_time: apt.end_time?.substring(0, 5) || '',
+                appointment_date: formatDateForApi(apt.appointment_date)
+            }));
 
-                error = null;
-            } catch (e) {
-                console.error('Failed to parse appointments:', e);
-                appointments = [];
-                error = e instanceof Error ? e.message : 'Failed to parse appointments';
-            }
+            error = null;
         } catch (err) {
             console.error('Load appointments error:', err);
             error = err instanceof Error ? err.message : 'Failed to load appointments';

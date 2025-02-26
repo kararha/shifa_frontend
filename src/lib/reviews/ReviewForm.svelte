@@ -4,8 +4,8 @@
   import { fade } from 'svelte/transition';
   import { BACKEND_URL } from '$lib/constants';
 
-  export let doctorId: string;
-
+  export let doctorId: string | undefined = undefined;
+  export let providerId: string | undefined = undefined;
   const dispatch = createEventDispatcher();
 
   let rating = 5;
@@ -18,22 +18,19 @@
       loading = true;
       const token = localStorage.getItem('token');
       const userData = JSON.parse(localStorage.getItem('user') || '{}');
-      
-      console.log('Submitting review with:', {
-        doctorId,
-        userId: userData.id,
-        token: !!token
-      });
 
-      if (!token || !userData.id || userData.role !== 'patient') {
-        throw new Error('Please login as a patient to submit a review');
+      if (!token || !userData.id) {
+        throw new Error('Please login to submit a review');
       }
 
       const reviewData = {
-        doctor_id: parseInt(doctorId),
-        patient_id: parseInt(userData.id),
+        patient_id: userData.id,
         rating,
-        comment: comment.trim()
+        comment: comment.trim(),
+        // Set the correct fields based on entity type
+        review_type: doctorId ? 'consultation' : 'home_care',
+        doctor_id: doctorId ? parseInt(doctorId) : null,
+        home_care_provider_id: providerId ? parseInt(providerId) : null
       };
 
       console.log('Submitting review:', reviewData);
@@ -47,15 +44,11 @@
         body: JSON.stringify(reviewData)
       });
 
-      const responseText = await response.text();
-      console.log('Review response:', responseText);
-
       if (!response.ok) {
-        throw new Error(responseText || 'Failed to submit review');
+        throw new Error('Failed to submit review');
       }
 
       dispatch('submit');
-      dispatch('close');
     } catch (err) {
       console.error('Review error:', err);
       error = err instanceof Error ? err.message : 'Failed to submit review';
@@ -65,11 +58,12 @@
   }
 </script>
 
+<!-- Modal template -->
 <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" transition:fade>
   <div class="glass-card max-w-lg w-full mx-4 p-6">
     <div class="flex justify-between items-center mb-6">
       <h2 class="text-xl font-semibold text-white">Write a Review</h2>
-      <button 
+      <button
         class="text-gray-400 hover:text-white"
         on:click={() => dispatch('close')}
         aria-label="Close review form"
@@ -79,7 +73,7 @@
         </svg>
       </button>
     </div>
-    
+
     {#if error}
       <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200 mb-4" transition:fade>
         {error}

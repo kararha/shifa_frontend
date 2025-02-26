@@ -5,6 +5,8 @@
 
     export let entityId: string;
     export let entityType: 'doctor' | 'home-care-provider';
+    export let submitParams: any = null;
+    export let hideWriteReview = false;  // Add this prop
     
     interface Review {
         id: number;
@@ -47,49 +49,34 @@
                 throw new Error('Entity ID is required');
             }
 
-            // Match the exact backend route structure from Go code
             const endpoint = entityType === 'doctor' 
                 ? `${BACKEND_URL}/api/reviews/doctor/${entityId}`
-                : `${BACKEND_URL}/api/reviews/home-care-provider/${entityId}`;
+                : `${BACKEND_URL}/api/reviews/provider/${entityId}`;
 
-            console.log('Loading reviews with:', {
-                entityType,
-                entityId,
-                endpoint
-            });
+            console.log('Loading reviews from:', endpoint);
 
-            const response = await fetch(endpoint, {
-                headers: {
-                    'Accept': 'application/json'
-                }
-            });
-
-            let text;
-            try {
-                text = await response.text();
-                console.log('Raw server response:', text);
-
-                // Handle empty response
-                if (!text || text.trim() === '') {
+            const response = await fetch(endpoint);
+            
+            if (!response.ok) {
+                if (response.status === 404) {
                     reviews = [];
                     return;
                 }
-
-                const data = JSON.parse(text);
-
-                if (!response.ok) {
-                    throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
-                }
-
-                // Handle the array response
-                reviews = Array.isArray(data) ? data : [data];
-                error = null;
-
-            } catch (parseError) {
-                console.error('Response parsing error:', parseError);
-                console.error('Raw response:', text);
-                throw new Error('Failed to parse server response');
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            const data = await response.json();
+            reviews = Array.isArray(data) ? data : [data];
+            
+            // Filter reviews for the correct entity
+            reviews = reviews.filter(review => 
+                entityType === 'doctor' 
+                    ? review.doctor_id === parseInt(entityId)
+                    : review.home_care_provider_id === parseInt(entityId)
+            );
+            
+            console.log('Loaded reviews:', reviews);
+            error = null;
 
         } catch (err) {
             console.error('Review loading error:', err);
@@ -110,29 +97,24 @@
             const token = localStorage.getItem('token');
             const userData = JSON.parse(localStorage.getItem('user') || '{}');
             
-            if (!token) {
-                throw new Error('Please login to submit a review');
-            }
-
-            if (!userData.id) {
-                throw new Error('User information not found');
-            }
+            if (!token) throw new Error('Please login to submit a review');
+            if (!userData.id) throw new Error('User information not found');
 
             const entityIdInt = parseInt(entityId);
-            if (isNaN(entityIdInt)) {
-                throw new Error('Invalid ID format');
-            }
+            if (isNaN(entityIdInt)) throw new Error('Invalid ID format');
 
             // Create the correct review data based on entity type
             const reviewData = {
-                review_type: getReviewType(entityType),
+                review_type: entityType === 'doctor' ? 'consultation' : 'home_care',
                 rating: newReview.rating,
                 comment: newReview.comment,
                 patient_id: userData.id,
+                // Use conditional field based on entityType
                 ...(entityType === 'doctor' 
-                    ? { doctor_id: entityIdInt }
-                    : { home_care_provider_id: entityIdInt }
-                )
+                    ? { doctor_id: parseInt(entityId) }
+                    : { home_care_provider_id: parseInt(entityId) }
+                ),
+                ...submitParams
             };
 
             console.log('Submitting review data:', reviewData);
@@ -174,50 +156,83 @@
     }
 </script>
 
-<div class="glass-card p-6 space-y-6" transition:fade>
-    <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-white">Reviews</h2>
-        <button 
-            class="glass-button"
-            on:click={() => showReviewForm = !showReviewForm}
-        >
-            {showReviewForm ? 'Cancel' : 'Write Review'}
-        </button>
+<div class="glass-card p-6" transition:fade>
+    <!-- Header with stats -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-white">Reviews & Ratings</h2>
+            {#if !hideWriteReview}
+                <button 
+                    class="glass-button"
+                    on:click={() => showReviewForm = !showReviewForm}
+                >
+                    {showReviewForm ? 'Cancel' : 'Write Review'}
+                </button>
+            {/if}
+        </div>
+        
+        {#if reviews.length > 0}
+            <div class="grid grid-cols-3 gap-4 mb-6">
+                <div class="glass-panel text-center p-4">
+                    <div class="text-2xl font-bold text-white mb-1">
+                        {reviews.length}
+                    </div>
+                    <div class="text-sm text-gray-400">Total Reviews</div>
+                </div>
+                <div class="glass-panel text-center p-4">
+                    <div class="text-2xl font-bold text-yellow-400 mb-1">
+                        {(reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length || 0).toFixed(1)}
+                    </div>
+                    <div class="text-sm text-gray-400">Average Rating</div>
+                </div>
+                <div class="glass-panel text-center p-4">
+                    <div class="text-2xl font-bold text-green-400 mb-1">
+                        {reviews.filter(r => r.rating >= 4).length}
+                    </div>
+                    <div class="text-sm text-gray-400">High Ratings</div>
+                </div>
+            </div>
+        {/if}
     </div>
 
+    <!-- Review Form -->
     {#if showReviewForm}
-        <form class="glass-panel space-y-4" on:submit|preventDefault={submitReview}>
+        <form class="glass-panel space-y-4 mb-8" on:submit|preventDefault={submitReview}>
             <div>
                 <label class="block text-gray-300 mb-2">Rating</label>
                 <div class="flex space-x-2">
                     {#each Array(5) as _, i}
                         <button
                             type="button"
-                            class="text-2xl"
+                            class="text-2xl transition-transform hover:scale-110"
                             on:click={() => newReview.rating = i + 1}
                         >
-                            {i < newReview.rating ? '★' : '☆'}
+                            <span class={i < newReview.rating ? 'text-yellow-400' : 'text-gray-500'}>
+                                ★
+                            </span>
                         </button>
                     {/each}
                 </div>
             </div>
 
             <div>
-                <label class="block text-gray-300 mb-2">Comment</label>
+                <label class="block text-gray-300 mb-2">Your Review</label>
                 <textarea
                     bind:value={newReview.comment}
                     required
                     rows="3"
-                    class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
+                    placeholder="Share your experience..."
+                    class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 ></textarea>
             </div>
 
-            <button type="submit" class="glass-button-primary">
+            <button type="submit" class="glass-button-primary w-full">
                 Submit Review
             </button>
         </form>
     {/if}
 
+    <!-- Reviews List -->
     {#if error}
         <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200">
             {error}
@@ -227,25 +242,37 @@
             <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
     {:else if reviews.length === 0}
-        <p class="text-center text-gray-400">No reviews yet</p>
+        <div class="text-center py-8">
+            <div class="text-gray-400 mb-4">No reviews yet</div>
+            <p class="text-gray-500 text-sm">Be the first to share your experience!</p>
+        </div>
     {:else}
-        <div class="space-y-4">
+        <div class="space-y-6">
             {#each reviews as review}
-                <div class="glass-panel">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="flex items-center mb-2">
-                                {#each Array(5) as _, i}
-                                    <span class="text-yellow-400">
-                                        {i < review.rating ? '★' : '☆'}
-                                    </span>
-                                {/each}
+                <div class="glass-panel hover:bg-white/5 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                <span class="text-blue-300 text-lg">
+                                    {review.patient_id.toString()[0].toUpperCase()}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="flex">
+                                    {#each Array(5) as _, i}
+                                        <span class={i < review.rating ? 'text-yellow-400' : 'text-gray-600'}>
+                                            ★
+                                        </span>
+                                    {/each}
+                                </div>
+                                <span class="text-sm text-gray-400">
+                                    {formatDate(review.created_at)}
+                                </span>
                             </div>
                             <p class="text-gray-300">{review.comment}</p>
                         </div>
-                        <span class="text-sm text-gray-400">
-                            {formatDate(review.created_at)}
-                        </span>
                     </div>
                 </div>
             {/each}
@@ -280,5 +307,16 @@
     button:hover {
         background: rgba(59, 130, 246, 0.7);
         transform: translateY(-1px);
+    }
+
+    .glass-panel {
+        @apply rounded-lg;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    textarea::placeholder {
+        color: rgba(255, 255, 255, 0.3);
     }
 </style>
