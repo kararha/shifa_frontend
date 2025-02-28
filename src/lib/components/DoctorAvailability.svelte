@@ -20,6 +20,7 @@
     let loading = true;
     let error: string | null = null;
     let showAddForm = false;
+    let successMessage: string | null = null;
 
     // Initialize with Sunday (0)
     let newSlot = {
@@ -78,9 +79,9 @@
                     availabilities = data.map(slot => ({
                         ...slot,
                         day_of_week: Number(slot.day_of_week),
-                        // Ensure consistent time format
-                        start_time: formatTimeForBackend(slot.start_time),
-                        end_time: formatTimeForBackend(slot.end_time)
+                        // Format using toLocaleTimeString once and store the result
+                        start_time: new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        end_time: new Date(slot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                     }));
                 } else {
                     availabilities = [];
@@ -130,7 +131,6 @@
                 return;
             }
 
-            // Validate day of week
             if (!validateDayOfWeek(newSlot.day_of_week)) {
                 error = 'Invalid day of week';
                 return;
@@ -141,12 +141,14 @@
                 return;
             }
 
-            // Format the time values with seconds for backend
+            // Use a fixed date (e.g., 1970-01-01) to create a full datetime string
+            const fixedDate = "1970-01-01";
             const payload = {
                 doctor_id: parseInt(doctorId),
                 day_of_week: newSlot.day_of_week,
-                start_time: formatTimeForBackend(newSlot.start_time),
-                end_time: formatTimeForBackend(newSlot.end_time)
+                // Append "Z" to designate UTC timezone
+                start_time: `${fixedDate}T${formatTimeForBackend(newSlot.start_time)}Z`,
+                end_time: `${fixedDate}T${formatTimeForBackend(newSlot.end_time)}Z`
             };
 
             console.log('Sending formatted payload:', payload);
@@ -171,6 +173,10 @@
             showAddForm = false;
             newSlot = { day_of_week: 0, start_time: '09:00', end_time: '17:00' };
             error = null;
+
+            // Set a custom alert message that matches the theme
+            successMessage = 'Availability slot added successfully';
+            setTimeout(() => { successMessage = null; }, 3000);
         } catch (err) {
             console.error('Add availability error:', err);
             error = err instanceof Error ? err.message : 'Failed to add availability';
@@ -202,23 +208,8 @@
         }
     }
 
-    // Helper function to format time for display
-    function formatTimeForDisplay(timeStr: string): string {
-        try {
-            const parts = timeStr.split(':');
-            if (parts.length < 2) return timeStr;
-            
-            const hours = parseInt(parts[0]);
-            const minutes = parts[1];
-            const period = hours >= 12 ? 'PM' : 'AM';
-            const displayHours = hours % 12 || 12;
-            
-            return `${displayHours}:${minutes} ${period}`;
-        } catch (e) {
-            console.error('Time display formatting error:', e);
-            return timeStr;
-        }
-    }
+    // Remove or comment out the extra formatting function if not used:
+    // function formatTimeForDisplay(timeStr: string): string { ... }
 
     // Update the display in the template
     function getDayName(dayIndex: number): string {
@@ -227,6 +218,13 @@
 </script>
 
 <div class="glass-card p-6" transition:fade>
+    <!-- Modern themed success alert -->
+    {#if successMessage}
+        <div class="glass-panel bg-green-500/10 border-green-500/20 text-green-200 mb-4" transition:fade>
+            {successMessage}
+        </div>
+    {/if}
+
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-bold text-white">Availability Schedule</h2>
         <button 
@@ -297,8 +295,7 @@
                         <div>
                             <h3 class="text-white font-semibold">{getDayName(slot.day_of_week)}</h3>
                             <p class="text-gray-300">
-                                {formatTimeForDisplay(slot.start_time)} - 
-                                {formatTimeForDisplay(slot.end_time)}
+                                {slot.start_time} - {slot.end_time}
                             </p>
                         </div>
                         <button

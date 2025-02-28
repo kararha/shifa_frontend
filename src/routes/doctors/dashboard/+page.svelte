@@ -69,9 +69,9 @@
                 date: formattedDate,
             });
 
-            // Updated URL to use the correct endpoint
+            // Updated URL to use the correct query parameters
             const response = await fetch(
-                `${BACKEND_URL}/api/appointments?provider_type=doctor&doctor_id=${doctorId}`,
+                `${BACKEND_URL}/api/appointments?type=doctor&providerId=${doctorId}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -103,20 +103,43 @@
         }
     }
 
-    async function updateAppointmentStatus(appointmentId: number, newStatus: string) {
+    async function updateAppointmentStatus(appointmentId: number, newStatus: string, reason?: string) {
         try {
             const token = localStorage.getItem('token');
+            const appointment = appointments.find(apt => apt.id === appointmentId);
+            if (!appointment) {
+                throw new Error('Appointment not found');
+            }
+
+            // Format date and times properly and build a full RFC3339 datetime
+            const formattedDate = new Date(appointment.appointment_date).toISOString().split('T')[0];
+            const fullDate = formattedDate + "T00:00:00Z"; // Append default time
+
+            const formattedStartTime = `${appointment.start_time}:00`;
+            const formattedEndTime = `${appointment.end_time}:00`;
+
+            const payload = {
+                status: newStatus,
+                provider_type: 'doctor',
+                patient_id: appointment.patient_id,
+                doctor_id: appointment.doctor_id,
+                appointment_date: fullDate,
+                start_time: formattedStartTime,
+                end_time: formattedEndTime
+                // Remove or include service_type_id as needed
+            };
+
+            if (reason) {
+                payload.cancellation_reason = reason;
+            }
+
             const response = await fetch(`${BACKEND_URL}/api/appointments/${appointmentId}`, {
-                method: 'PUT', // Changed from PATCH to PUT to match backend
+                method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                    'X-Provider-Type': 'doctor' // Add provider type header
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 
-                    status: newStatus,
-                    provider_type: 'doctor' // Add provider type to payload
-                })
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
@@ -128,6 +151,13 @@
         } catch (err) {
             console.error('Update appointment error:', err);
             error = err instanceof Error ? err.message : 'Failed to update appointment';
+        }
+    }
+
+    async function handleCancel(appointmentId: number) {
+        const reason = window.prompt('Please enter a reason for cancellation:');
+        if (reason !== null) { // Only proceed if user didn't click Cancel
+            await updateAppointmentStatus(appointmentId, 'cancelled', reason);
         }
     }
 
@@ -228,7 +258,7 @@
                                     </button>
                                     <button
                                         class="glass-button-danger"
-                                        on:click={() => updateAppointmentStatus(appointment.id, 'cancelled')}
+                                        on:click={() => handleCancel(appointment.id)}
                                     >
                                         Cancel
                                     </button>
