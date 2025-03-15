@@ -1,0 +1,261 @@
+{
+  "nav": {
+    "home": "Home",
+    "providers": "Home Care Providers",
+    "doctors": "Doctors",
+    "ai": "AI",
+    "about": "About",
+    "payments": "Payments",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "dashboard": "Dashboard",
+    "loggingOut": "Logging out..."
+  },
+  "hero": {
+    "title": "Complete Healthcare Solutions",
+    "subtitle": "Connect with top healthcare professionals and home care providers for comprehensive care.",
+    "findDoctor": "Find a Doctor",
+    "findHomeCare": "Find Home Care"
+  },
+  "stats": {
+    "registeredDoctors": "500+ Registered Doctors",
+    "careProviders": "300+ Care Providers",
+    "happyPatients": "10,000+ Happy Patients",
+    "specialties": "50+ Specialties"
+  },
+  "doctors": {
+    "title": "Medical Professionals",
+    "subtitle": "Expert healthcare from qualified doctors",
+    "specialtiesSection": "Our Medical Specialties",
+    "specialties": {
+      "cardiology": {
+        "title": "Cardiology",
+        "count": "24"
+      },
+      "neurology": {
+        "title": "Neurology",
+        "count": "18"
+      },
+      "pediatrics": {
+        "title": "Pediatrics",
+        "count": "32"
+      },
+      "orthopedics": {
+        "title": "Orthopedics",
+        "count": "15"
+      },
+      "dentistry": {
+        "title": "Dentistry",
+        "count": "28"
+      },
+      "ophthalmology": {
+        "title": "Ophthalmology",
+        "count": "20"
+      },
+      "dermatology": {
+        "title": "Dermatology",
+        "count": "22"
+      },
+      "psychology": {
+        "title": "Psychology",
+        "count": "19"
+      }
+    },
+    "doctorsCount": "Doctors",
+    "featuredDoctors": "Featured Doctors",
+    "viewAll": "View All Doctors",
+    "viewProfile": "View Profile",
+    "noDoctors": "No doctors available"
+  },
+  "homeCare": {
+    "title": "Home Care Services",
+    "subtitle": "Professional care in the comfort of your home",
+    "servicesSection": "Our Care Services",
+    "services": {
+      "elderlyCare": {
+        "title": "Elderly Care",
+        "count": "45 Providers"
+      },
+      "rehabilitation": {
+        "title": "Rehabilitation",
+        "count": "30 Providers"
+      },
+      "personalCare": {
+        "title": "Personal Care",
+        "count": "25 Providers"
+      },
+      "skilledNursing": {
+        "title": "Skilled Nursing",
+        "count": "20 Providers"
+      }
+    },
+    "featuredProviders": "Featured Care Providers",
+    "viewAll": "View All Providers",
+    "perHour": "/hour",
+    "provider": "Home Care Provider",
+    "providersCount": "Providers",
+    "hour": "hour",
+    "ourServices": "Our Care Services",
+    "noProviders": "No providers available"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to common queries about our services",
+    "questions": [
+      {
+        "question": "How do I book an appointment with a doctor?",
+        "answer": "You can book an appointment by visiting the doctor's profile and selecting your preferred time slot. We'll confirm your appointment within 24 hours."
+      },
+      {
+        "question": "What types of home care services do you offer?",
+        "answer": "We offer various home care services including elderly care, rehabilitation, personal care, and skilled nursing."
+      },
+      {
+        "question": "Are all healthcare providers verified?",
+        "answer": "Yes, all our healthcare providers undergo thorough background checks and credential verification before joining our platform."
+      },
+      {
+        "question": "How do I pay for services?",
+        "answer": "We offer secure online payment options through our platform. You can pay using credit cards, debit cards, or other supported payment methods."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Ready to Get Started?",
+    "search": "Search Professionals",
+    "join": "Join Our Network"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Operation successful",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "currency": "SAR",
+    "select": "Select",
+    "required": "Required"
+  },
+  "ratings": {
+    "outOf": "out of 5",
+    "reviews": "reviews"
+  },
+  "specialties": {
+    "cardiology": "Cardiology",
+    "neurology": "Neurology",
+    "pediatrics": "Pediatrics",
+    "orthopedics": "Orthopedics",
+    "dentistry": "Dentistry",
+    "ophthalmology": "Ophthalmology",
+    "dermatology": "Dermatology",
+    "psychology": "Psychology"
+  },
+  "currency": {
+    "SAR": "$"
+  },
+  "buttons": {
+    "viewProfile": "View Profile",
+    "viewAll": "View All"
+  },
+  "about": {
+    "title": "About Shfia",
+    "missionTitle": "Our Mission",
+    "missionDescription": "We are dedicated to providing complete healthcare solutions through a network of qualified professionals.",
+    "offerTitle": "What We Offer",
+    "offerItem1": "Wide range of medical specialties",
+    "offerItem2": "Advanced healthcare technology",
+    "offerItem3": "Personalized patient care",
+    "offerItem4": "Home care services",
+    "offerItem5": "Continuous support",
+    "providersTitle": "For Healthcare Providers",
+    "providersDescription": "Join our network to reach more patients and provide top-notch care.",
+    "patientsTitle": "For Patients",
+    "patientsDescription": "Access experienced doctors and professional home care services conveniently."
+  },
+  "providers": {
+    "findYourProvider": "Find Your Provider",
+    "registerAsProvider": "Register as Provider",
+    "searchPlaceholder": "Search providers...",
+    "noProvidersFound": "No providers found",
+    "resetFilters": "Reset Filters",
+    "rateSymbol": "Rate: ${rate}",
+    "available": "Available",
+    "unavailable": "Unavailable"
+  },
+  "professional": {
+    "common": {
+      "available": "Available",
+      "verified": "✓",
+      "viewProfile": "View Profile",
+      "perHour": "per hour"
+    },
+    "providers": {
+      "chronicIllness": {
+        "title": "Skilled in chronic illness management and palliative care",
+        "description": "Skilled in chronic illness management and palliative care",
+        "rating": "★ ★ ★ 4.9",
+        "rate": "$23 per hour"
+      },
+      "physicalTherapist": {
+        "title": "Licensed physical therapist with a focus on rehabilitation",
+        "description": "Licensed physical therapist with a focus on rehabilitation",
+        "rating": "★ ★ ★ 4.8",
+        "rate": "$25 per hour"
+      },
+      "dementiaSpecialist": {
+        "title": "Experienced in dementia care and daily living assistance",
+        "description": "Experienced in dementia care and daily living assistance",
+        "rating": "★ ★ ★ 4.7",
+        "rate": "$19 per hour"
+      },
+      "pediatricCare": {
+        "title": "Certified in pediatric home care and nutrition",
+        "description": "Certified in pediatric home care and nutrition",
+        "rating": "★ ★ ★ 4.6", 
+        "rate": "$22 per hour"
+      },
+      "seniorCompanion": {
+        "title": "Experienced caregiver specializing in senior companionship",
+        "description": "Experienced caregiver specializing in senior companionship",
+        "rating": "★ ★ ★ 4.6",
+        "rate": "$18.5 per hour"
+      },
+      "elderlyCareNurse": {
+        "title": "Certified nurse with specialization in elderly care",
+        "description": "Certified nurse with specialization in elderly care",
+        "rating": "★ ★ ★ 4.5",
+        "rate": "$20 per hour"
+      },
+      "respiratoryTherapist": {
+        "title": "Certified respiratory therapist for home ventilation needs",
+        "description": "Certified respiratory therapist for home ventilation needs",
+        "rating": "★ ★ ★ 4.5",
+        "rate": "$26 per hour"
+      },
+      "postoperativeCare": {
+        "title": "Specialized in postoperative home care",
+        "description": "Specialized in postoperative home care",
+        "rating": "★ ★ ★ 4.4",
+        "rate": "$21 per hour"
+      },
+      "mobilityAssistant": {
+        "title": "Experienced caregiver with training in mobility assistance",
+        "description": "Experienced caregiver with training in mobility assistance",
+        "rating": "★ ★ ★ 4.3",
+        "rate": "$18 per hour"
+      },
+      "physicalTherapyPost": {
+        "title": "Trained in post-surgery physical therapy",
+        "description": "Trained in post-surgery physical therapy",
+        "rating": "★ ★ ★ 4.3",
+        "rate": "$20 per hour"
+      }
+    }
+  }
+}

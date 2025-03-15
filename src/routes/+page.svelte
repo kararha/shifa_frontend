@@ -179,13 +179,57 @@
         user_id: "1",
         name: "Dr. John Doe",
         specialty: "Cardiology",
-        rating: 4.8
+        rating: 4.8,
+        profile_picture_url: 'src/images/doctors/doctor1.jpg'
       },
       {
         user_id: "2",
         name: "Dr. Jane Smith",
         specialty: "Neurology",
-        rating: 4.9
+        rating: 4.9,
+        profile_picture_url: 'src/images/doctors/doctor2.jpg'
+      },
+      {
+        user_id: "3",
+        name: "Dr. Sarah Johnson",
+        specialty: "Pediatrics",
+        rating: 4.7,
+        profile_picture_url: 'src/images/doctors/doctor3.jpg'
+      },
+      {
+        user_id: "4",
+        name: "Dr. Michael Brown",
+        specialty: "Orthopedics",
+        rating: 4.9,
+        profile_picture_url: 'src/images/doctors/doctor4.jpg'
+      },
+      {
+        user_id: "5",
+        name: "Dr. Emily Davis",
+        specialty: "Dentistry",
+        rating: 4.8,
+        profile_picture_url: 'src/images/doctors/doctor5.jpg'
+      },
+      {
+        user_id: "6",
+        name: "Dr. William Wilson",
+        specialty: "Ophthalmology",
+        rating: 4.6,
+        profile_picture_url: 'src/images/doctors/doctor6.jpg'
+      },
+      {
+        user_id: "7",
+        name: "Dr. Lisa Anderson",
+        specialty: "Dermatology",
+        rating: 4.9,
+        profile_picture_url: 'src/images/doctors/doctor7.jpg'
+      },
+      {
+        user_id: "8",
+        name: "Dr. Robert Martinez",
+        specialty: "Psychology",
+        rating: 4.7,
+        profile_picture_url: 'src/images/doctors/doctor8.jpg'
       }
     ];
 
@@ -194,13 +238,57 @@
         user_id: "1",
         name: "Sarah Johnson",
         hourly_rate: 25,
-        rating: 4.9
+        rating: 4.9,
+        profile_picture_url: 'src/images/providers/provider1.jpg'
       },
       {
         user_id: "2",
         name: "Mike Wilson",
         hourly_rate: 30,
-        rating: 4.7
+        rating: 4.7,
+        profile_picture_url: 'src/images/providers/provider2.jpg'
+      },
+      {
+        user_id: "3",
+        name: "Emma Thompson",
+        hourly_rate: 28,
+        rating: 4.8,
+        profile_picture_url: 'src/images/providers/provider3.jpg'
+      },
+      {
+        user_id: "4",
+        name: "David Clark",
+        hourly_rate: 32,
+        rating: 4.9,
+        profile_picture_url: 'src/images/providers/provider4.jpg'
+      },
+      {
+        user_id: "5",
+        name: "Linda Martinez",
+        hourly_rate: 27,
+        rating: 4.6,
+        profile_picture_url: 'src/images/providers/provider5.jpg'
+      },
+      {
+        user_id: "6",
+        name: "James Taylor",
+        hourly_rate: 35,
+        rating: 4.8,
+        profile_picture_url: 'src/images/providers/provider6.jpg'
+      },
+      {
+        user_id: "7",
+        name: "Patricia Brown",
+        hourly_rate: 29,
+        rating: 4.7,
+        profile_picture_url: 'src/images/providers/provider7.jpg'
+      },
+      {
+        user_id: "8",
+        name: "Robert Garcia",
+        hourly_rate: 31,
+        rating: 4.9,
+        profile_picture_url: 'src/images/providers/provider8.jpg'
       }
     ];
 
@@ -274,8 +362,8 @@
 
 <!-- Add smooth-scroll class to main container -->
 <div class="min-h-screen smooth-scroll">
-  <!-- Hero Section -->
-  <section class="relative h-screen">
+  <!-- Hero Section with responsive adjustments -->
+  <section class="relative min-h-[100vh]">
     <!-- Add canvas before other content -->
     <div
       bind:this={container}
@@ -293,27 +381,21 @@
     <!-- Gradient Overlay -->
     <div class="absolute inset-0 z-10 hero-gradient"></div>
 
-    <!-- Hero Content -->
-    <div class="relative z-20 h-full w-full px-4 lg:px-8">
+    <!-- Updated Hero Content -->
+    <div class="relative z-20 h-full w-full px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col justify-center h-full max-w-7xl mx-auto">
-        <div class="max-w-3xl {isMobile ? 'text-center' : ''}">
-          <h1 class="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
+        <div class="max-w-3xl mx-auto text-center sm:text-left">
+          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6">
             Complete Healthcare Solutions
           </h1>
-          <p class="text-lg md:text-2xl text-blue-100 mb-8">
+          <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 mb-6 sm:mb-8">
             Connect with top healthcare professionals and home care providers for comprehensive care.
           </p>
-          <div class="flex flex-col sm:flex-row gap-4 {isMobile ? 'items-center' : ''}">
-            <a
-              href="/doctors"
-              class="btn-secondary text-lg text-center"
-            >
+          <div class="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
+            <a href="/doctors" class="btn-secondary text-base sm:text-lg w-full sm:w-auto text-center">
               Find a Doctor
             </a>
-            <a
-              href="/providers"
-              class="btn-primary text-lg text-center"
-            >
+            <a href="/providers" class="btn-primary text-base sm:text-lg w-full sm:w-auto text-center">
               Find Home Care
             </a>
           </div>
@@ -321,28 +403,33 @@
       </div>
     </div>
 
-    <!-- Stats Section -->
-    <div class="absolute bottom-0 left-0 right-0 z-20 transform translate-y-1/2 w-full px-4 lg:px-8">
+    <!-- Updated Stats Section -->
+    <div class="absolute -bottom-20 sm:bottom-0 left-0 right-0 z-20 transform sm:translate-y-1/2 w-full px-4 sm:px-6 lg:px-8">
       <div class="max-w-7xl mx-auto">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 stats-card">
-          {#each [
-            { label: 'Registered Doctors', value: '500+' },
-            { label: 'Care Providers', value: '300+' },
-            { label: 'Happy Patients', value: '10,000+' },
-            { label: 'Specialties', value: '50+' }
-          ] as stat}
-            <div class="text-center">
-              <h3 class="text-3xl font-bold text-blue-900">{stat.value}</h3>
-              <p class="text-gray-600 mt-1">{stat.label}</p>
-            </div>
-          {/each}
+        <div class="stats-card">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {#each [
+              { label: 'Registered Doctors', value: '500+' },
+              { label: 'Care Providers', value: '300+' },
+              { label: 'Happy Patients', value: '10,000+' },
+              { label: 'Specialties', value: '50+' }
+            ] as stat}
+              <div class="text-center p-2 sm:p-4">
+                <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stat.value}</h3>
+                <p class="text-sm sm:text-base text-gray-300 mt-1">{stat.label}</p>
+              </div>
+            {/each}
+          </div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- Add spacing for stats overflow -->
+  <div class="h-24 sm:h-32"></div>
+
   <!-- Doctors Section -->
-  <section class="py-32 bg-white w-full">
+  <section class="py-16 sm:py-24 md:py-32 bg-white w-full">
     <div class="w-full px-4 lg:px-8">
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
@@ -380,7 +467,7 @@
           {:else if featuredDoctors.length === 0}
             <div class="text-center py-8">No featured doctors available</div>
           {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {#each featuredDoctors as doctor}
                 <div class="modern-card overflow-hidden">
                   <div class="img-container">
@@ -412,12 +499,22 @@
             </div>
           {/if}
         </div>
+
+        <!-- Add "View All Doctors" button -->
+        <div class="text-center mt-8">
+          <a 
+            href="/doctors" 
+            class="inline-block btn-primary"
+          >
+            View All Doctors
+          </a>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- Home Care Providers Section -->
-  <section class="py-32 section-gradient w-full">
+  <section class="py-16 sm:py-24 md:py-32 section-gradient w-full">
     <div class="w-full px-4 lg:px-8">
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
@@ -455,7 +552,7 @@
           {:else if featuredProviders.length === 0}
             <div class="text-center py-8">No featured providers available</div>
           {:else}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {#each featuredProviders as provider}
                 <div class="modern-card overflow-hidden">
                   <div class="img-container">
@@ -487,6 +584,16 @@
               {/each}
             </div>
           {/if}
+        </div>
+
+        <!-- Add "View All Providers" button -->
+        <div class="text-center mt-8">
+          <a 
+            href="/providers" 
+            class="inline-block btn-primary"
+          >
+            View All Providers
+          </a>
         </div>
       </div>
     </div>
@@ -717,6 +824,103 @@
         rgba(14, 21, 56, 0.9) 0%,
         rgba(26, 35, 126, 0.8) 100%
       );
+    }
+  }
+
+  /* Updated responsive styles */
+  :global(.modern-card) {
+    @apply rounded-xl sm:rounded-2xl p-4 sm:p-6;
+  }
+
+  :global(.stats-card) {
+    @apply rounded-xl sm:rounded-2xl p-4 sm:p-8;
+    background: rgba(13, 15, 48, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Enhanced mobile styles */
+  @media (max-width: 640px) {
+    :global(.modern-card) {
+      margin-bottom: 1rem;
+    }
+
+    :global(.btn-primary),
+    :global(.btn-secondary) {
+      @apply w-full py-3 px-4 text-sm;
+    }
+
+    canvas {
+      opacity: 0.4;
+    }
+  }
+
+  /* Tablet styles */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    :global(.modern-card) {
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  /* Enhanced animation performance on mobile */
+  @media (prefers-reduced-motion: reduce) {
+    :global(.modern-card),
+    :global(.btn-primary),
+    :global(.btn-secondary) {
+      transition: none;
+    }
+  }
+
+  /* Improved touch targets for mobile */
+  @media (hover: none) {
+    :global(.btn-primary),
+    :global(.btn-secondary) {
+      @apply min-h-[44px];
+    }
+
+    :global(.faq-item) {
+      @apply py-4 px-4;
+    }
+  }
+
+  /* Responsive grid layouts */
+  .grid {
+    @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Responsive typography */
+  h1, h2, h3, h4 {
+    @apply tracking-tight;
+  }
+
+  /* Responsive spacing */
+  section {
+    @apply py-12 sm:py-16 md:py-24 lg:py-32;
+  }
+
+  .container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Responsive images */
+  img {
+    @apply w-full h-auto;
+    max-height: 300px;
+    object-fit: cover;
+  }
+
+  /* Enhanced mobile navigation */
+  :global(.scroll-to-top) {
+    @apply bottom-4 right-4 sm:bottom-8 sm:right-8;
+    padding: 12px;
+  }
+
+  /* Fix iOS button styles */
+  @supports (-webkit-touch-callout: none) {
+    :global(.btn-primary),
+    :global(.btn-secondary) {
+      -webkit-tap-highlight-color: transparent;
     }
   }
 </style>

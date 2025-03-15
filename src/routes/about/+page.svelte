@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
+  import { t } from '$lib/utils/i18n';
 
   let isVisible = false;
   let mouseX = 0;
@@ -66,43 +67,39 @@
         in:fade={{ duration: 1000 }}
       >
         <h1 class="text-4xl font-bold text-white mb-8 text-center glow-text">
-          About Shfia
+          { $t('about.title') }
         </h1>
 
         <div class="space-y-8 text-gray-200">
           <section class="card-3d">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-300">Our Mission</h2>
+            <h2 class="text-2xl font-semibold mb-4 text-blue-300">{ $t('about.missionTitle') }</h2>
             <p>
-              Shfia is a comprehensive healthcare platform designed to bridge the gap between patients 
-              and healthcare providers. We aim to make quality healthcare accessible, efficient, and 
-              transparent for everyone.
+              { $t('about.missionDescription') }
             </p>
           </section>
 
           <section class="card-3d">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-300">What We Offer</h2>
+            <h2 class="text-2xl font-semibold mb-4 text-blue-300">{ $t('about.offerTitle') }</h2>
             <ul class="list-disc pl-6 space-y-3">
-              <li>Easy access to qualified healthcare providers</li>
-              <li>Secure patient-doctor communication</li>
-              <li>Streamlined appointment scheduling</li>
-              <li>Digital health records management</li>
-              <li>Real-time availability tracking</li>
+              <li>{ $t('about.offerItem1') }</li>
+              <li>{ $t('about.offerItem2') }</li>
+              <li>{ $t('about.offerItem3') }</li>
+              <li>{ $t('about.offerItem4') }</li>
+              <li>{ $t('about.offerItem5') }</li>
             </ul>
           </section>
 
           <section class="card-3d">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-300">For Providers</h2>
+            <h2 class="text-2xl font-semibold mb-4 text-blue-300">{ $t('about.providersTitle') }</h2>
             <p>
-              Healthcare providers can manage their practice efficiently with our platform, 
-              reaching more patients while reducing administrative overhead.
+              { $t('about.providersDescription') }
             </p>
           </section>
 
           <section class="card-3d">
-            <h2 class="text-2xl font-semibold mb-4 text-blue-300">For Patients</h2>
+            <h2 class="text-2xl font-semibold mb-4 text-blue-300">{ $t('about.patientsTitle') }</h2>
             <p>
-              Patients can easily find and connect with healthcare providers, manage their 
-              appointments, and access their medical history all in one place.
+              { $t('about.patientsDescription') }
             </p>
           </section>
         </div>

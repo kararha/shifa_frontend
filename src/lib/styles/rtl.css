@@ -1,0 +1,93 @@
+/* RTL Layout Fixes */
+[dir="rtl"] {
+    /* Text alignment */
+    .text-left { text-align: right; }
+    .text-right { text-align: left; }
+    
+    /* Margins and Paddings */
+    .ml-1, .ml-2, .ml-3, .ml-4 { margin-left: 0; }
+    .mr-1, .mr-2, .mr-3, .mr-4 { margin-right: 0; }
+    .pl-1, .pl-2, .pl-3, .pl-4 { padding-left: 0; }
+    .pr-1, .pr-2, .pr-3, .pr-4 { padding-right: 0; }
+    
+    /* Flex Direction */
+    .flex-row { flex-direction: row-reverse; }
+    
+    /* Borders */
+    .border-l { border-left: none; border-right-width: 1px; }
+    .border-r { border-right: none; border-left-width: 1px; }
+    
+    /* Icons and Images */
+    .transform-mirror { transform: scaleX(-1); }
+    
+    /* Forms and Inputs */
+    input, textarea {
+        text-align: right;
+    }
+    
+    select {
+        background-position: left 0.5rem center;
+        padding-right: 0.75rem;
+        padding-left: 2rem;
+    }
+    
+    /* Navigation */
+    .nav-content {
+        flex-direction: row-reverse;
+    }
+    
+    .nav-links {
+        margin-left: 0;
+        margin-right: auto;
+    }
+    
+    /* Cards and Components */
+    .card-content {
+        text-align: right;
+    }
+    
+    .icon-left {
+        margin-right: 0;
+        margin-left: 0.5rem;
+    }
+    
+    .icon-right {
+        margin-left: 0;
+        margin-right: 0.5rem;
+    }
+}
+
+/* Improved RTL Typography */
+[dir="rtl"] {
+    font-feature-settings: "kern", "liga", "clig", "calt", "rlig";
+    letter-spacing: 0;
+    word-spacing: 0.05em;
+}
+
+/* RTL Animations */
+[dir="rtl"] {
+    .slide-in {
+        transform: translateX(100%);
+    }
+    
+    .slide-out {
+        transform: translateX(-100%);
+    }
+}
+
+/* Mobile RTL Adjustments */
+@media (max-width: 768px) {
+    [dir="rtl"] {
+        .nav-menu {
+            left: auto;
+            right: 0;
+            transform-origin: top right;
+        }
+        
+        .drawer {
+            left: auto;
+            right: 0;
+            transform: translateX(100%);
+        }
+    }
+}

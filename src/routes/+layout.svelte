@@ -5,53 +5,99 @@
     import { DEFAULT_AVATAR, BACKEND_URL } from '$lib/constants';
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
+    import { detectUserLanguage, setLanguage } from '$lib/stores/languageStore';
+    import '../lib/styles/rtl.css';
+    import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
+    import { initI18n } from '$lib/i18n';
+    import { locale, waitLocale } from 'svelte-i18n';
+    import { currentLanguage, documentDirection, initializeLanguage } from '$lib/store/i18n';
+    import { t } from '$lib/utils/i18n';
+    import { browser } from '$app/environment';
     
     let isMenuOpen = false;
-    let isLoading = false;
+    let isLoading = true;
+    let initialized = false;
     let user: any = null;
 
     $: user = $authStore.user;
     $: isAuthenticated = $authStore.isAuthenticated;
 
+    // Initialize translations before rendering anything
     onMount(() => {
-        try {
-            const userCookie = document.cookie
-                .split('; ')
-                .find(row => row.startsWith('user='));
-            
-            if (userCookie) {
-                const userData = decodeURIComponent(userCookie.split('=')[1]);
-                const parsedUser = JSON.parse(userData);
-                if (parsedUser) {
-                    authStore.updateUser(parsedUser);
+        async function initialize() {
+            if (browser) {
+                try {
+                    await initI18n();
+                    const userLang = detectUserLanguage();
+                    await setLanguage(userLang);
+                    initialized = true;
+                } catch (error) {
+                    console.error('Failed to initialize i18n:', error);
+                } finally {
+                    isLoading = false;
                 }
             }
-        } catch (e) {
-            console.error('Error in onMount:', e);
-        }
+            
+            // Single locale subscription that handles both direction and locale changes
+            const unsubscribeLocale = locale.subscribe((value) => {
+                if (value) {
+                    // Update document direction when locale changes
+                    document.dir = value === 'ar' ? 'rtl' : 'ltr';
+                }
+            });
 
-        // Check for existing auth
-        const storedUser = localStorage.getItem('user');
-        const token = localStorage.getItem('token');
-        
-        if (storedUser && token) {
             try {
-                user = JSON.parse(storedUser);
-                console.log('Restored user session:', user);
+                const userCookie = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith('user='));
+                
+                if (userCookie) {
+                    const userData = decodeURIComponent(userCookie.split('=')[1]);
+                    const parsedUser = JSON.parse(userData);
+                    if (parsedUser) {
+                        authStore.updateUser(parsedUser);
+                    }
+                }
             } catch (e) {
-                console.error('Error parsing stored user:', e);
-                // Clear invalid data
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                localStorage.removeItem('refresh_token');
+                console.error('Error in onMount:', e);
             }
+
+            // Check for existing auth
+            const storedUser = localStorage.getItem('user');
+            const token = localStorage.getItem('token');
+            
+            if (storedUser && token) {
+                try {
+                    user = JSON.parse(storedUser);
+                    console.log('Restored user session:', user);
+                } catch (e) {
+                    console.error('Error parsing stored user:', e);
+                    // Clear invalid data
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('refresh_token');
+                }
+            }
+
+            // Redirect if not authenticated
+            const publicRoutes = ['/login', '/register', '/', '/about'];
+            if (!user && !publicRoutes.includes($page.url.pathname)) {
+                goto('/login');
+            }
+
+            const detectedLang = detectUserLanguage();
+            setLanguage(detectedLang);
         }
 
-        // Redirect if not authenticated
-        const publicRoutes = ['/login', '/register', '/', '/about'];
-        if (!user && !publicRoutes.includes($page.url.pathname)) {
-            goto('/login');
-        }
+        initialize();
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            if (locale.subscribe) {
+                const unsubscribe = locale.subscribe(() => {});
+                unsubscribe();
+            }
+        };
     });
 
     async function logout() {
@@ -127,67 +173,99 @@
             window.removeEventListener('scroll', handleScroll);
         };
     });
+
+    // Add SEO metadata
+    $: metaTitle = $currentLanguage === 'ar' ? 'شفاء - الرعاية الصحية الشاملة' : 'Shfia - Complete Healthcare';
+    $: metaDescription = $currentLanguage === 'ar' 
+        ? 'منصة شفاء للرعاية الصحية - اتصل بأفضل الأطباء ومقدمي الرعاية المنزلية'
+        : 'Shfia Healthcare Platform - Connect with top healthcare professionals and home care providers';
 </script>
 
-<div class="layout">
-    <nav>
-        <div class="nav-content">
-            <a href="/" class="logo">Shfia</a>
-            <button class="menu-toggle" on:click={toggleMenu}>
-                <span class="sr-only">Menu</span>
-                <svg viewBox="0 0 24 24" class="h-6 w-6">
-                    <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </button>
-            <div class="nav-links" class:open={isMenuOpen}>
-                <a href="/">Home</a>
-                <a href="/providers">Home Care Providers</a>
-                <a href="/doctors">Doctors</a>
-                <a href="/AI">AI</a>
-                <a href="/about">About</a>
-                <!-- <a href="/contact">Contact</a> -->
-                
-                {#if isAuthenticated && user}
-                    <a href="/payments">Payments</a>
-                    <div class="user-profile">
-                        <img 
-                            src={getImageUrl(user?.profile_picture_url)}
-                            alt={user?.name}
-                            class="profile-image"
-                            on:error={(e) => {
-                                const img = e.target as HTMLImageElement;
-                                img.src = DEFAULT_AVATAR;
-                            }}
-                        />
-                        <div class="user-menu">
-                            <span class="username">{user.name}</span>
-                            <a 
-                                href={getDashboardLink(user)} 
-                                class="dashboard-btn"
-                            >
-                                Dashboard
-                            </a>
-                            <button class="logout-btn" on:click={logout} disabled={isLoading}>
-                                {isLoading ? 'Logging out...' : 'Logout'}
-                            </button>
-                        </div>
-                    </div>
-                {:else}
-                    <div class="auth-buttons">
-                        <a href="/login" class="login-btn">Login</a>
-                        <a href="/register" class="register-btn">Register</a>
-                    </div>
-                {/if}
-            </div>
-        </div>
-    </nav>
+<svelte:head>
+    {#if $currentLanguage === 'ar'}
+        <link rel="stylesheet" href="/fonts/cairo.css">
+    {/if}
+    <title>{metaTitle}</title>
+    <meta name="description" content={metaDescription}>
+    <meta property="og:title" content={metaTitle}>
+    <meta property="og:description" content={metaDescription}>
+    <meta name="twitter:title" content={metaTitle}>
+    <meta name="twitter:description" content={metaDescription}>
+</svelte:head>
 
-    <main>
-        <slot />
-    </main>
-</div>
+{#if isLoading && browser}
+    <div class="loading">Loading...</div>
+{:else}
+    <div dir={$documentDirection} lang={$currentLanguage} class="app layout">
+        <nav>
+            <div class="nav-content">
+                <a href="/" class="logo">Shfia</a>
+                
+                <!-- Add LanguageSwitcher before menu toggle -->
+                <LanguageSwitcher />
+                
+                <button class="menu-toggle" on:click={toggleMenu}>
+                    <span class="sr-only">Menu</span>
+                    <svg viewBox="0 0 24 24" class="h-6 w-6">
+                        <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </button>
+                <div class="nav-links" class:open={isMenuOpen}>
+                    <a href="/">{ $t('nav.home') }</a>
+                    <a href="/providers">{ $t('nav.providers') }</a>
+                    <a href="/doctors">{ $t('nav.doctors') }</a>
+                    <a href="/AI">{ $t('nav.ai') }</a>
+                    <a href="/about">{ $t('nav.about') }</a>
+                    <!-- <a href="/contact">Contact</a> -->
+                    
+                    {#if isAuthenticated && user}
+                        <a href="/payments">{ $t('nav.payments') }</a>
+                        <div class="user-profile">
+                            <img 
+                                src={getImageUrl(user?.profile_picture_url)}
+                                alt={user?.name}
+                                class="profile-image"
+                                on:error={(e) => {
+                                    const img = e.target as HTMLImageElement;
+                                    img.src = DEFAULT_AVATAR;
+                                }}
+                            />
+                            <div class="user-menu">
+                                <span class="username">{user.name}</span>
+                                <a 
+                                    href={getDashboardLink(user)} 
+                                    class="dashboard-btn"
+                                >
+                                    {$t('nav.dashboard')}
+                                </a>
+                                <button class="logout-btn" on:click={logout} disabled={isLoading}>
+                                    {isLoading ? $t('nav.loggingOut') : $t('nav.logout')}
+                                </button>
+                            </div>
+                        </div>
+                    {:else}
+                        <div class="auth-buttons">
+                            <a href="/login" class="login-btn">{ $t('nav.login') }</a>
+                            <a href="/register" class="register-btn">{ $t('nav.register') }</a>
+                        </div>
+                    {/if}
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            <slot />
+        </main>
+    </div>
+{/if}
 
 <style>
+    .app {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
     /* Add these new styles */
     .user-profile {
         display: flex;
@@ -253,5 +331,37 @@
     .dashboard-btn:hover {
         background: rgba(255, 255, 255, 0.2);
         transform: translateY(-1px);
+    }
+
+    /* Add styles for language switcher placement */
+    :global(.lang-switch) {
+        margin-right: 1rem;
+        margin-left: 1rem;
+    }
+
+    :global([dir="rtl"]) :global(.lang-switch) {
+        margin-right: 1rem;
+        margin-left: 0;
+    }
+
+    @media (max-width: 768px) {
+        :global(.lang-switch) {
+            position: absolute;
+            top: 1rem;
+            right: 4rem;
+        }
+
+        :global([dir="rtl"]) :global(.lang-switch) {
+            right: auto;
+            left: 4rem;
+        }
+    }
+
+    .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-size: 1.2rem;
     }
 </style>

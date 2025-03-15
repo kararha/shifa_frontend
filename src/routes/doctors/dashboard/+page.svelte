@@ -30,6 +30,11 @@
     const userData = JSON.parse(localStorage.getItem('user') || '{}');
     const doctorId = userData.id;
 
+    // New reactive variables for global listing
+    let allAvailabilities = [];
+    let loadingAllAvailabilities = true;
+    let errorAllAvailabilities: string | null = null;
+
     onMount(() => {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('user') || 'null');
@@ -47,6 +52,7 @@
 
     onMount(async () => {
         await loadAppointments();
+        loadAllAvailabilities();
     });
 
     // Format date for API requests
@@ -161,6 +167,39 @@
         }
     }
 
+    // Function to load availability for this specific doctor
+    async function loadAllAvailabilities() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                errorAllAvailabilities = 'Authentication token not found';
+                return;
+            }
+            // Change fetch URL to specific doctor's endpoint using doctorId
+            const response = await fetch(`${BACKEND_URL}/api/doctors/${doctorId}/availability`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`Error: ${response.status}`);
+            }
+            const data = await response.json();
+            // Optionally format times if needed
+            allAvailabilities = data.map(slot => ({
+                ...slot,
+                start_time: new Date(slot.start_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                end_time: new Date(slot.end_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }));
+            errorAllAvailabilities = null;
+        } catch (err) {
+            errorAllAvailabilities = err instanceof Error ? err.message : 'Failed to load availabilities';
+        } finally {
+            loadingAllAvailabilities = false;
+        }
+    }
+
     // Reload appointments when date changes
     $: {
         if (selectedDate) {
@@ -272,6 +311,36 @@
                 {/each}
             </div>
         {/if}
+
+        <!-- Global Availability Listing Section in Doctor Dashboard -->
+        <div class="glass-card p-6 mt-8" transition:fade>
+            <h2 class="text-2xl font-bold text-white mb-6">All Availability Slots</h2>
+            {#if loadingAllAvailabilities}
+                <div class="flex justify-center">
+                    <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+            {:else if errorAllAvailabilities}
+                <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200">
+                    {errorAllAvailabilities}
+                </div>
+            {:else if allAvailabilities.length === 0}
+                <p class="text-center text-gray-400">No availability slots found.</p>
+            {:else}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {#each allAvailabilities as slot}
+                        <div class="glass-panel">
+                            <div class="flex flex-col">
+                                <h3 class="text-white font-semibold">Doctor ID: {slot.doctor_id}</h3>
+                                <p class="text-gray-300">{['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][slot.day_of_week]}</p>
+                                <p class="text-blue-300">
+                                    {slot.start_time} - {slot.end_time}
+                                </p>
+                            </div>
+                        </div>
+                    {/each}
+                </div>
+            {/if}
+        </div>
 
         <!-- Add Availability Management Section -->
         <DoctorAvailability {doctorId} />

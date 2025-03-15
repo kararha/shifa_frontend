@@ -1,6 +1,8 @@
 // src/routes/api/providers/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { translationQueue } from '$lib/services/translationQueue';
+import { API_BASE_URL } from '$lib/config';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
   try {
@@ -63,9 +65,66 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     // Here you would typically save to your database
     // const result = await db.homeCareProvider.create({ data: provider });
 
-    return json({ success: true, provider });
+    // Auto-translate new provider data
+    await Promise.all([
+      translationQueue.addToQueue(String(data.bio), 'bio', provider.userId),
+      translationQueue.addToQueue(String(data.qualifications), 'qualifications', provider.userId),
+      translationQueue.addToQueue(data.specialty ? String(data.specialty) : '', 'specialty', provider.userId)
+    ]);
+
+    const translations = {
+      bio: translationQueue.getTranslation(provider.userId, 'bio'),
+      qualifications: translationQueue.getTranslation(provider.userId, 'qualifications'),
+      specialty: translationQueue.getTranslation(provider.userId, 'specialty')
+    };
+
+    return json({ success: true, provider: { ...provider, translations } });
   } catch (error) {
     console.error('Provider registration error:', error);
     return new Response('Internal Server Error', { status: 500 });
+  }
+};
+
+export const GET: RequestHandler = async ({ url }) => {
+  try {
+    const searchQuery = url.searchParams.get('q') || '';
+    console.log('Fetching providers with query:', searchQuery);
+
+    const response = await fetch(`${API_BASE_URL}/api/providers${searchQuery ? `?q=${searchQuery}` : ''}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      }
+    });
+
+    console.log('Response status:', response.status);
+    const responseText = await response.text();
+    console.log('Raw response:', responseText);
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status} - ${responseText}`);
+    }
+
+    let providers;
+    try {
+      providers = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse response:', e);
+      throw new Error('Invalid JSON response from server');
+    }
+
+    if (!Array.isArray(providers)) {
+      console.warn('Expected array response, got:', typeof providers);
+      providers = [];
+    }
+
+    return json(providers);
+  } catch (error) {
+    console.error('Error fetching providers:', error);
+    return json({ 
+      error: 'Failed to load providers',
+      details: error instanceof Error ? error.message : 'Unknown error occurred'
+    }, { status: 500 });
   }
 };

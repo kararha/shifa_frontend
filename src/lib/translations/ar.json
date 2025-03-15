@@ -1,0 +1,337 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "providers": "مقدمي الرعاية المنزلية",
+    "doctors": "الأطباء",
+    "ai": "الذكاء الاصطناعي",
+    "about": "عن شفاء",
+    "payments": "المدفوعات",
+    "login": "تسجيل الدخول",
+    "register": "حساب جديد",
+    "logout": "تسجيل الخروج",
+    "dashboard": "لوحة التحكم",
+    "loggingOut": "جاري تسجيل الخروج..."
+  },
+  "hero": {
+    "title": "حلول الرعاية الصحية المتكاملة",
+    "subtitle": "تواصل مع أفضل المتخصصين في الرعاية الصحية ومقدمي الرعاية المنزلية",
+    "findDoctor": "ابحث عن طبيب",
+    "findHomeCare": "ابحث عن رعاية منزلية"
+  },
+  "doctors": {
+    "title": "الأطباء المتخصصون",
+    "subtitle": "رعاية صحية متخصصة من أطباء مؤهلين",
+    "specialtiesSection": "تخصصاتنا الطبية",
+    "specialties": {
+      "cardiology": {
+        "title": "أمراض القلب",
+        "count": "24"
+      },
+      "neurology": {
+        "title": "الأعصاب",
+        "count": "18"
+      },
+      "pediatrics": {
+        "title": "طب الأطفال",
+        "count": "32"
+      },
+      "orthopedics": {
+        "title": "العظام",
+        "count": "15"
+      },
+      "dentistry": {
+        "title": "طب الأسنان",
+        "count": "28"
+      },
+      "ophthalmology": {
+        "title": "العيون",
+        "count": "20"
+      },
+      "dermatology": {
+        "title": "طب الجلد",
+        "count": "22"
+      },
+      "psychology": {
+        "title": "علم النفس",
+        "count": "19"
+      }
+    },
+    "doctorsCount": "الأطباء",
+    "featuredDoctors": "أطباء مميزون",
+    "viewAll": "عرض الكل",
+    "viewProfile": "عرض الملف",
+    "noDoctors": "لا يوجد أطباء متاحين"
+  },
+  "homeCare": {
+    "title": "خدمات الرعاية المنزلية",
+    "subtitle": "رعاية احترافية في منزلك",
+    "ourServices": "خدماتنا",
+    "featuredProviders": "مقدمو الرعاية المميزون",
+    "noProviders": "لا يوجد مقدمو رعاية حالياً",
+    "provider": "مقدم رعاية",
+    "hour": "ساعة",
+    "services": {
+      "elderlyCare": {
+        "title": "رعاية المسنين",
+        "count": "45"
+      },
+      "rehabilitation": {
+        "title": "إعادة التأهيل",
+        "count": "30"
+      },
+      "personalCare": {
+        "title": "الرعاية الشخصية",
+        "count": "25"
+      },
+      "skilledNursing": {
+        "title": "التمريض المتخصص",
+        "count": "20"
+      }
+    },
+    "providersCount": "مقدمي الرعاية"
+  },
+  "stats": {
+    "registeredDoctors": "+500 طبيب مسجل",
+    "careProviders": "+300 مقدم رعاية",
+    "happyPatients": "+10,000 مريض سعيد",
+    "specialties": "+50 تخصص"
+  },
+  "faq": {
+    "title": "الأسئلة الشائعة",
+    "subtitle": "إجابات على الأسئلة المتكررة حول خدماتنا",
+    "questions": [
+      {
+        "question": "كيف يمكنني حجز موعد مع طبيب؟",
+        "answer": "يمكنك حجز موعد عن طريق زيارة صفحة الطبيب واختيار الوقت المناسب لك. سنؤكد موعدك خلال 24 ساعة."
+      },
+      {
+        "question": "ما هي أنواع خدمات الرعاية المنزلية التي تقدمونها؟",
+        "answer": "نقدم خدمات متنوعة تشمل رعاية المسنين، إعادة التأهيل، الرعاية الشخصية، والتمريض المتخصص. كل خدمة يقدمها متخصصون مؤهلون."
+      },
+      {
+        "question": "هل جميع مقدمي الرعاية الصحية معتمدون؟",
+        "answer": "نعم، جميع مقدمي الرعاية لدينا يخضعون لفحوصات خلفية شاملة والتحقق من مؤهلاتهم قبل الانضمام إلى منصتنا."
+      },
+      {
+        "question": "كيف يمكنني الدفع مقابل الخدمات؟",
+        "answer": "نقدم خيارات دفع آمنة عبر منصتنا. يمكنك الدفع باستخدام البطاقات الائتمانية، بطاقات الخصم، أو طرق الدفع الأخرى المدعومة."
+      }
+    ]
+  },
+  "specialties": {
+    "cardiology": "أمراض القلب",
+    "neurology": "الأعصاب",
+    "pediatrics": "طب الأطفال",
+    "orthopedics": "العظام",
+    "dentistry": "طب الأسنان",
+    "ophthalmology": "العيون",
+    "doctors": "طبيب"
+  },
+  "cta": {
+    "title": "هل أنت مستعد للبدء؟",
+    "search": "ابحث عن متخصصين",
+    "join": "انضم إلى شبكتنا"
+  },
+  "providers": {
+    "viewProfile": "عرض الملف",
+    "loading": "جاري التحميل...",
+    "noProviders": "لا يوجد مقدمي خدمة متاحين",
+    "hourlyRate": "ريال/ساعة",
+    "available": "متاح",
+    "unavailable": "غير متاح",
+    "status": {
+      "available": "متاح",
+      "unavailable": "غير متاح"
+    },
+    "findYourProvider": "ابحث عن مقدم رعاية",
+    "registerAsProvider": "سجل كمقدم رعاية",
+    "searchPlaceholder": "ابحث عن مقدم رعاية...",
+    "noProvidersFound": "لا يوجد مقدمي خدمة",
+    "resetFilters": "إعادة تعيين المرشحات",
+    "rateSymbol": "السعر: ${rate}"
+  },
+  "services": {
+    "elderlyCare": "رعاية المسنين",
+    "rehabilitation": "إعادة التأهيل",
+    "personalCare": "الرعاية الشخصية",
+    "skilledNursing": "التمريض المتخصص",
+    "providers": "مقدم خدمة"
+  },
+  "ratings": {
+    "outOf": "من 5",
+    "reviews": "تقييم"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "noResults": "لا توجد نتائج",
+    "viewAll": "عرض الكل",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "priceRange": "نطاق السعر",
+    "rating": "التقييم",
+    "location": "الموقع",
+    "availability": "التوفر",
+    "experience": "الخبرة",
+    "years": "سنوات",
+    "error": "حدث خطأ",
+    "success": "تمت العملية بنجاح",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "view": "عرض",
+    "select": "اختر",
+    "required": "مطلوب"
+  },
+  "profile": {
+    "about": "نبذة عني",
+    "education": "التعليم",
+    "experience": "الخبرة",
+    "services": "الخدمات",
+    "location": "الموقع",
+    "contact": "التواصل",
+    "bookAppointment": "حجز موعد",
+    "sendMessage": "إرسال رسالة",
+    "availability": "أوقات العمل",
+    "reviews": "التقييمات",
+    "certificates": "الشهادات",
+    "languages": "اللغات",
+    "viewHours": "عرض المواعيد",
+    "sendInquiry": "إرسال استفسار",
+    "hourlyRate": "السعر بالساعة",
+    "experience": "سنوات الخبرة",
+    "yearsExp": "سنوات خبرة",
+    "specialization": "التخصص"
+  },
+  "sections": {
+    "doctors": {
+      "title": "الأطباء المتخصصون",
+      "subtitle": "رعاية صحية خبيرة من أطباء مؤهلين",
+      "specialties": "تخصصاتنا الطبية",
+      "featured": "الأطباء المميزون"
+    },
+    "homeCare": {
+      "title": "خدمات الرعاية المنزلية",
+      "subtitle": "رعاية احترافية في راحة منزلك",
+      "services": "خدماتنا",
+      "featured": "مقدمو الرعاية المميزون",
+      "provider": "مقدم رعاية",
+      "hourlyRate": "ريال/ساعة"
+    }
+  },
+  "buttons": {
+    "viewProfile": "عرض الملف",
+    "searchProfessionals": "البحث عن متخصصين",
+    "joinNetwork": "انضم إلى شبكتنا",
+    "scrollTop": "العودة للأعلى"
+  },
+  "loading": {
+    "text": "جاري التحميل..."
+  },
+  "empty": {
+    "doctors": "لا يوجد أطباء متاحين",
+    "providers": "لا يوجد مقدمي رعاية متاحين"
+  },
+  "currency": {
+    "SAR": "ر.س"
+  },
+  "about": {
+    "title": "حول شفاء",
+    "missionTitle": "رؤيتنا ورسالتنا",
+    "missionDescription": "نحن ملتزمون بتقديم حلول رعاية صحية متكاملة من خلال شبكة من المتخصصين المؤهلين.",
+    "offerTitle": "ما نقدمه",
+    "offerItem1": "مجموعة واسعة من التخصصات الطبية",
+    "offerItem2": "تكنولوجيا رعاية صحية متطورة",
+    "offerItem3": "رعاية شخصية للمرضى",
+    "offerItem4": "خدمات الرعاية المنزلية",
+    "offerItem5": "دعم مستمر",
+    "providersTitle": "لمقدمي الرعاية الصحية",
+    "providersDescription": "انضم إلى شبكتنا للوصول إلى المزيد من المرضى وتقديم رعاية متميزة.",
+    "patientsTitle": "للمرضى",
+    "patientsDescription": "يمكنك الوصول إلى أطباء متمرسين وخدمات رعاية منزلية احترافية بسهولة."
+  },
+  "professional": {
+    "common": {
+      "available": "متاح",
+      "verified": "✓",
+      "viewProfile": "عرض الملف",
+      "perHour": "في الساعة"
+    },
+    "providers": {
+      "chronicIllness": {
+        "title": "متخصص في إدارة الأمراض المزمنة والرعاية التلطيفية",
+        "description": "متخصص في إدارة الأمراض المزمنة والرعاية التلطيفية",
+        "rating": "★ ★ ★ 4.9",
+        "rate": "23 في الساعة",
+        "motto": "نسعى جاهدين لتحسين الراحة والرفاهية"
+      },
+      "physicalTherapist": {
+        "title": "معالج فيزيائي مرخص متخصص في إعادة التأهيل",
+        "description": "ملتزم بتحسين جودة حياة المرضى",
+        "rating": "★ ★ ★ 4.8",
+        "rate": "25 في الساعة"
+      },
+      "dementiaSpecialist": {
+        "title": "خبير في رعاية مرضى الخرف والمساعدة في الحياة اليومية",
+        "description": "تقديم رعاية حانية لكبار السن",
+        "rating": "★ ★ ★ 4.7",
+        "rate": "19 في الساعة"
+      },
+      "pediatricCare": {
+        "title": "معتمد في الرعاية المنزلية للأطفال والتغذية.",
+        "description": "رعاية المرضى الصغار ذوي الحالات المزمنة",
+        "rate": "22 في الساعة",
+        "rating": "★ ★ ★ 4.6"
+      },
+      "seniorCompanion": {
+        "title": "مقدم رعاية متخصص في مرافقة كبار السن",
+        "description": "تقديم الدعم العاطفي والجسدي",
+        "rate": "18.5 في الساعة",
+        "rating": "★ ★ ★ 4.6"
+      },
+      "elderlyCareNurse": {
+        "title": "ممرض معتمد متخصص في رعاية المسنين",
+        "description": "شغوف بتقديم رعاية منزلية عالية الجودة",
+        "rate": "20 في الساعة",
+        "rating": "★ ★ ★ 4.5"
+      },
+      "respiratoryTherapist": {
+        "title": "معالج تنفسي معتمد لاحتياجات التنفس المنزلي",
+        "description": "متخصص في الصحة والرعاية التنفسية",
+        "rate": "26 في الساعة",
+        "rating": "★ ★ ★ 4.5"
+      },
+      "postoperativeCare": {
+        "title": "متخصص في الرعاية المنزلية بعد العمليات",
+        "description": "مساعدة المرضى على التعافي بأمان في المنزل",
+        "rate": "21 في الساعة",
+        "rating": "★ ★ ★ 4.4"
+      },
+      "mobilityAssistant": {
+        "title": "مقدم رعاية ذو خبرة في المساعدة على التنقل",
+        "description": "ملتزم بمساعدة المرضى على استعادة استقلاليتهم",
+        "rate": "18 في الساعة",
+        "rating": "★ ★ ★ 4.3"
+      },
+      "physicalTherapyPost": {
+        "title": "مدرب في العلاج الطبيعي بعد العمليات الجراحية",
+        "description": "مساعدة المرضى على استعادة قوتهم وقدرتهم على الحركة",
+        "rate": "20 في الساعة",
+        "rating": "★ ★ ★ 4.3"
+      },
+      "common": {
+        "available": "متاح",
+        "verified": "✓",
+        "viewProfile": "عرض الملف",
+        "perHour": "في الساعة"
+      }
+    },
+    "chronicIllness": {
+      "title": "متخصص في إدارة الأمراض المزمنة والرعاية التلطيفية",
+      "rating": "★ ★ ★ 4.9",
+      "motto": "متخصص في إدارة الأمراض المزمنة والرعاية التلطيفية",
+      "hourlyRate": "23 في الساعة"
+    }
+  }
+}

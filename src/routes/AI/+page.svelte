@@ -92,16 +92,18 @@
         </div>
 
         <form on:submit|preventDefault={handleSubmit} class="chat-input glass">
-            <input
-                type="text"
-                bind:value={question}
-                placeholder="Type your message..."
-                disabled={isLoading}
-                class="input-field glass"
-            />
-            <button type="submit" disabled={isLoading || !question.trim()} class="send-button glass">
-                {isLoading ? '...' : '↑'}
-            </button>
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    bind:value={question}
+                    placeholder="Ask me anything..."
+                    disabled={isLoading}
+                    class="input-field glass"
+                />
+                <button type="submit" disabled={isLoading || !question.trim()} class="send-button glass">
+                    <span class="button-text">{isLoading ? '...' : '↑'}</span>
+                </button>
+            </div>
         </form>
     </div>
 </div>
@@ -110,10 +112,8 @@
     .page-container {
         min-height: 100vh;
         width: 100%;
-         /* Dark background */
-        /* or you can use a subtle pattern */
-        /* background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); */
-        padding: 2rem;
+        padding: 2rem 1rem; /* Reduced padding for mobile */
+        box-sizing: border-box;
     }
 
     .glass {
@@ -127,22 +127,22 @@
     .chat-container {
         max-width: 900px;
         margin: 0 auto;
-        padding: 1.5rem;
-        border-radius: 24px;
+        padding: 1rem; /* Reduced padding for mobile */
+        border-radius: 16px; /* Smaller radius for mobile */
     }
 
     .chat-messages {
-        min-height: 500px;
-        max-height: 700px;
+        min-height: calc(100vh - 200px); /* Responsive height */
+        max-height: calc(100vh - 150px);
         overflow-y: auto;
-        padding: 1.5rem;
-        border-radius: 16px;
+        padding: 1rem;
+        border-radius: 12px; /* Smaller radius for mobile */
         background: rgba(255, 255, 255, 0.05);
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
 
     .message {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem; /* Reduced spacing for mobile */
         opacity: 0;
         animation: fadeIn 0.3s forwards;
     }
@@ -172,11 +172,13 @@
 
     .message p {
         margin: 0;
-        padding: 1rem 1.5rem;
+        padding: 0.75rem 1rem; /* Reduced padding for mobile */
+        font-size: 0.9rem; /* Smaller font for mobile */
         line-height: 1.5;
-        border-radius: 16px;
+        border-radius: 12px;
         backdrop-filter: blur(5px);
         -webkit-backdrop-filter: blur(5px);
+        word-break: break-word; /* Prevent text overflow */
     }
 
     .typing .cursor {
@@ -185,19 +187,28 @@
 
     .chat-input {
         display: flex;
-        gap: 1rem;
-        padding: 1rem;
-        border-radius: 16px;
+        padding: 0.75rem;
+        border-radius: 12px;
         margin-top: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .input-wrapper {
+        display: flex;
+        gap: 0.5rem;
+        width: 100%;
+        align-items: center;
     }
 
     .input-field {
         flex: 1;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
-        font-size: 1rem;
+        font-size: 0.9rem;
+        min-width: 0; /* Prevent input from overflowing */
     }
 
     .input-field::placeholder {
@@ -210,8 +221,9 @@
     }
 
     .send-button {
-        width: 3.5rem;
-        height: 3.5rem;
+        width: 2.75rem; /* Smaller button for mobile */
+        height: 2.75rem;
+        min-width: 2.75rem; /* Prevent shrinking */
         border-radius: 50%;
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
@@ -243,7 +255,7 @@
     }
 
     .chat-messages::-webkit-scrollbar {
-        width: 8px;
+        width: 4px;
     }
 
     .chat-messages::-webkit-scrollbar-track {
@@ -288,5 +300,102 @@
     @keyframes blink {
         0%, 100% { opacity: 1; }
         50% { opacity: 0; }
+    }
+
+    /* Add responsive breakpoints */
+    @media (max-width: 640px) {
+        .page-container {
+            padding: 1rem 0.5rem;
+        }
+
+        .chat-container {
+            padding: 0.75rem;
+        }
+
+        .message-content {
+            gap: 0.5rem;
+        }
+
+        .role-badge {
+            font-size: 1.25rem;
+        }
+
+        .input-field {
+            font-size: 16px; /* Prevent zoom on iOS */
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chat-messages {
+            min-height: calc(100vh - 160px);
+            padding: 0.75rem;
+        }
+
+        .message p {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .send-button {
+            width: 2.5rem;
+            height: 2.5rem;
+            min-width: 2.5rem;
+        }
+
+        .chat-input {
+            padding: 0.5rem;
+        }
+
+        .input-wrapper {
+            gap: 0.375rem;
+        }
+
+        .input-field {
+            padding: 0.625rem 0.75rem;
+        }
+    }
+
+    /* Add landscape mode support */
+    @media (max-height: 600px) and (orientation: landscape) {
+        .chat-messages {
+            min-height: 300px;
+            max-height: calc(100vh - 120px);
+        }
+
+        .message {
+            margin-bottom: 0.75rem;
+        }
+    }
+
+    /* Add better touch support */
+    @media (hover: none) {
+        .send-button {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .input-field {
+            -webkit-appearance: none;
+        }
+
+        .chat-messages {
+            -webkit-overflow-scrolling: touch;
+        }
+    }
+
+    /* Improve scrollbar for mobile */
+    .chat-messages::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    /* Add smooth transitions for layout changes */
+    .chat-container, .chat-messages, .message p {
+        transition: all 0.3s ease;
+    }
+
+    /* Fix iOS input styles */
+    .input-field {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
     }
 </style>

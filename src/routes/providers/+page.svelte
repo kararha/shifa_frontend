@@ -2,7 +2,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
-  import ProviderCard from '$lib/components/ProviderCard.svelte';
+  import { debounce } from 'lodash-es';
+  // import ProviderCard from '$lib/components/ProviderCard.svelte';
   import SearchFilter from '$lib/components/SearchFilter.svelte';
   import { DEFAULT_DOCTOR_AVATAR } from '$lib/constants';
 
@@ -46,6 +47,81 @@
     availability: []
   };
 
+  // Remove old reactive scroll variables
+  // let scrollY: number;
+  // let innerHeight: number;
+  // $: { if (typeof window !== 'undefined') { scrollY = window.scrollY; innerHeight = window.innerHeight; } }
+
+  // New variables for scroll detection
+  let lastScrollY = 0;
+  let showFilter = true;
+
+  // Add search state variables
+  let searchQuery = '';
+  let isSearching = false;
+  let searchResults: Provider[] = [];
+  
+  // Update the debounced search function
+  const debouncedSearch = debounce(async (query: string) => {
+    if (!query.trim()) {
+      searchResults = [];
+      loadProviders();
+      return;
+    }
+
+    isSearching = true;
+    error = null; // Clear previous errors
+
+    try {
+      const response = await fetch(`http://localhost:8888/api/providers/search?q=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      // Ensure data is always an array
+      searchResults = Array.isArray(data) ? data : [];
+      
+      if (searchResults.length === 0) {
+        // Not an error, just no results
+        error = null;
+      }
+
+    } catch (err) {
+      console.error('Search error:', err);
+      error = err instanceof Error ? err.message : 'Search failed. Please try again.';
+      searchResults = [];
+    } finally {
+      isSearching = false;
+    }
+  }, 300);
+
+  // Handle search input
+  function handleSearch(event: Event) {
+    const query = (event.target as HTMLInputElement).value;
+    searchQuery = query;
+    debouncedSearch(query);
+  }
+
+  onMount(() => {
+    loadProviders();
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      // Hide filter when scrolling down beyond 100px, show when scrolling up.
+      showFilter = currentScrollY < lastScrollY || currentScrollY < 100;
+      lastScrollY = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  });
+
   async function loadProviders() {
     loading = true;
     error = null;
@@ -67,7 +143,7 @@
         name: item.qualifications?.split('.')[0] || 'Healthcare Provider',
         profile_picture_url: item.profile_picture_url || DEFAULT_DOCTOR_AVATAR,
         rating: item.rating,
-        hourlyRate: item.hourly_rate,
+        hourly_rate: item.hourly_rate, // Make sure this matches exactly
         experienceYears: item.experience_years,
         specialty: item.qualifications,
         bio: item.bio,
@@ -90,10 +166,6 @@
     loadProviders();
   }
 
-  onMount(() => {
-    loadProviders();
-  });
-
   // Add image handling function
   function handleImageError(event: Event) {
     const img = event.target as HTMLImageElement;
@@ -101,15 +173,6 @@
   }
 
   // Add scroll animations
-  let scrollY: number;
-  let innerHeight: number;
-  
-  $: {
-    if (typeof window !== 'undefined') {
-      scrollY = window.scrollY;
-      innerHeight = window.innerHeight;
-    }
-  }
 </script>
 
 <!-- Corner SVG Decorations -->
@@ -152,9 +215,66 @@
         </a>
       </div>
 
-      <!-- Search and Filter Section -->
-      <div class="filter-section" transition:fade>
-        <SearchFilter {filter} on:filterChange={handleFilterChange} />
+      <!-- Centered Search Box -->
+      <div class="max-w-xl mx-auto mb-12">
+        <div class="glass-card p-4">
+          <div class="relative">
+            <input
+              type="text"
+              placeholder="Search providers..."
+              class="w-full pl-10 pr-4 py-3 text-base rounded-lg"
+              bind:value={searchQuery}
+              on:input={handleSearch}
+            />
+            <div class="absolute inset-y-0 left-3 flex items-center pointer-events-none">
+              <svg class="w-5 h-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            {#if isSearching}
+              <div class="absolute inset-y-0 right-3 flex items-center">
+                <div class="w-4 h-4 border-2 border-t-blue-500 border-blue-200 rounded-full animate-spin"></div>
+              </div>
+            {/if}
+          </div>
+
+          {#if searchQuery && searchResults.length > 0}
+            <div class="mt-2 divide-y divide-white/10">
+              {#each searchResults as result}
+                <a
+                  href={`/providers/${result.user_id}`}
+                  class="block p-3 hover:bg-white/10 transition-all duration-200 rounded-lg"
+                >
+                  <div class="flex items-center gap-3">
+                    <img
+                      src={result.profile_picture_url || DEFAULT_DOCTOR_AVATAR}
+                      alt={result.name}
+                      class="w-10 h-10 rounded-full object-cover"
+                      on:error={handleImageError}
+                    />
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2">
+                        <p class="text-white truncate">{result.name}</p>
+                        {#if result.is_verified}
+                          <span class="bg-blue-500/20 text-blue-300 text-xs px-1.5 py-0.5 rounded-full">✓</span>
+                        {/if}
+                      </div>
+                      <p class="text-gray-400 text-sm truncate">{result.specialty}</p>
+                    </div>
+                    <div class="text-right text-sm">
+                      <div class="text-green-400">${result.hourly_rate}/hr</div>
+                      <div class="text-yellow-400">★ {result.rating?.toFixed(1) || 'N/A'}</div>
+                    </div>
+                  </div>
+                </a>
+              {/each}
+            </div>
+          {:else if searchQuery && !isSearching && searchResults.length === 0}
+            <div class="text-center mt-2 p-3 text-gray-400 text-sm">
+              No providers found
+            </div>
+          {/if}
+        </div>
       </div>
 
       {#if error}
@@ -170,7 +290,7 @@
           <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         </div>
       {:else}
-        <div class="provider-grid">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {#each providers as provider (provider.user_id)}
             <div class="glass-card transform hover:scale-105 transition-all duration-300">
               <div class="relative">
@@ -390,5 +510,61 @@
     background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     min-height: 100vh;
     overflow-x: hidden;
+  }
+
+  .search-field input,
+  .filter-field select {
+    @apply bg-white/10 border border-white/20 text-white rounded-lg px-4 py-2.5 w-full;
+    backdrop-filter: blur(5px);
+  }
+
+  .search-field input:focus,
+  .filter-field select:focus {
+    @apply outline-none border-blue-500/50 bg-white/20;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  .form-checkbox {
+    @apply rounded border-white/20 bg-white/10 text-blue-500 focus:ring-blue-500/50;
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  /* Add these new styles */
+  .search-field {
+    @apply z-50;
+  }
+
+  .search-field input {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .search-field input:focus {
+    @apply ring-2 ring-blue-500/50 border-blue-500/50;
+    transform: translateY(-1px);
+  }
+
+  /* Update existing search-field styles */
+  .search-field input {
+    @apply bg-white/10 border border-white/20 text-white rounded-lg px-4 py-3 w-full;
+    backdrop-filter: blur(10px);
+  }
+
+  .search-container {
+    @apply relative z-50 transition-all duration-300;
+  }
+
+  .search-container input {
+    @apply bg-white/10 border border-white/20 text-white rounded-lg;
+    backdrop-filter: blur(10px);
+  }
+
+  .search-container input:focus {
+    @apply outline-none border-blue-500/50 bg-white/20;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  .search-container button {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-1 focus:ring-offset-transparent;
   }
 </style>

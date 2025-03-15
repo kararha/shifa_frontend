@@ -204,65 +204,75 @@
 </svg>
 
 <div class="page-container provider-layout">
-  <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-      <div class="flex justify-between items-center mb-12">
-        <h1 class="text-4xl font-bold text-white tracking-tight">Find Your Doctor</h1>
+      <!-- Responsive Header -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12">
+        <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Find Your Doctor</h1>
         <a
           href="/doctors/register"
-          class="glass-button-primary"
+          class="glass-button-primary w-full sm:w-auto text-center"
         >
           Register as Doctor
         </a>
       </div>
 
-      <!-- Enhanced Filter Section -->
+      <!-- Enhanced Responsive Filter Section -->
       <div class="glass-panel mb-8">
-        <div class="flex flex-wrap gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           <input
             type="text"
             bind:value={searchQuery}
             placeholder="Search doctors..."
-            class="glass-input flex-1"
+            class="glass-input w-full col-span-1 sm:col-span-2 lg:col-span-1"
           />
-          <select bind:value={selectedSpecialty} class="glass-select">
+          <select bind:value={selectedSpecialty} class="glass-select w-full">
             {#each specialties as specialty}
               <option value={specialty}>
                 {specialty === 'all' ? 'All Specialties' : specialty}
               </option>
             {/each}
           </select>
-          <select bind:value={sortBy} class="glass-select">
+          <select bind:value={sortBy} class="glass-select w-full">
             <option value="rating">Sort by Rating</option>
             <option value="price">Sort by Price</option>
             <option value="recent">Most Recent</option>
           </select>
 
-          <div class="flex items-center gap-2">
-            <input type="checkbox" 
-                  bind:checked={showOnlyAvailable} 
-                  class="glass-checkbox"
-                  id="available-only"/>
-            <label for="available-only" class="text-white">Available Only</label>
-          </div>
+          <!-- Responsive Filter Controls -->
+          <div class="flex flex-wrap gap-4 col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4">
+            <div class="flex items-center gap-2 min-w-[150px]">
+              <input type="checkbox" 
+                    bind:checked={showOnlyAvailable} 
+                    class="glass-checkbox"
+                    id="available-only"/>
+              <label for="available-only" class="text-white whitespace-nowrap">Available Only</label>
+            </div>
 
-          <div class="flex items-center gap-2">
-            <label class="text-white">Min Rating:</label>
-            <select bind:value={minimumRating} class="glass-select">
-              {#each [0, 1, 2, 3, 4] as rating}
-                <option value={rating}>{rating}+ ★</option>
-              {/each}
-            </select>
-          </div>
+            <div class="flex items-center gap-2 min-w-[150px]">
+              <label class="text-white whitespace-nowrap">Min Rating:</label>
+              <select bind:value={minimumRating} class="glass-select flex-1">
+                {#each [0, 1, 2, 3, 4] as rating}
+                  <option value={rating}>{rating}+ ★</option>
+                {/each}
+              </select>
+            </div>
 
-          <div class="flex items-center gap-2">
-            <label class="text-white">Price Range:</label>
-            <input type="range" 
-                  bind:value={priceRange.max} 
-                  min="0" 
-                  max="1000" 
-                  class="glass-range"/>
-            <span class="text-white">${priceRange.max}</span>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-[200px]">
+              <label class="text-white whitespace-nowrap text-sm sm:text-base">Price Range:</label>
+              <div class="flex items-center gap-2 w-full">
+                <input type="range" 
+                      bind:value={priceRange.max} 
+                      min="0" 
+                      max="1000" 
+                      step="10"
+                      class="glass-range flex-1 w-full"/>
+                <span class="text-white min-w-[60px] text-right text-sm sm:text-base">
+                  ${priceRange.max}
+                </span>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -296,7 +306,7 @@
           <p class="text-gray-400">Try adjusting your search or filters</p>
         </div>
       {:else}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
           {#each paginatedDoctors as doctor (doctor.user_id)}
             <div class="glass-card transform hover:scale-105 transition-all duration-300
                         hover:shadow-xl hover:shadow-blue-500/20">
@@ -356,59 +366,67 @@
 
         <!-- Enhanced Pagination UI -->
         {#if filteredDoctors.length > itemsPerPage}
-          <div class="flex justify-center items-center gap-4 mt-8">
-            <button 
-              class="glass-button px-4 py-2" 
-              on:click={prevPage}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </button>
-            
+          <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-8">
             <div class="flex gap-2">
-              {#if currentPage > 2}
-                <button class="glass-button px-4 py-2" on:click={() => goToPage(1)}>1</button>
-                {#if currentPage > 3}
-                  <span class="text-white px-2 py-2">...</span>
-                {/if}
-              {/if}
+              <button 
+                class="glass-button px-3 sm:px-4 py-2" 
+                on:click={prevPage}
+                disabled={currentPage === 1}
+              >
+                <span class="hidden sm:inline">Previous</span>
+                <span class="sm:hidden">←</span>
+              </button>
               
-              {#each Array.from({length: Math.min(3, totalPages)}, (_, i) => {
-                const page = currentPage + i - 1;
-                return page;
-              }).filter(page => page > 0 && page <= totalPages) as page}
-                <button
-                  class="glass-button px-4 py-2 {currentPage === page ? 'bg-blue-600/50' : ''}"
-                  on:click={() => goToPage(page)}
-                >
-                  {page}
-                </button>
-              {/each}
-              
-              {#if currentPage < totalPages - 1}
-                {#if currentPage < totalPages - 2}
-                  <span class="text-white px-2 py-2">...</span>
+              <div class="flex gap-1 sm:gap-2">
+                <!-- Simplified pagination for mobile -->
+                {#if window.innerWidth < 640}
+                  <span class="text-white py-2">Page {currentPage}/{totalPages}</span>
+                {:else}
+                  {#if currentPage > 2}
+                    <button class="glass-button px-4 py-2" on:click={() => goToPage(1)}>1</button>
+                    {#if currentPage > 3}
+                      <span class="text-white px-2 py-2">...</span>
+                    {/if}
+                  {/if}
+                  
+                  {#each Array.from({length: Math.min(3, totalPages)}, (_, i) => {
+                    const page = currentPage + i - 1;
+                    return page;
+                  }).filter(page => page > 0 && page <= totalPages) as page}
+                    <button
+                      class="glass-button px-4 py-2 {currentPage === page ? 'bg-blue-600/50' : ''}"
+                      on:click={() => goToPage(page)}
+                    >
+                      {page}
+                    </button>
+                  {/each}
+                  
+                  {#if currentPage < totalPages - 1}
+                    {#if currentPage < totalPages - 2}
+                      <span class="text-white px-2 py-2">...</span>
+                    {/if}
+                    <button 
+                      class="glass-button px-4 py-2" 
+                      on:click={() => goToPage(totalPages)}
+                    >
+                      {totalPages}
+                    </button>
+                  {/if}
                 {/if}
-                <button 
-                  class="glass-button px-4 py-2" 
-                  on:click={() => goToPage(totalPages)}
-                >
-                  {totalPages}
-                </button>
-              {/if}
-            </div>
+              </div>
 
-            <button 
-              class="glass-button px-4 py-2" 
-              on:click={nextPage}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </button>
+              <button 
+                class="glass-button px-3 sm:px-4 py-2" 
+                on:click={nextPage}
+                disabled={currentPage === totalPages}
+              >
+                <span class="hidden sm:inline">Next</span>
+                <span class="sm:hidden">→</span>
+              </button>
+            </div>
             
-            <span class="text-white">
-              Page {currentPage} of {totalPages}
-              ({filteredDoctors.length} doctors)
+            <span class="text-white text-sm sm:text-base">
+              {filteredDoctors.length} doctors found
             </span>
           </div>
         {/if}
@@ -502,8 +520,41 @@
   }
 
   .glass-range {
-    @apply rounded-lg;
+    @apply rounded-lg h-2;
     accent-color: rgb(59, 130, 246);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+  }
+
+  .glass-range::-webkit-slider-thumb {
+    @apply w-4 h-4 rounded-full;
+    -webkit-appearance: none;
+    background: rgb(59, 130, 246);
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+  }
+
+  .glass-range::-moz-range-thumb {
+    @apply w-4 h-4 rounded-full;
+    background: rgb(59, 130, 246);
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+  }
+
+  /* Add responsive adjustments for the range input */
+  @media (max-width: 640px) {
+    .glass-range {
+      @apply h-1.5;
+    }
+    
+    .glass-range::-webkit-slider-thumb {
+      @apply w-3 h-3;
+    }
+    
+    .glass-range::-moz-range-thumb {
+      @apply w-3 h-3;
+    }
   }
 
   .corner-decoration {
@@ -569,5 +620,43 @@
     background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
     min-height: 100vh;
     overflow-x: hidden;
+  }
+
+  /* Add responsive styles */
+  @media (max-width: 640px) {
+    .glass-card {
+      @apply mx-auto max-w-sm;
+    }
+
+    .glass-input,
+    .glass-select,
+    .glass-button {
+      @apply text-sm;
+    }
+
+    .corner-decoration {
+      @apply w-16 h-16;
+      opacity: 0.3;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .glass-panel {
+      @apply p-3;
+    }
+
+    .corner-decoration {
+      display: none;
+    }
+  }
+
+  /* Add smooth transitions for layout changes */
+  .grid {
+    transition: grid-template-columns 0.3s ease-in-out;
+  }
+
+  .glass-card {
+    @apply w-full;
+    max-width: 100%;
   }
 </style>
