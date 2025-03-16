@@ -3,6 +3,10 @@
   import { onMount } from 'svelte';
   import { fade, slide } from 'svelte/transition';
   import * as THREE from 'three';
+  import { getContext } from 'svelte';
+  import { writable } from 'svelte/store';
+  import { currentLanguage, currentTranslations, changeLanguage, type SupportedLanguages } from '$lib/stores/translations';
+  import { browser } from '$app/environment';
 
   type Provider = {
     user_id: string;
@@ -103,6 +107,8 @@
   }
 
   onMount(() => {
+    if (!browser) return;
+    
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
@@ -321,8 +327,13 @@
 
   // Update scroll position
   function handleScroll() {
+    if (!browser) return;
     showScrollTop = window.scrollY > window.innerHeight / 2;
   }
+
+  // Add store subscription
+  $: lang = $currentLanguage;
+  $: translations = $currentTranslations;
 </script>
 
 <svelte:window
@@ -385,18 +396,24 @@
     <div class="relative z-20 h-full w-full px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col justify-center h-full max-w-7xl mx-auto">
         <div class="max-w-3xl mx-auto text-center sm:text-left">
-          <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6">
-            Complete Healthcare Solutions
+          <h1 
+            class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6"
+            data-translate
+          >
+            {translations.hero.title}
           </h1>
-          <p class="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 mb-6 sm:mb-8">
-            Connect with top healthcare professionals and home care providers for comprehensive care.
+          <p 
+            class="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 mb-6 sm:mb-8"
+            data-translate="hero.subtitle"
+          >
+            {translations.hero.subtitle}
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
             <a href="/doctors" class="btn-secondary text-base sm:text-lg w-full sm:w-auto text-center">
-              Find a Doctor
+              {translations?.hero?.findDoctor || "Find a Doctor"}
             </a>
             <a href="/providers" class="btn-primary text-base sm:text-lg w-full sm:w-auto text-center">
-              Find Home Care
+              {translations?.hero?.findCare || "Find Home Care"}
             </a>
           </div>
         </div>
@@ -922,5 +939,19 @@
     :global(.btn-secondary) {
       -webkit-tap-highlight-color: transparent;
     }
+  }
+
+  /* Add RTL support */
+  :global([dir="rtl"]) .right-4 {
+    right: unset;
+    left: 1rem;
+  }
+
+  :global([dir="rtl"]) .text-left {
+    text-align: right;
+  }
+
+  :global([dir="rtl"]) .sm\:text-left {
+    text-align: right;
   }
 </style>

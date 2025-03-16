@@ -1,25 +1,44 @@
-const LIBRETRANSLATE_API = 'https://translate.argosopentech.com';  // Free LibreTranslate instance
+import { browser } from '$app/environment';
 
-// Simple in-memory cache
-const translationCache = new Map<string, { [key: string]: string }>();
+const LIBRETRANSLATE_API = 'https://translate.argosopentech.com';
+const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
+
+interface CacheEntry {
+  translations: { [key: string]: string };
+  timestamp: number;
+}
+
+// Use localStorage for persistent cache in browser
+const cache = browser ? new Map<string, CacheEntry>(
+  JSON.parse(localStorage.getItem('translationCache') || '[]')
+) : new Map();
 
 export async function translateText(text: string, targetLang: 'en' | 'ar', sourceLang?: string): Promise<string> {
   if (!text?.trim()) return '';
 
-  // Generate cache key
-  const cacheKey = `${text}_${targetLang}`;
+  console.debug(`Translation request: "${text}" to ${targetLang}`);
   
-  // Check cache first
-  if (translationCache.has(cacheKey)) {
-    return translationCache.get(cacheKey)[targetLang];
+  // Detect if text is already in target language
+  if (isArabic(text) && targetLang === 'ar') {
+    console.debug('Text already in Arabic, skipping translation');
+    return text;
+  }
+  
+  const cacheKey = `${text}_${targetLang}`;
+  const cached = cache.get(cacheKey);
+
+  if (cached && (Date.now() - cached.timestamp < CACHE_EXPIRY)) {
+    console.debug('Using cached translation');
+    return cached.translations[targetLang];
   }
 
   try {
+    console.debug('Fetching translation from API');
     const response = await fetch(`${LIBRETRANSLATE_API}/translate`, {
       method: 'POST',
       body: JSON.stringify({
         q: text,
-        source: sourceLang || 'auto',
+        source: sourceLang || detectLanguage(text),
         target: targetLang,
         format: 'text'
       }),
@@ -29,20 +48,35 @@ export async function translateText(text: string, targetLang: 'en' | 'ar', sourc
     });
 
     if (!response.ok) {
-      throw new Error('Translation failed');
+      console.error('Translation API error:', response.status);
+      throw new Error(`Translation failed: ${response.statusText}`);
     }
 
     const data = await response.json();
-    const translatedText = data.translatedText;
-
-    // Cache the result
-    translationCache.set(cacheKey, {
-      [targetLang]: translatedText
+    console.debug(`Translated text: "${data.translatedText}"`);
+    
+    // Update cache
+    cache.set(cacheKey, {
+      translations: { [targetLang]: data.translatedText },
+      timestamp: Date.now()
     });
 
-    return translatedText;
+    if (browser) {
+      localStorage.setItem('translationCache', JSON.stringify([...cache]));
+    }
+
+    return data.translatedText;
   } catch (error) {
     console.error('Translation error:', error);
-    return text; // Fallback to original text
+    return text;
   }
+}
+
+function isArabic(text: string): boolean {
+  const arabicPattern = /[\u0600-\u06FF]/;
+  return arabicPattern.test(text);
+}
+
+function detectLanguage(text: string): string {
+  return isArabic(text) ? 'ar' : 'en';
 }

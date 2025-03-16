@@ -10,14 +10,19 @@
     import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
     import { initI18n } from '$lib/i18n';
     import { locale, waitLocale } from 'svelte-i18n';
-    import { currentLanguage, documentDirection, initializeLanguage } from '$lib/store/i18n';
+    import { currentLanguage as i18nLang, documentDirection } from '$lib/store/i18n';
     import { t } from '$lib/utils/i18n';
     import { browser } from '$app/environment';
+    import { 
+        changeLanguage, 
+        initializeTranslations, 
+        currentLanguage,
+        type SupportedLanguages 
+    } from '$lib/stores/translations';
     
     let isMenuOpen = false;
     let isLoading = true;
     let initialized = false;
-    let user: any = null;
 
     $: user = $authStore.user;
     $: isAuthenticated = $authStore.isAuthenticated;
@@ -28,76 +33,48 @@
             if (browser) {
                 try {
                     await initI18n();
-                    const userLang = detectUserLanguage();
-                    await setLanguage(userLang);
-                    initialized = true;
+                    await setLanguage(await detectUserLanguage());
+
+                    // Check auth status
+                    const storedUser = localStorage.getItem('user');
+                    const token = localStorage.getItem('token');
+                    const currentPath = $page.url.pathname;
+
+                    if (storedUser && token) {
+                        const userData = JSON.parse(storedUser);
+                        authStore.login(userData, token);
+                        console.log('Auth restored:', { userData, path: currentPath });
+                    }
+
+                    // Define routes
+                    const publicRoutes = ['/login', '/register', '/', '/about'];
+                    const adminRoutes = ['/admin', '/admin/dashboard'];
+                    const userRole = $authStore.user?.role?.toLowerCase();
+
+                    console.log('Route check:', { path: currentPath, role: userRole });
+
+                    // Handle route access
+                    if (adminRoutes.some(route => currentPath.startsWith(route))) {
+                        if (userRole !== 'admin') {
+                            console.log('Admin access denied');
+                            await goto('/login');
+                            return;
+                        }
+                    } else if (!publicRoutes.includes(currentPath) && !$authStore.isAuthenticated) {
+                        console.log('Protected route - redirecting to login');
+                        await goto('/login');
+                        return;
+                    }
+
                 } catch (error) {
-                    console.error('Failed to initialize i18n:', error);
+                    console.error('Init error:', error);
                 } finally {
                     isLoading = false;
                 }
             }
-            
-            // Single locale subscription that handles both direction and locale changes
-            const unsubscribeLocale = locale.subscribe((value) => {
-                if (value) {
-                    // Update document direction when locale changes
-                    document.dir = value === 'ar' ? 'rtl' : 'ltr';
-                }
-            });
-
-            try {
-                const userCookie = document.cookie
-                    .split('; ')
-                    .find(row => row.startsWith('user='));
-                
-                if (userCookie) {
-                    const userData = decodeURIComponent(userCookie.split('=')[1]);
-                    const parsedUser = JSON.parse(userData);
-                    if (parsedUser) {
-                        authStore.updateUser(parsedUser);
-                    }
-                }
-            } catch (e) {
-                console.error('Error in onMount:', e);
-            }
-
-            // Check for existing auth
-            const storedUser = localStorage.getItem('user');
-            const token = localStorage.getItem('token');
-            
-            if (storedUser && token) {
-                try {
-                    user = JSON.parse(storedUser);
-                    console.log('Restored user session:', user);
-                } catch (e) {
-                    console.error('Error parsing stored user:', e);
-                    // Clear invalid data
-                    localStorage.removeItem('user');
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('refresh_token');
-                }
-            }
-
-            // Redirect if not authenticated
-            const publicRoutes = ['/login', '/register', '/', '/about'];
-            if (!user && !publicRoutes.includes($page.url.pathname)) {
-                goto('/login');
-            }
-
-            const detectedLang = detectUserLanguage();
-            setLanguage(detectedLang);
         }
 
         initialize();
-
-        return () => {
-            window.removeEventListener('scroll', handleScroll);
-            if (locale.subscribe) {
-                const unsubscribe = locale.subscribe(() => {});
-                unsubscribe();
-            }
-        };
     });
 
     async function logout() {
@@ -128,10 +105,13 @@
     // Helper function to determine dashboard link based on user role
     function getDashboardLink(user: User | null): string {
         if (!user) return '/dashboard';
-        switch (user.role) {
-            case 'admin': return '/admin-dashboard';
-            case 'doctor': return '/doctors/dashboard';
-            case 'provider': return '/provider-dashboard';
+        const role = user.role.toLowerCase();
+        console.log('Getting dashboard link for role:', role);
+        
+        switch (role) {
+            case 'admin': return '/admin/dashboard';
+            case 'doctor': return `/doctors/${user.id}`;
+            case 'provider': return `/providers/${user.id}`;
             default: return '/dashboard';
         }
     }
@@ -140,6 +120,12 @@
     function toggleMenu() {
         isMenuOpen = !isMenuOpen;
         console.log('Menu toggled:', isMenuOpen); // Add logging for debugging
+    }
+
+    // Language switcher function
+    function toggleLanguage() {
+        const newLang: SupportedLanguages = $currentLanguage === 'en' ? 'ar' : 'en';
+        changeLanguage(newLang);
     }
 
     let lastScroll = 0;
@@ -179,6 +165,10 @@
     $: metaDescription = $currentLanguage === 'ar' 
         ? 'منصة شفاء للرعاية الصحية - اتصل بأفضل الأطباء ومقدمي الرعاية المنزلية'
         : 'Shfia Healthcare Platform - Connect with top healthcare professionals and home care providers';
+
+    onMount(() => {
+        initializeTranslations();
+    });
 </script>
 
 <svelte:head>
@@ -199,11 +189,17 @@
     <div dir={$documentDirection} lang={$currentLanguage} class="app layout">
         <nav>
             <div class="nav-content">
-                <a href="/" class="logo">Shfia</a>
-                
-                <!-- Add LanguageSwitcher before menu toggle -->
-                <LanguageSwitcher />
-                
+                <div class="left-section">
+                    <a href="/" class="logo">Shfia</a>
+                    <button 
+                        class="language-btn"
+                        on:click={toggleLanguage}
+                        aria-label="Switch language"
+                    >
+                        {$currentLanguage === 'en' ? 'العربية' : 'English'}
+                    </button>
+                </div>
+
                 <button class="menu-toggle" on:click={toggleMenu}>
                     <span class="sr-only">Menu</span>
                     <svg viewBox="0 0 24 24" class="h-6 w-6">
@@ -363,5 +359,44 @@
         align-items: center;
         height: 100vh;
         font-size: 1.2rem;
+    }
+
+    .language-switcher {
+        margin-left: 1rem;
+    }
+
+    .left-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .language-btn {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 0.5rem;
+        color: white;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .language-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+    }
+
+    /* RTL support */
+    :global([dir="rtl"]) .left-section {
+        margin-right: 0;
+        margin-left: auto;
+    }
+
+    @media (max-width: 768px) {
+        .language-btn {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+        }
     }
 </style>

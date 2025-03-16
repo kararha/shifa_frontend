@@ -1,6 +1,9 @@
 import type { User } from '$lib/types';
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
+import { fetchWithTranslation } from '$lib/utils/apiWrapper';
+import { get } from 'svelte/store';
+import { currentLanguage } from '$lib/store/i18n';
 
 const BASE_URL = '/api'; // Uses Vite proxy configuration
 
@@ -52,11 +55,13 @@ export const api = {
 
     async listDoctors(filters?: any) {
         const queryParams = new URLSearchParams(filters).toString();
-        return this.get(`/doctors?${queryParams}`);
+        const lang = get(currentLanguage);
+        return fetchWithTranslation(`/api/doctors?${queryParams}&lang=${lang}`);
     },
 
     async getDoctor(id: number) {
-        return this.get(`/doctors/${id}`);
+        const lang = get(currentLanguage);
+        return fetchWithTranslation(`/api/doctors/${id}?lang=${lang}`);
     },
 
     async updateDoctor(id: number, doctorData: any) {
@@ -82,5 +87,17 @@ export const api = {
     async listAppointments(params?: any) {
         const queryString = new URLSearchParams(params).toString();
         return this.get(`/appointments?${queryString}`);
+    },
+
+    // Add similar methods for providers
+    async listProviders(filters?: any) {
+        const queryParams = new URLSearchParams(filters).toString();
+        const lang = get(currentLanguage);
+        return fetchWithTranslation(`/api/providers?${queryParams}&lang=${lang}`);
+    },
+
+    async getProvider(id: number) {
+        const lang = get(currentLanguage);
+        return fetchWithTranslation(`/api/providers/${id}?lang=${lang}`);
     }
 };

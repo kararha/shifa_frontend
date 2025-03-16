@@ -17,48 +17,55 @@
     }
 
     async function handleLoginSuccess(result: { type: string; status?: number; data?: any; error?: any }) {
-        logDiagnostic('Login result received');
-        logDiagnostic(`Result type: ${result.type}`);
-        logDiagnostic(`Status: ${result.status}`);
-        logDiagnostic(`Full result: ${JSON.stringify(result)}`); // Add this line for debugging
+        logDiagnostic('Login result received: ' + JSON.stringify(result));
 
-        if (result.type === 'success') {
-            // Access nested data correctly
-            const userData = result.data?.data;
-            logDiagnostic(`User data: ${JSON.stringify(userData)}`);
+        if (result.type === 'success' && result.data?.data) {
+            try {
+                const { user: userData, token, refresh_token } = result.data.data;
+                
+                if (!userData?.id || !userData?.role || !token) {
+                    throw new Error('Invalid response data');
+                }
 
-            if (!userData?.user) {
-                logDiagnostic('Error: No user data in response');
+                // Update auth store and wait a moment
+                authStore.login(userData, token, refresh_token);
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Handle admin redirect specially
+                if (userData.role.toLowerCase() === 'admin') {
+                    logDiagnostic('Admin login - redirecting to dashboard');
+                    window.location.replace('/admin/dashboard');
+                    return;
+                }
+
+                // Handle other roles...
+                const role = userData.role.toLowerCase();
+                logDiagnostic('User role: ' + role);
+
+                // Handle redirects based on role
+                switch (role) {
+                    case 'doctor':
+                        logDiagnostic('Doctor user - redirecting to doctor dashboard');
+                        window.location.href = `/doctors/${userData.id}`;
+                        break;
+                    case 'patient':
+                        window.location.href = `/patients/${userData.id}`;
+                        break;
+                    case 'home_care_provider':
+                        window.location.href = `/providers/${userData.id}`;
+                        break;
+                    default:
+                        logDiagnostic('Unknown role - redirecting to home');
+                        window.location.href = '/';
+                }
+
+            } catch (err) {
+                console.error('Login error:', err);
+                logDiagnostic('Login error: ' + err.message);
                 showDiagnostics = true;
-                return;
             }
-
-            const { user, token } = userData;
-
-            // Store in localStorage
-            localStorage.setItem('user', JSON.stringify(user));
-            localStorage.setItem('token', token);
-            localStorage.setItem('isLoggedIn', 'true');
-
-            // Store user data using the auth store
-            authStore.setUser(user);
-
-            // Normalize role to lowercase for comparison
-            const userRole = user.role.toLowerCase();
-            logDiagnostic(`User role: ${userRole}`);
-
-            const redirectPaths = {
-                'patient': `/patients/${user.id}`,
-                'doctor': `/doctors/${user.id}`,
-                'admin': '/admin/dashboard',
-                'home_care_provider': `/providers/${user.id}`
-            };
-
-            const redirectPath = redirectPaths[userRole] || '/';
-            logDiagnostic(`Redirecting to: ${redirectPath}`);
-            goto(redirectPath);
         } else {
-            logDiagnostic('Login was not successful');
+            logDiagnostic('Login failed - invalid response');
             showDiagnostics = true;
         }
     }
