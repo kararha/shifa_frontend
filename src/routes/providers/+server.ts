@@ -1,86 +1,65 @@
 // src/routes/api/providers/+server.ts
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { translationQueue } from '$lib/services/translationQueue';
 import { API_BASE_URL } from '$lib/config';
 
-export const POST: RequestHandler = async ({ request, locals }) => {
+export const POST: RequestHandler = async ({ request }) => {
   try {
-    // Ensure user is authenticated
-    const userId = locals.user?.id;
-    if (!userId) {
-      return new Response('Unauthorized', { status: 401 });
-    }
-
-    // Handle multipart form data
     const formData = await request.formData();
-    const data = Object.fromEntries(formData.entries());
     
-    // Handle the profile picture file
-    const profilePicture = formData.get('profilePicture') as File;
+    // First handle the profile picture upload
+    const profilePicture = formData.get('profile_picture') as File;
     let profilePictureUrl = '';
-    
-    if (profilePicture) {
-      // Here you would typically:
-      // 1. Check file type
-      if (!profilePicture.type.startsWith('image/')) {
-        return new Response('Invalid file type. Please upload an image.', { status: 400 });
+
+    if (profilePicture && profilePicture.size > 0) {
+      const imageFormData = new FormData();
+      imageFormData.append('file', profilePicture);
+      imageFormData.append('directory', 'profile_images'); // Specify the upload directory
+
+      const uploadResponse = await fetch(`${API_BASE_URL}/api/uploads`, {
+        method: 'POST',
+        body: imageFormData
+      });
+
+      if (uploadResponse.ok) {
+        const uploadResult = await uploadResponse.json();
+        profilePictureUrl = uploadResult.url;
       }
-      
-      // 2. Check file size (e.g., 5MB limit)
-      if (profilePicture.size > 5 * 1024 * 1024) {
-        return new Response('File too large. Maximum size is 5MB.', { status: 400 });
-      }
-      
-      // 3. Upload to your storage service (e.g., S3, Cloudinary, etc.)
-      // This is a placeholder - implement your file upload logic here
-      // profilePictureUrl = await uploadToStorage(profilePicture);
-      profilePictureUrl = '/placeholder-url.jpg'; // Replace with actual upload
     }
 
-    // Validate required fields
-    if (!data.serviceTypeId || !data.qualifications || !data.bio || !data.hourlyRate) {
-      return new Response('Missing required fields', { status: 400 });
+    // Create registration data
+    const registrationData = new FormData();
+    for (const [key, value] of formData.entries()) {
+      if (key !== 'profile_picture') {
+        registrationData.append(key, value);
+      }
+    }
+    if (profilePictureUrl) {
+      registrationData.append('profile_picture_url', profilePictureUrl);
     }
 
-    // Create provider record
-    const provider = {
-      userId,
-      serviceTypeId: data.serviceTypeId,
-      experienceYears: data.experienceYears,
-      qualifications: data.qualifications,
-      bio: data.bio,
-      profilePictureUrl: data.profilePictureUrl,
-      hourlyRate: data.hourlyRate,
-      rating: 0, // Default rating for new providers
-      isVerified: false, // Providers need to be verified by admin
-      isAvailable: true, // Default to available
-      status: 'pending', // Initial status
-      latitude: data.latitude,
-      longitude: data.longitude,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
+    // Send registration data
+    const registerResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
+      method: 'POST',
+      body: registrationData
+    });
 
-    // Here you would typically save to your database
-    // const result = await db.homeCareProvider.create({ data: provider });
+    if (!registerResponse.ok) {
+      const errorText = await registerResponse.text();
+      console.error('Registration failed:', errorText);
+      return new Response(errorText, { status: registerResponse.status });
+    }
 
-    // Auto-translate new provider data
-    await Promise.all([
-      translationQueue.addToQueue(String(data.bio), 'bio', provider.userId),
-      translationQueue.addToQueue(String(data.qualifications), 'qualifications', provider.userId),
-      translationQueue.addToQueue(data.specialty ? String(data.specialty) : '', 'specialty', provider.userId)
-    ]);
+    const result = await registerResponse.json();
+    return json({
+      success: true,
+      user: result.user,
+      token: result.token,
+      profile_picture_url: profilePictureUrl
+    });
 
-    const translations = {
-      bio: translationQueue.getTranslation(provider.userId, 'bio'),
-      qualifications: translationQueue.getTranslation(provider.userId, 'qualifications'),
-      specialty: translationQueue.getTranslation(provider.userId, 'specialty')
-    };
-
-    return json({ success: true, provider: { ...provider, translations } });
   } catch (error) {
-    console.error('Provider registration error:', error);
+    console.error('Registration error:', error);
     return new Response('Internal Server Error', { status: 500 });
   }
 };

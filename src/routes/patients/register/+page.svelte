@@ -28,12 +28,21 @@
     async function handleSubmit(event: Event) {
         event.preventDefault();
         isSubmitting = true;
+        error = '';
 
         try {
+            // Validate userId exists
+            const userId = localStorage.getItem('tempUserId');
+            const token = localStorage.getItem('token');
+            
+            if (!userId || !token) {
+                throw new Error('Registration session expired. Please start over.');
+            }
+
             // Format date to match backend expectation
             const formattedData = {
                 ...patientData,
-                user_id: parseInt(patientData.user_id),
+                user_id: parseInt(userId),
                 date_of_birth: new Date(patientData.date_of_birth).toISOString()
             };
 
@@ -41,6 +50,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify(formattedData)
             });
@@ -52,11 +62,17 @@
 
             // Clean up and redirect
             localStorage.removeItem('tempUserId');
+            localStorage.removeItem('token');
             await goto('/login?registered=true');
 
         } catch (err) {
             console.error('Registration error:', err);
             error = err instanceof Error ? err.message : 'Registration failed';
+            
+            // If session expired, redirect to start
+            if (error.includes('session expired')) {
+                await goto('/register');
+            }
         } finally {
             isSubmitting = false;
         }

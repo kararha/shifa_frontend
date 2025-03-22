@@ -5,6 +5,7 @@
   import { DEFAULT_DOCTOR_AVATAR } from '$lib/constants';
   import HomeCareVisitModal from '$lib/components/HomeCareVisitModal.svelte';
   import ReviewList from '$lib/reviews/ReviewList.svelte';
+  import { authStore } from '$lib/stores/authStore';
 
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   let provider: any = null;
@@ -22,6 +23,9 @@
           console.error('Provider ID is undefined in URL params');
       }
   }
+
+  // Check if current user is this provider
+  $: isOwnProfile = $authStore.user?.id === parseInt(providerId);
 
   onMount(async () => {
     try {
@@ -113,6 +117,18 @@
                   </span>
                 </div>
               </div>
+
+              <!-- Add Dashboard button if viewing own profile -->
+              {#if isOwnProfile}
+                <div class="mt-6">
+                  <a
+                    href="/providers/dashboard"
+                    class="glass-button-primary w-full text-center"
+                  >
+                    Go to Dashboard
+                  </a>
+                </div>
+              {/if}
             </div>
           </div>
         </div>
@@ -182,7 +198,7 @@
   }
 
   .glass-button-primary {
-    @apply px-6 py-3 rounded-lg font-semibold text-white text-center;
+    @apply block px-6 py-3 rounded-lg font-semibold text-white text-center;
     background: rgba(37, 99, 235, 0.8);
     backdrop-filter: blur(5px);
     border: 1px solid rgba(59, 130, 246, 0.5);

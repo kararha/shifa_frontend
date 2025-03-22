@@ -14,6 +14,11 @@ export const API_ENDPOINTS = {
     USERS: '/v1/users'
 } as const;
 
+export interface FileUploadResponse {
+    url: string;
+    message: string;
+}
+
 // Add better fetch with timeout and error handling
 export async function fetchWithTimeout(url: string, options: RequestInit = {}) {
   const timeout = 10000;
@@ -44,4 +49,11 @@ export async function fetchWithTimeout(url: string, options: RequestInit = {}) {
     console.error('Fetch error:', e);
     throw e;
   }
+}
+
+// Add a helper function to get complete profile picture URL
+export function getProfilePictureUrl(url: string | null | undefined): string {
+    if (!url) return DEFAULT_AVATAR;
+    if (url.startsWith('http')) return url;
+    return `${BACKEND_URL}${url}`;
 }

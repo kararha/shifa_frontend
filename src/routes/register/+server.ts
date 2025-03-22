@@ -1,60 +1,57 @@
 import type { RequestHandler } from '@sveltejs/kit';
 import { z } from 'zod';
-import { baseUserSchema, patientSchema, doctorSchema } from '$lib/validation';
+import { API_BASE_URL } from '$lib/config';
+
+// Basic user schema for first registration step
+const userSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+    name: z.string().min(2),
+    role: z.enum(['doctor', 'patient', 'home_care_provider', 'admin'])
+});
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
-        const data = await request.json() as { role?: string };
-        let parsedData;
+        const data = await request.json();
+        const validatedData = userSchema.parse(data);
 
-        switch (data.role) {
-            case 'patient':
-                parsedData = patientSchema.parse(data);
-                break;
-            case 'doctor':
-                parsedData = doctorSchema.parse(data);
-                break;
-            default:
-                parsedData = baseUserSchema.parse(data);
+        // First step: Create user
+        const userResponse = await fetch(`${API_BASE_URL}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(validatedData)
+        });
+
+        if (!userResponse.ok) {
+            const error = await userResponse.text();
+            return new Response(error, { status: userResponse.status });
         }
 
-        // Mock user registration logic
-        console.log('Parsed registration data:', parsedData);
-        // Simulate saving user data
-        const userId = 'generated-user-id'; // Simulated user ID
+        const userData = await userResponse.json();
 
-        return new Response(JSON.stringify({ 
-            message: 'Registration successful',
-            userId 
-        }), { 
+        // Include token in response
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'User registered successfully',
+            user: userData.user,
+            token: userData.token // Make sure backend provides this
+        }), {
             status: 201,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
 
     } catch (error) {
         console.error('Registration error:', error);
-
+        
         if (error instanceof z.ZodError) {
-            return new Response(JSON.stringify({ 
+            return new Response(JSON.stringify({
                 error: 'Validation failed',
-                details: error.errors 
-            }), { 
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+                details: error.errors
+            }), { status: 400 });
         }
 
-        return new Response(JSON.stringify({ 
-            error: 'Internal server error' 
-        }), { 
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+        return new Response(JSON.stringify({
+            error: 'Registration failed'
+        }), { status: 500 });
     }
 };

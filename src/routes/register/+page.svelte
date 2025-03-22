@@ -66,43 +66,32 @@
                 })
             });
 
-            const contentType = response.headers.get("content-type");
-            let result;
-            
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                result = await response.json();
-            } else {
-                result = await response.text();
-                throw new Error(result || 'Registration failed');
-            }
+            const result = await response.json();
 
             if (!response.ok) {
                 throw new Error(result.error || 'Registration failed');
             }
 
-            // Store the user data properly
-            if (result.user && result.user.id) {
-                localStorage.setItem('tempUserId', result.user.id.toString());
-                
-                // Redirect based on role
-                switch (userData.role) {
-                    case 'doctor':
-                        await goto('/doctors/register');
-                        break;
-                    case 'patient':
-                        await goto('/patients/register');
-                        break;
-                    case 'home_care_provider':
-                        await goto('/providers/register');
-                        break;
-                    case 'admin':
-                        await goto('/admin/register');
-                        break;
-                    default:
-                        await goto('/login?registered=true');
-                }
-            } else {
-                throw new Error('Invalid response from server');
+            // Store both user ID and token
+            localStorage.setItem('tempUserId', result.user.id.toString());
+            localStorage.setItem('token', result.token);
+            
+            // Redirect based on role
+            switch (userData.role) {
+                case 'doctor':
+                    await goto('/doctors/register');
+                    break;
+                case 'patient':
+                    await goto('/patients/register');
+                    break;
+                case 'home_care_provider':
+                    await goto('/providers/register');
+                    break;
+                case 'admin':
+                    await goto('/admin/register');
+                    break;
+                default:
+                    await goto('/login?registered=true');
             }
 
         } catch (error) {

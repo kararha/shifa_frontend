@@ -29,54 +29,79 @@
     hourly_rate: '',
     latitude: '',
     longitude: '',
-    service_type_id: ''
+    service_type_id: '',
+    user_id: ''
   };
 
   onMount(async () => {
     try {
-      // Fetch service types from API
-      const response = await fetch('/api/service-types');
-      serviceTypes = await response.json();
+      // Get stored user ID
+      const userId = localStorage.getItem('tempUserId');
+      const token = localStorage.getItem('token');
+
+      if (!userId || !token) {
+        throw new Error('Registration session expired');
+      }
+
+      providerData.user_id = userId;
+
+      // Updated service types fetch
+      const response = await fetch(`http://localhost:8888/api/api/service-types`, {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load service types: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      serviceTypes = Array.isArray(result) ? result : result.data || [];
+
+      console.log('Loaded service types:', serviceTypes);
+
     } catch (error) {
-      errorMessage = 'Failed to load service types';
+      console.error('Error:', error);
+      errorMessage = error instanceof Error ? error.message : 'Failed to initialize';
     }
   });
 
-  async function handleSubmit() {
+  async function handleSubmit(event: Event) {
+    event.preventDefault();
     loading = true;
     errorMessage = '';
 
     try {
-      // Step 1: Register user
-      const userResponse = await fetch('/api/register', {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token missing');
+      }
+
+      const response = await fetch('/api/providers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(providerData)
       });
 
-      if (!userResponse.ok) throw new Error('User registration failed');
-      
-      const { id: userId } = await userResponse.json();
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to complete registration');
+      }
 
-      // Step 2: Create provider profile
-      const providerResponse = await fetch('/api/providers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: userId,
-          ...providerData,
-          is_verified: false,
-          is_available: true,
-          status: 'active'
-        })
-      });
+      // Clear temporary storage
+      localStorage.removeItem('tempUserId');
+      localStorage.removeItem('token');
 
-      if (!providerResponse.ok) throw new Error('Provider profile creation failed');
+      // Redirect to login
+      window.location.href = '/login?registered=true';
 
-      // Redirect to success page or dashboard
-      window.location.href = '/providers';
     } catch (error) {
-      errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      errorMessage = error instanceof Error ? error.message : 'Registration failed';
     } finally {
       loading = false;
     }
