@@ -5,17 +5,16 @@
     import { DEFAULT_AVATAR, BACKEND_URL } from '$lib/constants';
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
-    import { detectUserLanguage, setLanguage } from '$lib/stores/languageStore';
     import '../lib/styles/rtl.css';
     import { initI18n } from '$lib/i18n';
     import { locale, waitLocale } from 'svelte-i18n';
-    import { currentLanguage as i18nLang, documentDirection } from '$lib/store/i18n';
     import { t } from '$lib/utils/i18n';
     import { browser } from '$app/environment';
     import { 
         changeLanguage, 
         initializeTranslations, 
         currentLanguage,
+        documentDirection,
         type SupportedLanguages 
     } from '$lib/stores/translations';
     import LanguageSwitch from '$lib/components/LanguageSwitch.svelte';
@@ -33,7 +32,7 @@
             if (browser) {
                 try {
                     await initI18n();
-                    await setLanguage(await detectUserLanguage());
+                    await initializeTranslations();
 
                     // Check auth status
                     const storedUser = localStorage.getItem('user');

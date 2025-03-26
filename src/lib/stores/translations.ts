@@ -5,6 +5,10 @@ import { register, init, getLocaleFromNavigator, waitLocale } from 'svelte-i18n'
 export type SupportedLanguages = 'en' | 'ar';
 
 export const currentLanguage = writable<SupportedLanguages>('ar');
+export const documentDirection = derived(
+    currentLanguage,
+    $lang => $lang === 'ar' ? 'rtl' : 'ltr'
+);
 
 // Initialize translations with both languages
 register('en', () => import('$lib/translations/en.json'));
@@ -25,6 +29,17 @@ export const currentTranslations = derived(
         loadTranslations();
     }
 );
+
+export function initializeTranslations() {
+    if (!browser) return;
+    
+    const storedLang = localStorage.getItem('preferred-language') as SupportedLanguages;
+    if (storedLang) {
+        changeLanguage(storedLang);
+    } else {
+        changeLanguage('ar');
+    }
+}
 
 // Language change handler
 export async function changeLanguage(lang: SupportedLanguages): Promise<void> {
