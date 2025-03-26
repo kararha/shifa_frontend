@@ -1,53 +1,56 @@
 import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
-import { translations as defaultTranslations } from '../i18n/translations';
+import { register, init, getLocaleFromNavigator, waitLocale } from 'svelte-i18n';
 
-export type SupportedLanguages = 'en' | 'ar' | 'fr' | 'es';
+export type SupportedLanguages = 'en' | 'ar';
 
-export const currentLanguage = writable<SupportedLanguages>('en');
-export const translations = writable(defaultTranslations);
+export const currentLanguage = writable<SupportedLanguages>('ar');
+
+// Initialize translations with both languages
+register('en', () => import('$lib/translations/en.json'));
+register('ar', () => import('$lib/translations/ar.json'));
 
 // Create a derived store for current translations
 export const currentTranslations = derived(
-  [translations, currentLanguage],
-  ([$translations, $currentLang]) => $translations[$currentLang] || $translations.en
+    currentLanguage,
+    ($currentLang, set) => {
+        const loadTranslations = async () => {
+            try {
+                const module = await import(`$lib/translations/${$currentLang}.json`);
+                set(module.default);
+            } catch (error) {
+                console.error('Failed to load translations:', error);
+            }
+        };
+        loadTranslations();
+    }
 );
 
-// Initialize translations
-export function initializeTranslations(): void {
-  if (!browser) return;
-  
-  try {
-    // Get stored language preference
-    const storedLang = localStorage.getItem('preferred-language');
-    const browserLang = navigator.language.split('-')[0];
-    const supportedLangs: SupportedLanguages[] = ['en', 'ar', 'fr', 'es'];
-    
-    // Determine language
-    const lang = storedLang && supportedLangs.includes(storedLang as SupportedLanguages)
-      ? storedLang as SupportedLanguages
-      : supportedLangs.includes(browserLang as SupportedLanguages)
-        ? browserLang as SupportedLanguages
-        : 'en';
-    
-    changeLanguage(lang);
-  } catch (error) {
-    console.error('Failed to initialize translations:', error);
-    changeLanguage('en');
-  }
-}
-
 // Language change handler
-export function changeLanguage(lang: SupportedLanguages): void {
-  if (!browser) return;
+export async function changeLanguage(lang: SupportedLanguages): Promise<void> {
+    if (!browser) return;
 
-  try {
-    // Update language
-    currentLanguage.set(lang);
-    localStorage.setItem('preferred-language', lang);
-    document.documentElement.lang = lang;
-    document.dir = lang === 'ar' ? 'rtl' : 'ltr';
-  } catch (error) {
-    console.error('Language change error:', error);
-  }
+    try {
+        // Update language
+        currentLanguage.set(lang);
+        
+        // Update HTML attributes
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        
+        // Store preference
+        localStorage.setItem('preferred-language', lang);
+        
+        // Initialize i18n
+        init({
+            fallbackLocale: 'ar',
+            initialLocale: lang
+        });
+        
+        // Wait for locale to be loaded
+        await waitLocale(lang);
+        
+    } catch (error) {
+        console.error('Language change error:', error);
+    }
 }

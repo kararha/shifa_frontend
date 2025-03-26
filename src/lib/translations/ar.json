@@ -20,7 +20,7 @@
   },
   "doctors": {
     "title": "الأطباء المتخصصون",
-    "subtitle": "رعاية صحية متخصصة من أطباء مؤهلين",
+    "subtitle": "رعاية صحية خبيرة من أطباء مؤهلين",
     "specialtiesSection": "تخصصاتنا الطبية",
     "specialties": {
       "cardiology": {
@@ -60,7 +60,22 @@
     "featuredDoctors": "أطباء مميزون",
     "viewAll": "عرض الكل",
     "viewProfile": "عرض الملف",
-    "noDoctors": "لا يوجد أطباء متاحين"
+    "noDoctors": "لا يوجد أطباء متاحين",
+    "counts": {
+      "doctors": "طبيب",
+      "providers": "مقدم خدمة"
+    },
+    "featuredTitle": "الأطباء المميزون",
+    "viewAll": "عرض جميع الأطباء",
+    "specialtyCard": {
+      "doctor": "طبيب",
+      "doctors": "أطباء"
+    },
+    "featuredDoctors": {
+      "title": "الأطباء المميزون",
+      "loading": "جاري التحميل...",
+      "noResults": "لا يوجد أطباء متميزون حالياً"
+    }
   },
   "homeCare": {
     "title": "خدمات الرعاية المنزلية",
@@ -88,17 +103,32 @@
         "count": "20"
       }
     },
-    "providersCount": "مقدمي الرعاية"
+    "providersCount": "مقدمي الرعاية",
+    "serviceCard": {
+      "providers": "مقدم خدمة"
+    },
+    "provider": {
+      "title": "مقدم رعاية منزلية",
+      "rate": "ريال/ساعة"
+    },
+    "featuredProviders": {
+      "title": "مقدمو الرعاية المميزون",
+      "loading": "جاري التحميل...",
+      "noResults": "لا يوجد مقدمو رعاية مميزون حالياً"
+    },
+    "viewAll": "عرض جميع مقدمي الرعاية",
+    "perHour": "في الساعة",
+    "noProviders": "لا يوجد مقدمو خدمة متاحين"
   },
   "stats": {
     "registeredDoctors": "+500 طبيب مسجل",
     "careProviders": "+300 مقدم رعاية",
     "happyPatients": "+10,000 مريض سعيد",
-    "specialties": "+50 تخصص"
+    "specialties": "+50 تخصص طبي"
   },
   "faq": {
     "title": "الأسئلة الشائعة",
-    "subtitle": "إجابات على الأسئلة المتكررة حول خدماتنا",
+    "subtitle": "إجابات على الأسئلة الشائعة حول خدماتنا",
     "questions": [
       {
         "question": "كيف يمكنني حجز موعد مع طبيب؟",
@@ -148,7 +178,11 @@
     "searchPlaceholder": "ابحث عن مقدم رعاية...",
     "noProvidersFound": "لا يوجد مقدمي خدمة",
     "resetFilters": "إعادة تعيين المرشحات",
-    "rateSymbol": "السعر: ${rate}"
+    "rateSymbol": "السعر: ${rate}",
+    "title": "مقدمو الرعاية المنزلية",
+    "subtitle": "رعاية احترافية في منزلك",
+    "viewAll": "عرض جميع مقدمي الرعاية",
+    "perHour": "في الساعة"
   },
   "services": {
     "elderlyCare": "رعاية المسنين",
@@ -218,13 +252,28 @@
       "featured": "مقدمو الرعاية المميزون",
       "provider": "مقدم رعاية",
       "hourlyRate": "ريال/ساعة"
+    },
+    "medicalProfessionals": {
+      "title": "الأطباء المتخصصون",
+      "subtitle": "رعاية صحية خبيرة من أطباء مؤهلين"
+    },
+    "featuredDoctors": {
+      "title": "الأطباء المميزون",
+      "loading": "جاري التحميل...",
+      "noResults": "لا يوجد أطباء متميزون حالياً"
+    },
+    "featuredProviders": {
+      "title": "مقدمو الرعاية المميزون",
+      "loading": "جاري التحميل...",
+      "noResults": "لا يوجد مقدمو رعاية متميزون حالياً"
     }
   },
   "buttons": {
     "viewProfile": "عرض الملف",
     "searchProfessionals": "البحث عن متخصصين",
     "joinNetwork": "انضم إلى شبكتنا",
-    "scrollTop": "العودة للأعلى"
+    "scrollTop": "العودة للأعلى",
+    "viewAll": "عرض الكل"
   },
   "loading": {
     "text": "جاري التحميل..."
@@ -333,5 +382,25 @@
       "motto": "متخصص في إدارة الأمراض المزمنة والرعاية التلطيفية",
       "hourlyRate": "23 في الساعة"
     }
+  },
+  "arabicDoctors": {
+    "Dr. John Doe": "د. محمد أحمد",
+    "Dr. Jane Smith": "د. سارة خالد",
+    "Dr. Sarah Johnson": "د. نورة العبدالله",
+    "Dr. Michael Brown": "د. عبدالله محمد",
+    "Dr. Emily Davis": "د. فاطمة علي",
+    "Dr. William Wilson": "د. خالد العمر",
+    "Dr. Lisa Anderson": "د. ريم السعيد",
+    "Dr. Robert Martinez": "د. أحمد العبدالرحمن"
+  },
+  "arabicProviders": {
+    "Sarah Johnson": "سارة عبدالله",
+    "Mike Wilson": "محمد وليد",
+    "Emma Thompson": "إيمان محمد",
+    "David Clark": "داوود خالد",
+    "Linda Martinez": "لينا مراد",
+    "James Taylor": "جمال طاهر",
+    "Patricia Brown": "بتول براون",
+    "Robert Garcia": "رامي غرناطة"
   }
 }

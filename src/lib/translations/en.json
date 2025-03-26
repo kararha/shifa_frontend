@@ -63,7 +63,11 @@
       }
     },
     "doctorsCount": "Doctors",
-    "featuredDoctors": "Featured Doctors",
+    "featuredDoctors": {
+      "title": "Featured Doctors",
+      "loading": "Loading...",
+      "noResults": "No featured doctors available"
+    },
     "viewAll": "View All Doctors",
     "viewProfile": "View Profile",
     "noDoctors": "No doctors available"
@@ -90,7 +94,11 @@
         "count": "20 Providers"
       }
     },
-    "featuredProviders": "Featured Care Providers",
+    "featuredProviders": {
+      "title": "Featured Care Providers",
+      "loading": "Loading...",
+      "noResults": "No featured providers available"
+    },
     "viewAll": "View All Providers",
     "perHour": "/hour",
     "provider": "Home Care Provider",
@@ -101,7 +109,7 @@
   },
   "faq": {
     "title": "Frequently Asked Questions",
-    "subtitle": "Answers to common queries about our services",
+    "subtitle": "Find answers to common questions about our services",
     "questions": [
       {
         "question": "How do I book an appointment with a doctor?",

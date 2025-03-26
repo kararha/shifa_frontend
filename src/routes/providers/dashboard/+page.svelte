@@ -5,6 +5,24 @@
   import { page } from '$app/stores';
   import { authStore } from '$lib/stores/authStore';
 
+  interface Patient {
+    user_id: number;
+    name: string;
+    date_of_birth: string;
+    gender: string;
+    phone: string;
+    address: string;
+    emergency_contact_name: string;
+    emergency_contact_phone: string;
+  }
+
+  interface User {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  }
+
   interface HomeCareVisit {
     id: number;
     patient_id: number;
@@ -15,6 +33,7 @@
     duration_hours: number;
     special_requirements: string;
     status: string;
+    patient?: Patient;
   }
 
   let visits: HomeCareVisit[] = [];
@@ -33,6 +52,7 @@
         throw new Error('Authentication required');
       }
 
+      // Get visits
       const response = await fetch(`http://localhost:8888/api/home-care-visits?provider_id=${providerId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -44,17 +64,33 @@
         throw new Error(`Failed to load visits: ${response.statusText}`);
       }
 
-      const data = await response.json();
-      console.log('Raw visits data:', data);
+      const visitsData = await response.json();
+      console.log('Raw visits data:', visitsData);
 
-      // Set visits directly since the response is already an array
-      visits = data;
+      // Fetch patient details for each visit using the patients endpoint
+      const visitsWithPatients = await Promise.all(visitsData.map(async (visit: HomeCareVisit) => {
+        const patientResponse = await fetch(`http://localhost:8888/api/patients/${visit.patient_id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
 
-      // Debug log the processed visits
-      console.log('Processed visits:', visits);
+        if (patientResponse.ok) {
+          const patientData = await patientResponse.json();
+          return {
+            ...visit,
+            patient: patientData
+          };
+        }
+        console.warn(`Failed to fetch patient data for ID: ${visit.patient_id}`);
+        return visit;
+      }));
+
+      visits = visitsWithPatients;
+      console.log('Visits with patient details:', visits);
       
       error = null;
-      loading = false;
 
     } catch (err) {
       console.error('Error in loadVisits:', err);
@@ -167,23 +203,53 @@
           {#each filteredVisits as visit (visit.id)}
             <div class="glass-card p-6" transition:fade>
               <div class="flex items-start justify-between">
-                <div>
-                  <h3 class="text-xl font-semibold text-white mb-2">
-                    Patient ID: {visit.patient_id}
-                  </h3>
-                  <p class="text-gray-400 mb-2">
-                    Address: {visit.address}
-                  </p>
-                  <p class="text-gray-400">
-                    Duration: {visit.duration_hours} hours
-                  </p>
-                  {#if visit.special_requirements}
-                    <p class="text-gray-400 mt-2">
-                      Special Requirements: {visit.special_requirements}
-                    </p>
-                  {/if}
+                <div class="space-y-3">
+                  <!-- Patient Information -->
+                  <div class="border-b border-white/10 pb-3">
+                    <h3 class="text-xl font-semibold text-white mb-2">
+                      Patient Information
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4 text-gray-300">
+                      <div>
+                        <p class="font-medium">Name:</p>
+                        <p>{visit.patient?.name || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p class="font-medium">Gender:</p>
+                        <p class="capitalize">{visit.patient?.gender || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p class="font-medium">Phone:</p>
+                        <p>{visit.patient?.phone || 'N/A'}</p>
+                      </div>
+                      <!-- <div>
+                        <p class="font-medium">Address:</p>
+                        <p>{visit.patient?.address || 'N/A'}</p>
+                      </div> -->
+                    </div>
+                  </div>
+
+                  <!-- Visit Information -->
+                  <div>
+                    <h4 class="text-lg font-medium text-white mb-2">Visit Details</h4>
+                    <div class="space-y-2 text-gray-300">
+                      <p>
+                        <span class="font-medium">Address:</span> {visit.address}
+                      </p>
+                      <p>
+                        <span class="font-medium">Duration:</span> {visit.duration_hours} hours
+                      </p>
+                      {#if visit.special_requirements}
+                        <p>
+                          <span class="font-medium">Special Requirements:</span>
+                          <span class="text-yellow-300">{visit.special_requirements}</span>
+                        </p>
+                      {/if}
+                    </div>
+                  </div>
                 </div>
 
+                <!-- Action Buttons -->
                 <div class="flex flex-col space-y-2">
                   {#if visit.status === 'scheduled'}
                     <button

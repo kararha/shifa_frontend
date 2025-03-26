@@ -1,4 +1,4 @@
-import { register, init, waitLocale, getLocaleFromNavigator } from 'svelte-i18n';
+import { register, init, waitLocale } from 'svelte-i18n';
 import { browser } from '$app/environment';
 
 let initialized = false;
@@ -11,17 +11,16 @@ export async function initI18n() {
 
     init({
         fallbackLocale: 'ar',
-        initialLocale: browser ? getLocaleFromNavigator() : 'ar'
+        initialLocale: 'ar'
     });
 
-    if (browser) {
-        await waitLocale('ar');
-    }
-
+    // Always wait for Arabic locale in both browser and SSR
+    await waitLocale('ar');
+    
     initialized = true;
 }
 
-// Initialize immediately for SSR
+// Don't initialize for SSR to avoid race conditions
 if (!browser) {
-    initI18n();
+    initialized = true;
 }

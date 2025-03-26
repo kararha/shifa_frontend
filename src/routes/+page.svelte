@@ -37,24 +37,6 @@
     'src/images/4.jpg'
   ];
 
-  // Doctor specialties
-  const doctorSpecialties = [
-    { name: 'Cardiology', icon: 'heart', count: 24 },
-    { name: 'Neurology', icon: 'brain', count: 18 },
-    { name: 'Pediatrics', icon: 'baby', count: 32 },
-    { name: 'Orthopedics', icon: 'bone', count: 15 },
-    { name: 'Dentistry', icon: 'tooth', count: 28 },
-    { name: 'Ophthalmology', icon: 'eye', count: 20 }
-  ];
-
-  // Home care service types
-  const careServices = [
-    { name: 'Elderly Care', icon: 'users', count: 45 },
-    { name: 'Rehabilitation', icon: 'activity', count: 30 },
-    { name: 'Personal Care', icon: 'heart', count: 25 },
-    { name: 'Skilled Nursing', icon: 'plus', count: 20 }
-  ];
-
   // Add image lazy loading
   const lazyLoadImage = (node: HTMLImageElement) => {
     node.loading = "lazy";
@@ -64,22 +46,22 @@
   };
 
   // Add FAQ data
-  const faqs = [
+  $: faqs = [
     {
-      question: "How do I book an appointment with a doctor?",
-      answer: "You can book an appointment by visiting the doctor's profile and selecting your preferred time slot. We'll confirm your appointment within 24 hours."
+      question: translations?.faq?.questions[0]?.question || "How do I book an appointment with a doctor?",
+      answer: translations?.faq?.questions[0]?.answer || "You can book an appointment by visiting the doctor's profile and selecting your preferred time slot. We'll confirm your appointment within 24 hours."
     },
     {
-      question: "What types of home care services do you offer?",
-      answer: "We offer various home care services including elderly care, rehabilitation, personal care, and skilled nursing. Each service is provided by qualified professionals."
+      question: translations?.faq?.questions[1]?.question || "What types of home care services do you offer?",
+      answer: translations?.faq?.questions[1]?.answer || "We offer various home care services including elderly care, rehabilitation, personal care, and skilled nursing. Each service is provided by qualified professionals."
     },
     {
-      question: "Are all healthcare providers verified?",
-      answer: "Yes, all our healthcare providers undergo thorough background checks and credential verification before joining our platform."
+      question: translations?.faq?.questions[2]?.question || "Are all healthcare providers verified?",
+      answer: translations?.faq?.questions[2]?.answer || "Yes, all our healthcare providers undergo thorough background checks and credential verification before joining our platform."
     },
     {
-      question: "How do I pay for services?",
-      answer: "We offer secure online payment options through our platform. You can pay using credit cards, debit cards, or other supported payment methods."
+      question: translations?.faq?.questions[3]?.question || "How do I pay for services?",
+      answer: translations?.faq?.questions[3]?.answer || "We offer secure online payment options through our platform. You can pay using credit cards, debit cards, or other supported payment methods."
     }
   ];
 
@@ -334,6 +316,35 @@
   // Add store subscription
   $: lang = $currentLanguage;
   $: translations = $currentTranslations;
+
+  // Dynamically set the direction based on the language
+  $: dir = $currentLanguage === 'ar' ? 'rtl' : 'ltr';
+
+  // Add helper function for name localization
+  function getLocalizedName(name: string, type: 'doctor' | 'provider'): string {
+    if ($currentLanguage === 'ar') {
+      return translations?.[type === 'doctor' ? 'arabicDoctors' : 'arabicProviders']?.[name] || name;
+    }
+    return name;
+  }
+
+  // Move doctorSpecialties into a reactive block so it updates when translations changes
+  $: doctorSpecialties = [
+    { name: translations?.specialties?.cardiology || 'Cardiology', icon: 'heart', count: 24 },
+    { name: translations?.specialties?.neurology || 'Neurology', icon: 'brain', count: 18 },
+    { name: translations?.specialties?.pediatrics || 'Pediatrics', icon: 'baby', count: 32 },
+    { name: translations?.specialties?.orthopedics || 'Orthopedics', icon: 'bone', count: 15 },
+    { name: translations?.specialties?.dentistry || 'Dentistry', icon: 'tooth', count: 28 },
+    { name: translations?.specialties?.ophthalmology || 'Ophthalmology', icon: 'eye', count: 20 }
+  ];
+
+  // Move careServices into a reactive block so it updates when translations changes
+  $: careServices = [
+    { name: translations?.services?.elderlyCare || 'Elderly Care', icon: 'users', count: 45 },
+    { name: translations?.services?.rehabilitation || 'Rehabilitation', icon: 'activity', count: 30 },
+    { name: translations?.services?.personalCare || 'Personal Care', icon: 'heart', count: 25 },
+    { name: translations?.services?.skilledNursing || 'Skilled Nursing', icon: 'plus', count: 20 }
+  ];
 </script>
 
 <svelte:window
@@ -372,7 +383,7 @@
 {/if}
 
 <!-- Add smooth-scroll class to main container -->
-<div class="min-h-screen smooth-scroll">
+<div class="min-h-screen smooth-scroll" dir={dir}>
   <!-- Hero Section with responsive adjustments -->
   <section class="relative min-h-[100vh]">
     <!-- Add canvas before other content -->
@@ -400,20 +411,20 @@
             class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight mb-4 sm:mb-6"
             data-translate
           >
-            {translations.hero.title}
+            {translations?.hero?.title || "Complete Healthcare Solutions"}
           </h1>
           <p 
             class="text-base sm:text-lg md:text-xl lg:text-2xl text-blue-100 mb-6 sm:mb-8"
             data-translate="hero.subtitle"
           >
-            {translations.hero.subtitle}
+            {translations?.hero?.subtitle || "Connect with top healthcare professionals and home care providers for comprehensive care."}
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center sm:justify-start">
             <a href="/doctors" class="btn-secondary text-base sm:text-lg w-full sm:w-auto text-center">
               {translations?.hero?.findDoctor || "Find a Doctor"}
             </a>
             <a href="/providers" class="btn-primary text-base sm:text-lg w-full sm:w-auto text-center">
-              {translations?.hero?.findCare || "Find Home Care"}
+              {translations?.hero?.findHomeCare || "Find Home Care"}
             </a>
           </div>
         </div>
@@ -426,10 +437,10 @@
         <div class="stats-card">
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {#each [
-              { label: 'Registered Doctors', value: '500+' },
-              { label: 'Care Providers', value: '300+' },
-              { label: 'Happy Patients', value: '10,000+' },
-              { label: 'Specialties', value: '50+' }
+              { label: translations?.stats?.registeredDoctors || 'Registered Doctors', value: '500+' },
+              { label: translations?.stats?.careProviders || 'Care Providers', value: '300+' },
+              { label: translations?.stats?.happyPatients || 'Happy Patients', value: '10,000+' },
+              { label: translations?.stats?.specialties || 'Specialties', value: '50+' }
             ] as stat}
               <div class="text-center p-2 sm:p-4">
                 <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-white">{stat.value}</h3>
@@ -449,9 +460,14 @@
   <section class="py-16 sm:py-24 md:py-32 bg-white w-full">
     <div class="w-full px-4 lg:px-8">
       <div class="max-w-7xl mx-auto">
+        <!-- Medical Professionals Section -->
         <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold text-blue-900">Medical Professionals</h2>
-          <p class="mt-4 text-xl text-gray-600">Expert healthcare from qualified doctors</p>
+          <h2 class="text-4xl font-bold text-blue-900">
+            {translations?.doctors?.title || "Medical Professionals"}
+          </h2>
+          <p class="mt-4 text-xl text-gray-600">
+            {translations?.doctors?.subtitle || "Expert healthcare from qualified doctors"}
+          </p>
         </div>
 
         <!-- Doctor Specialties -->
@@ -468,7 +484,7 @@
                   </div>
                   <div>
                     <h3 class="text-xl font-semibold text-blue-900">{specialty.name}</h3>
-                    <p class="text-gray-600">{specialty.count} Doctors</p>
+                    <p class="text-gray-600">{specialty.count} {translations?.doctors?.specialtyCard?.[specialty.count === 1 ? 'doctor' : 'doctors']}</p>
                   </div>
                 </div>
               </div>
@@ -478,11 +494,17 @@
 
         <!-- Featured Doctors -->
         <div>
-          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Doctors</h3>
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">
+            {translations?.sections?.featuredDoctors?.title || "Featured Doctors"}
+          </h3>
           {#if loading}
-            <div class="text-center py-8">Loading...</div>
+            <div class="text-center py-8">
+              {translations?.sections?.featuredDoctors?.loading || "Loading..."}
+            </div>
           {:else if featuredDoctors.length === 0}
-            <div class="text-center py-8">No featured doctors available</div>
+            <div class="text-center py-8">
+              {translations?.sections?.featuredDoctors?.noResults || "No featured doctors available"}
+            </div>
           {:else}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {#each featuredDoctors as doctor}
@@ -496,8 +518,8 @@
                     />
                   </div>
                   <div class="p-6">
-                    <h3 class="text-xl font-semibold text-blue-900">{doctor.name}</h3>
-                    <p class="text-gray-600">{doctor.specialty}</p>
+                    <h3 class="text-xl font-semibold text-blue-900">{getLocalizedName(doctor.name, 'doctor')}</h3>
+                    <p class="text-gray-600">{translations?.specialties?.[doctor.specialty?.toLowerCase()] || doctor.specialty}</p>
                     <div class="mt-4 flex items-center justify-between">
                       <div class="flex items-center">
                         <span class="text-yellow-400">★</span>
@@ -507,7 +529,7 @@
                         href={`/doctors/${doctor.user_id}`}
                         class="text-blue-600 hover:text-blue-700 font-medium"
                       >
-                        View Profile
+                        {translations?.buttons?.viewProfile || "View Profile"}
                       </a>
                     </div>
                   </div>
@@ -523,7 +545,7 @@
             href="/doctors" 
             class="inline-block btn-primary"
           >
-            View All Doctors
+            {translations?.doctors?.viewAll || "View All Doctors"}
           </a>
         </div>
       </div>
@@ -535,13 +557,13 @@
     <div class="w-full px-4 lg:px-8">
       <div class="max-w-7xl mx-auto">
         <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold text-blue-900">Home Care Services</h2>
-          <p class="mt-4 text-xl text-gray-600">Professional care in the comfort of your home</p>
+          <h2 class="text-4xl font-bold text-blue-900">{translations?.homeCare?.title}</h2>
+          <p class="mt-4 text-xl text-gray-600">{translations?.homeCare?.subtitle}</p>
         </div>
 
         <!-- Care Services -->
         <div class="mb-20">
-          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Our Care Services</h3>
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">{translations?.homeCare?.ourServices}</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {#each careServices as service}
               <div class="modern-card p-6">
@@ -563,11 +585,17 @@
 
         <!-- Featured Providers -->
         <div>
-          <h3 class="text-2xl font-semibold text-blue-900 mb-8">Featured Care Providers</h3>
+          <h3 class="text-2xl font-semibold text-blue-900 mb-8">
+            {translations?.sections?.featuredProviders?.title || "Featured Care Providers"}
+          </h3>
           {#if loading}
-            <div class="text-center py-8">Loading...</div>
+            <div class="text-center py-8">
+              {translations?.sections?.featuredProviders?.loading || "Loading..."}
+            </div>
           {:else if featuredProviders.length === 0}
-            <div class="text-center py-8">No featured providers available</div>
+            <div class="text-center py-8">
+              {translations?.sections?.featuredProviders?.noResults || "No featured providers available"}
+            </div>
           {:else}
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
               {#each featuredProviders as provider}
@@ -581,9 +609,9 @@
                     />
                   </div>
                   <div class="p-6">
-                    <h3 class="text-xl font-semibold text-blue-900">{provider.name}</h3>
-                    <p class="text-gray-600">Home Care Provider</p>
-                    <p class="text-sm text-gray-500 mt-1">${provider.hourly_rate}/hour</p>
+                    <h3 class="text-xl font-semibold text-blue-900">{getLocalizedName(provider.name, 'provider')}</h3>
+                    <p class="text-gray-600">{translations?.homeCare?.provider?.title}</p>
+                    <p class="text-sm text-gray-500 mt-1">{provider.hourly_rate} {translations?.homeCare?.provider?.rate}</p>
                     <div class="mt-4 flex items-center justify-between">
                       <div class="flex items-center">
                         <span class="text-yellow-400">★</span>
@@ -620,9 +648,14 @@
   <section class="py-24 bg-blue-50 w-full">
     <div class="w-full px-4 lg:px-8">
       <div class="max-w-4xl mx-auto">
+        <!-- FAQ Section -->
         <div class="text-center mb-16">
-          <h2 class="text-4xl font-bold text-blue-900 mb-4">Frequently Asked Questions</h2>
-          <p class="text-xl text-gray-600">Find answers to common questions about our services</p>
+          <h2 class="text-4xl font-bold text-blue-900 mb-4">
+            {translations?.faq?.title || "Frequently Asked Questions"}
+          </h2>
+          <p class="text-xl text-gray-600">
+            {translations?.faq?.subtitle || "Find answers to common questions about our services"}
+          </p>
         </div>
 
         <div class="space-y-4">
@@ -667,13 +700,13 @@
             href="/search"
             class="btn-secondary"
           >
-            Search Professionals
+            {translations?.cta?.search || "Search Professionals"}
           </a>
           <a
             href="/register"
             class="btn-primary"
           >
-            Join Our Network
+            {translations?.cta?.join || "Join Our Network"}
           </a>
         </div>
       </div>
@@ -942,16 +975,31 @@
   }
 
   /* Add RTL support */
-  :global([dir="rtl"]) .right-4 {
-    right: unset;
-    left: 1rem;
+  :global([dir="rtl"]) {
+    direction: rtl;
   }
 
   :global([dir="rtl"]) .text-left {
     text-align: right;
   }
 
-  :global([dir="rtl"]) .sm\:text-left {
-    text-align: right;
+  :global([dir="rtl"]) .ml-auto {
+    margin-left: 0;
+    margin-right: auto;
+  }
+
+  :global([dir="rtl"]) .mr-auto {
+    margin-right: 0;
+    margin-left: auto;
+  }
+
+  :global([dir="rtl"]) .pl-4 {
+    padding-left: 0;
+    padding-right: 1rem;
+  }
+
+  :global([dir="rtl"]) .pr-4 {
+    padding-right: 0;
+    padding-left: 1rem;
   }
 </style>

@@ -7,7 +7,6 @@
     import { page } from '$app/stores';
     import { detectUserLanguage, setLanguage } from '$lib/stores/languageStore';
     import '../lib/styles/rtl.css';
-    import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
     import { initI18n } from '$lib/i18n';
     import { locale, waitLocale } from 'svelte-i18n';
     import { currentLanguage as i18nLang, documentDirection } from '$lib/store/i18n';
@@ -19,6 +18,7 @@
         currentLanguage,
         type SupportedLanguages 
     } from '$lib/stores/translations';
+    import LanguageSwitch from '$lib/components/LanguageSwitch.svelte';
     
     let isMenuOpen = false;
     let isLoading = true;
@@ -122,12 +122,6 @@
         console.log('Menu toggled:', isMenuOpen); // Add logging for debugging
     }
 
-    // Language switcher function
-    function toggleLanguage() {
-        const newLang: SupportedLanguages = $currentLanguage === 'en' ? 'ar' : 'en';
-        changeLanguage(newLang);
-    }
-
     let lastScroll = 0;
     let nav: HTMLElement;
 
@@ -191,13 +185,6 @@
             <div class="nav-content">
                 <div class="left-section">
                     <a href="/" class="logo">Shfia</a>
-                    <button 
-                        class="language-btn"
-                        on:click={toggleLanguage}
-                        aria-label="Switch language"
-                    >
-                        {$currentLanguage === 'en' ? 'العربية' : 'English'}
-                    </button>
                 </div>
 
                 <button class="menu-toggle" on:click={toggleMenu}>
@@ -246,6 +233,7 @@
                         </div>
                     {/if}
                 </div>
+                <LanguageSwitch />
             </div>
         </nav>
 
@@ -369,22 +357,6 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-    }
-
-    .language-btn {
-        padding: 0.5rem 1rem;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 0.5rem;
-        color: white;
-        font-size: 0.875rem;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-
-    .language-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-1px);
     }
 
     /* RTL support */

@@ -1,8 +1,9 @@
 <script lang="ts">
-import { currentLanguage, setLanguage } from '$lib/store/i18n';
+import { currentLanguage, changeLanguage } from '$lib/stores/translations';
 
 function toggleLanguage() {
-    setLanguage($currentLanguage === 'en' ? 'ar' : 'en');
+    const newLang = $currentLanguage === 'en' ? 'ar' : 'en';
+    changeLanguage(newLang);
 }
 </script>
 
