@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import type { Doctor } from '$lib/types'; // Ensure the Doctor type is imported
   import { DEFAULT_DOCTOR_AVATAR, BACKEND_URL } from '$lib/constants';
+  import { t } from '$lib/utils/i18n';
+  import { currentLanguage, currentTranslations } from '$lib/stores/translations';
 
   let doctors: Doctor[] = []; // Correctly declare the doctors array
 
@@ -141,6 +143,8 @@
   function handleScroll() {
     showBackToTop = window.pageYOffset > 300;
   }
+
+  $: translations = $currentTranslations;
 </script>
 
 <svelte:window on:scroll={handleScroll}/>
@@ -208,12 +212,14 @@
     <div class="max-w-7xl mx-auto">
       <!-- Responsive Header -->
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 sm:mb-12">
-        <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">Find Your Doctor</h1>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+          {$t('doctorsPage.title')}
+        </h1>
         <a
           href="/doctors/register"
           class="glass-button-primary w-full sm:w-auto text-center"
         >
-          Register as Doctor
+          {$t('doctorsPage.registerButton')}
         </a>
       </div>
 
@@ -223,20 +229,19 @@
           <input
             type="text"
             bind:value={searchQuery}
-            placeholder="Search doctors..."
+            placeholder={$t('doctorsPage.search.placeholder')}
             class="glass-input w-full col-span-1 sm:col-span-2 lg:col-span-1"
           />
           <select bind:value={selectedSpecialty} class="glass-select w-full">
+            <option value="all">{$t('doctorsPage.filters.allSpecialties')}</option>
             {#each specialties as specialty}
-              <option value={specialty}>
-                {specialty === 'all' ? 'All Specialties' : specialty}
-              </option>
+              <option value={specialty}>{specialty}</option>
             {/each}
           </select>
           <select bind:value={sortBy} class="glass-select w-full">
-            <option value="rating">Sort by Rating</option>
-            <option value="price">Sort by Price</option>
-            <option value="recent">Most Recent</option>
+            <option value="rating">{$t('doctorsPage.filters.sortOptions.rating')}</option>
+            <option value="price">{$t('doctorsPage.filters.sortOptions.price')}</option>
+            <option value="recent">{$t('doctorsPage.filters.sortOptions.recent')}</option>
           </select>
 
           <!-- Responsive Filter Controls -->
@@ -246,11 +251,13 @@
                     bind:checked={showOnlyAvailable} 
                     class="glass-checkbox"
                     id="available-only"/>
-              <label for="available-only" class="text-white whitespace-nowrap">Available Only</label>
+              <label for="available-only" class="text-white whitespace-nowrap">
+                {$t('doctorsPage.filters.availableOnly')}
+              </label>
             </div>
 
             <div class="flex items-center gap-2 min-w-[150px]">
-              <label class="text-white whitespace-nowrap">Min Rating:</label>
+              <label class="text-white whitespace-nowrap">{$t('doctorsPage.filters.minRating')}:</label>
               <select bind:value={minimumRating} class="glass-select flex-1">
                 {#each [0, 1, 2, 3, 4] as rating}
                   <option value={rating}>{rating}+ ★</option>
@@ -259,7 +266,9 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full min-w-[200px]">
-              <label class="text-white whitespace-nowrap text-sm sm:text-base">Price Range:</label>
+              <label class="text-white whitespace-nowrap text-sm sm:text-base">
+                {$t('doctorsPage.filters.priceRange')}:
+              </label>
               <div class="flex items-center gap-2 w-full">
                 <input type="range" 
                       bind:value={priceRange.max} 
@@ -268,7 +277,7 @@
                       step="10"
                       class="glass-range flex-1 w-full"/>
                 <span class="text-white min-w-[60px] text-right text-sm sm:text-base">
-                  ${priceRange.max}
+                  {$t('doctorsPage.filters.currency')} {priceRange.max}
                 </span>
               </div>
             </div>
@@ -279,7 +288,7 @@
 
       {#if error}
         <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200 mb-8">
-          <p>{error}</p>
+          <p>{$t('doctorsPage.error.loading')}</p>
         </div>
       {/if}
 
@@ -320,7 +329,9 @@
                 <div class="absolute top-4 right-4">
                   <span class={`px-3 py-1 rounded-full text-sm 
                     ${doctor.is_available ? 'bg-green-500/90' : 'bg-red-500/90'} text-white`}>
-                    {doctor.is_available ? 'Available' : 'Unavailable'}
+                    {doctor.is_available ? 
+                      $t('doctorsPage.status.available') : 
+                      $t('doctorsPage.status.unavailable')}
                   </span>
                 </div>
                 {#if doctor.is_verified}
@@ -350,14 +361,14 @@
                   </span>
                 </div>
                 <div class="flex justify-between items-center mb-6">
-                  <span class="text-2xl font-bold text-white">${doctor.consultation_fee}</span>
-                  <span class="text-gray-400">per consultation</span>
+                  <span class="text-2xl font-bold text-white">{$t('doctorsPage.filters.currency')} {doctor.consultation_fee}</span>
+                  <span class="text-gray-400">{$t('doctorsPage.doctor.perConsultation')}</span>
                 </div>
                 <a
                   href={`/doctors/${doctor.user_id}`}
                   class="block w-full text-center glass-button"
                 >
-                  View Profile
+                  {$t('doctorsPage.doctor.viewProfile')}
                 </a>
               </div>
             </div>
@@ -373,14 +384,16 @@
                 on:click={prevPage}
                 disabled={currentPage === 1}
               >
-                <span class="hidden sm:inline">Previous</span>
+                <span class="hidden sm:inline">{$t('doctorsPage.pagination.previous')}</span>
                 <span class="sm:hidden">←</span>
               </button>
               
               <div class="flex gap-1 sm:gap-2">
                 <!-- Simplified pagination for mobile -->
                 {#if window.innerWidth < 640}
-                  <span class="text-white py-2">Page {currentPage}/{totalPages}</span>
+                  <span class="text-white py-2">
+                    {$t('doctorsPage.pagination.page')} {currentPage} {$t('doctorsPage.pagination.of')} {totalPages}
+                  </span>
                 {:else}
                   {#if currentPage > 2}
                     <button class="glass-button px-4 py-2" on:click={() => goToPage(1)}>1</button>
@@ -420,13 +433,13 @@
                 on:click={nextPage}
                 disabled={currentPage === totalPages}
               >
-                <span class="hidden sm:inline">Next</span>
+                <span class="hidden sm:inline">{$t('doctorsPage.pagination.next')}</span>
                 <span class="sm:hidden">→</span>
               </button>
             </div>
             
             <span class="text-white text-sm sm:text-base">
-              {filteredDoctors.length} doctors found
+              {$t('doctorsPage.searchResults.foundCount', { values: { count: filteredDoctors.length } })}
             </span>
           </div>
         {/if}

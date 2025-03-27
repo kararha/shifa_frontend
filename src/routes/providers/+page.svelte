@@ -6,6 +6,8 @@
   // import ProviderCard from '$lib/components/ProviderCard.svelte';
   import SearchFilter from '$lib/components/SearchFilter.svelte';
   import { DEFAULT_DOCTOR_AVATAR } from '$lib/constants';
+  import { t } from '$lib/utils/i18n';
+  import { currentLanguage, currentTranslations } from '$lib/stores/translations';
 
   interface Provider {
     user_id: number;
@@ -173,6 +175,7 @@
   }
 
   // Add scroll animations
+  $: translations = $currentTranslations;
 </script>
 
 <!-- Corner SVG Decorations -->
@@ -206,12 +209,11 @@
   <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
       <div class="flex justify-between items-center mb-12">
-        <h1 class="text-4xl font-bold text-white tracking-tight">Find Your Provider</h1>
-        <a
-          href="/providers/register"
-          class="glass-button-primary"
-        >
-          Register as Provider
+        <h1 class="text-4xl font-bold text-white tracking-tight">
+          {$t('providers.findYourProvider')}
+        </h1>
+        <a href="/providers/register" class="glass-button-primary">
+          {$t('providers.registerButton')}
         </a>
       </div>
 
@@ -221,7 +223,7 @@
           <div class="relative">
             <input
               type="text"
-              placeholder="Search providers..."
+              placeholder={$t('providers.searchPlaceholder')}
               class="w-full pl-10 pr-4 py-3 text-base rounded-lg"
               bind:value={searchQuery}
               on:input={handleSearch}
@@ -262,7 +264,7 @@
                       <p class="text-gray-400 text-sm truncate">{result.specialty}</p>
                     </div>
                     <div class="text-right text-sm">
-                      <div class="text-green-400">${result.hourly_rate}/hr</div>
+                      <div class="text-green-400">{result.hourly_rate} {$t('providers.perHour')}</div>
                       <div class="text-yellow-400">★ {result.rating?.toFixed(1) || 'N/A'}</div>
                     </div>
                   </div>
@@ -271,7 +273,7 @@
             </div>
           {:else if searchQuery && !isSearching && searchResults.length === 0}
             <div class="text-center mt-2 p-3 text-gray-400 text-sm">
-              No providers found
+              {$t('providers.noResults')}
             </div>
           {/if}
         </div>
@@ -280,7 +282,7 @@
       {#if error}
         <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200 mb-8">
           <p class="flex items-center">
-            {error}
+            {$t('providers.error.loading')}
           </p>
         </div>
       {/if}
@@ -303,7 +305,9 @@
                 <div class="absolute top-4 right-4">
                   <span class={`px-3 py-1 rounded-full text-sm 
                     ${provider.availability.isAvailable ? 'bg-green-500/90' : 'bg-red-500/90'} text-white`}>
-                    {provider.availability.isAvailable ? 'Available' : 'Unavailable'}
+                    {provider.availability.isAvailable ? 
+                      $t('providers.status.available') : 
+                      $t('providers.status.unavailable')}
                   </span>
                 </div>
                 {#if provider.is_verified}
@@ -321,14 +325,14 @@
                 </div>
                 <p class="text-gray-300 line-clamp-2 mb-4">{provider.bio}</p>
                 <div class="flex justify-between items-center mb-6">
-                  <span class="text-2xl font-bold text-white">${provider.hourly_rate}</span>
-                  <span class="text-gray-400">per hour</span>
+                  <span class="text-2xl font-bold text-white">{provider.hourly_rate}</span>
+                  <span class="text-gray-400">{$t('providers.perHour')}</span>
                 </div>
                 <a
                   href={`/providers/${provider.user_id}`}
                   class="block w-full text-center glass-button"
                 >
-                  View Profile
+                  {$t('providers.viewProfile')}
                 </a>
               </div>
             </div>
@@ -336,7 +340,7 @@
 
           {#if providers.length === 0}
             <div class="col-span-full glass-card py-16 text-center">
-              <p class="text-gray-300 text-lg mb-6">No providers found matching your criteria</p>
+              <p class="text-gray-300 text-lg mb-6">{$t('providers.noProvidersFound')}</p>
               <button 
                 class="glass-button"
                 on:click={() => {
@@ -350,7 +354,7 @@
                   loadProviders();
                 }}
               >
-                Reset Filters
+                {$t('providers.resetFilters')}
               </button>
             </div>
           {/if}

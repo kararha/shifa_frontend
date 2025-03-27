@@ -4,6 +4,8 @@
     import { BACKEND_URL } from '$lib/constants';
     import DoctorAvailability from '$lib/components/DoctorAvailability.svelte';
     import { goto } from '$app/navigation';
+    import { t } from '$lib/utils/i18n';
+    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
 
     interface Appointment {
         id: number;
@@ -224,13 +226,15 @@
             minute: '2-digit' 
         });
     }
+
+    $: translations = $currentTranslations;
 </script>
 
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto space-y-8" transition:fade>
         <!-- Header -->
         <div class="glass-card">
-            <h1 class="text-3xl font-bold text-white mb-6">Doctor Dashboard</h1>
+            <h1 class="text-3xl font-bold text-white mb-6">{$currentTranslations.doctorDashboard.title}</h1>
             
             <!-- Date Selector -->
             <div class="flex items-center space-x-4 mb-6">
@@ -243,13 +247,13 @@
 
             <!-- Tabs -->
             <div class="flex space-x-4 mb-6">
-                {#each ['upcoming', 'completed', 'cancelled'] as tab, i}
+                {#each ['upcoming', 'completed', 'cancelled'] as tab}
                     <button
                         class="glass-button"
                         class:active={activeTab === tab}
                         on:click={() => activeTab = tab as 'upcoming' | 'completed' | 'cancelled'}
                     >
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        {$currentTranslations.doctorDashboard.appointments.tabs[tab]}
                     </button>
                 {/each}
             </div>
@@ -259,14 +263,15 @@
         {#if loading}
             <div class="flex justify-center">
                 <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+                <span class="ml-3 text-white">{$currentTranslations.doctorDashboard.appointments.loading}</span>
             </div>
         {:else if error}
             <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200">
-                {error}
+                {$currentTranslations.doctorDashboard.appointments.error}
             </div>
         {:else if filteredAppointments.length === 0}
             <div class="glass-panel text-center text-gray-300">
-                No appointments found for this date.
+                {$currentTranslations.doctorDashboard.appointments.noAppointments}
             </div>
         {:else}
             <div class="space-y-4">
@@ -314,7 +319,7 @@
 
         <!-- Global Availability Listing Section in Doctor Dashboard -->
         <div class="glass-card p-6 mt-8" transition:fade>
-            <h2 class="text-2xl font-bold text-white mb-6">All Availability Slots</h2>
+            <h2 class="text-2xl font-bold text-white mb-6">{$currentTranslations.doctorDashboard.availability.title}</h2>
             {#if loadingAllAvailabilities}
                 <div class="flex justify-center">
                     <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>

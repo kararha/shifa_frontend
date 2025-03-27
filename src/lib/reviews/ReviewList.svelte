@@ -2,7 +2,8 @@
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import { BACKEND_URL } from '$lib/constants';
-
+    import { t } from '$lib/utils/i18n';
+    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
     export let entityId: string;
     export let entityType: 'doctor' | 'home-care-provider';
     export let submitParams: any = null;
@@ -154,19 +155,20 @@
     function formatDate(dateString: string): string {
         return new Date(dateString).toLocaleDateString();
     }
+
 </script>
 
 <div class="glass-card p-6" transition:fade>
     <!-- Header with stats -->
     <div class="mb-8">
         <div class="flex justify-between items-center mb-6">
-            <h2 class="text-xl font-bold text-white">Reviews & Ratings</h2>
+            <h2 class="text-xl font-bold text-white">{$currentTranslations.reviews.title}</h2>
             {#if !hideWriteReview}
                 <button 
                     class="glass-button"
                     on:click={() => showReviewForm = !showReviewForm}
                 >
-                    {showReviewForm ? 'Cancel' : 'Write Review'}
+                    {showReviewForm ? $currentTranslations.reviews.cancel : $currentTranslations.reviews.writeReview}
                 </button>
             {/if}
         </div>
@@ -177,19 +179,19 @@
                     <div class="text-2xl font-bold text-white mb-1">
                         {reviews.length}
                     </div>
-                    <div class="text-sm text-gray-400">Total Reviews</div>
+                    <div class="text-sm text-gray-400">{$currentTranslations.reviews.totalReviews}</div>
                 </div>
                 <div class="glass-panel text-center p-4">
                     <div class="text-2xl font-bold text-yellow-400 mb-1">
                         {(reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviews.length || 0).toFixed(1)}
                     </div>
-                    <div class="text-sm text-gray-400">Average Rating</div>
+                    <div class="text-sm text-gray-400">{$currentTranslations.reviews.averageRating}</div>
                 </div>
                 <div class="glass-panel text-center p-4">
                     <div class="text-2xl font-bold text-green-400 mb-1">
                         {reviews.filter(r => r.rating >= 4).length}
                     </div>
-                    <div class="text-sm text-gray-400">High Ratings</div>
+                    <div class="text-sm text-gray-400">{$currentTranslations.reviews.highRatings}</div>
                 </div>
             </div>
         {/if}
@@ -243,8 +245,8 @@
         </div>
     {:else if reviews.length === 0}
         <div class="text-center py-8">
-            <div class="text-gray-400 mb-4">No reviews yet</div>
-            <p class="text-gray-500 text-sm">Be the first to share your experience!</p>
+            <div class="text-gray-400 mb-4">{$currentTranslations.reviews.noReviews}</div>
+            <p class="text-gray-500 text-sm">{$currentTranslations.reviews.beFirst}</p>
         </div>
     {:else}
         <div class="space-y-6">

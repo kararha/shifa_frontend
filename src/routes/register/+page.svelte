@@ -1,6 +1,8 @@
 <script lang="ts">
     import { z } from 'zod';
     import { goto } from '$app/navigation';
+    import { t } from '$lib/utils/i18n';
+    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
 
     // User role type
     type UserRole = 'patient' | 'doctor' | 'home_care_provider' | 'admin';
@@ -165,16 +167,18 @@
             handleBasicInfoSubmit(event);
         }
     }
+
+    $: translations = $currentTranslations;
 </script>
 
 <div class="registration-container">
     <div class="blob"></div>
-    <h2>User Registration</h2>
+    <h2>{$t('register.userRegistration')}</h2>
 
     {#if stage === 'basic-info'}
         <form on:submit|preventDefault={handleBasicInfoSubmit}>
             <div class="form-group">
-                <label for="name">Full Name</label>
+                <label for="name">{$t('register.basicInfo.fullName')}</label>
                 <input 
                     type="text" 
                     id="name" 
@@ -187,7 +191,7 @@
             </div>
 
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">{$t('register.basicInfo.email')}</label>
                 <input 
                     type="email" 
                     id="email" 
@@ -200,7 +204,7 @@
             </div>
 
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">{$t('register.basicInfo.password')}</label>
                 <input 
                     type="password" 
                     id="password" 
@@ -212,31 +216,31 @@
                 {/if}
             </div>
 
-            <button type="submit">Next</button>
+            <button type="submit">{$t('register.basicInfo.next')}</button>
         </form>
     {:else if stage === 'role-selection'}
         <div class="role-selection">
-            <h3>Select Your Role</h3>
-            <button on:click={goBack}>Back</button>
+            <h3>{$t('register.roleSelection.title')}</h3>
+            <button on:click={goBack}>{$t('register.roleSelection.back')}</button>
             {#each roles as role}
                 <button 
                     on:click={() => handleRoleSelect(role)}
                     class="role-button"
                 >
-                    {role.replace('_', ' ').toUpperCase()}
+                    {$t(`register.roleSelection.${role}`)}
                 </button>
             {/each}
         </div>
     {:else if stage === 'role-details' && userData.role}
         <form on:submit|preventDefault={handleSubmit}>
-            <button type="button" on:click={goBack}>Back</button>
+            <button type="button" on:click={goBack}>{$t('register.roleDetails.back')}</button>
             
             <button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Registering...' : 'Continue Registration'}
+                {isSubmitting ? $t('register.roleDetails.registering') : $t('register.roleDetails.continue')}
             </button>
 
             {#if errors.submit}
-                <span class="error">{errors.submit}</span>
+                <span class="error">{$t('register.error.submit')}</span>
             {/if}
         </form>
     {/if}

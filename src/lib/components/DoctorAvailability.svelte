@@ -2,8 +2,9 @@
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import { BACKEND_URL } from '$lib/constants';
-
-    export let doctorId: string;
+    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+    
+    export let doctorId: string | number;
 
     interface Availability {
         id: number;
@@ -215,6 +216,8 @@
     function getDayName(dayIndex: number): string {
         return DAYS[dayIndex] || 'Unknown';
     }
+
+    $: translations = $currentTranslations;
 </script>
 
 <div class="glass-card p-6" transition:fade>
@@ -226,90 +229,113 @@
     {/if}
 
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-white">Availability Schedule</h2>
+        <h2 class="text-2xl font-bold text-white">
+            {$currentTranslations.doctorAvailability.title}
+        </h2>
         <button 
             class="glass-button"
-            on:click={() => showAddForm = !showAddForm}
+            on:click={() => showAddForm = true}
         >
-            {showAddForm ? 'Cancel' : 'Add Time Slot'}
+            {$currentTranslations.doctorAvailability.addNew}
         </button>
     </div>
 
-    {#if showAddForm}
-        <form class="glass-panel space-y-4 mb-6" on:submit|preventDefault={addAvailability}>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="day-select" class="block text-gray-300 mb-2">Day</label>
-                    <select
-                        id="day-select"
-                        bind:value={newSlot.day_of_week}
-                        class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
-                    >
-                        {#each DAYS as day, index}
-                            <option value={index}>{day}</option>
-                        {/each}
-                    </select>
-                </div>
-                <div>
-                    <label for="start-time" class="block text-gray-300 mb-2">Start Time</label>
-                    <input
-                        id="start-time"
-                        type="time"
-                        bind:value={newSlot.start_time}
-                        class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
-                    />
-                </div>
-                <div>
-                    <label for="end-time" class="block text-gray-300 mb-2">End Time</label>
-                    <input
-                        id="end-time"
-                        type="time"
-                        bind:value={newSlot.end_time}
-                        class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
-                    />
-                </div>
-            </div>
-            <div class="flex justify-end">
-                <button type="submit" class="glass-button-primary">
-                    Add Slot
-                </button>
-            </div>
-        </form>
-    {/if}
-
-    {#if error}
-        <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200 mb-4">
-            {error}
-        </div>
-    {:else if loading}
-        <div class="flex justify-center">
+    {#if loading}
+        <div class="flex justify-center py-8">
             <div class="w-8 h-8 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+            <span class="ml-3 text-white">{$currentTranslations.doctorAvailability.loading}</span>
+        </div>
+    {:else if error}
+        <div class="glass-panel bg-red-500/10 border-red-500/20 text-red-200">
+            {$currentTranslations.doctorAvailability.error}
         </div>
     {:else if availabilities.length === 0}
-        <p class="text-center text-gray-400">No availability slots set</p>
+        <div class="text-center py-8 text-gray-400">
+            {$currentTranslations.doctorAvailability.noSlots}
+        </div>
     {:else}
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid gap-4">
             {#each availabilities as slot}
-                <div class="glass-panel">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <h3 class="text-white font-semibold">{getDayName(slot.day_of_week)}</h3>
-                            <p class="text-gray-300">
-                                {slot.start_time} - {slot.end_time}
-                            </p>
-                        </div>
-                        <button
-                            class="text-red-400 hover:text-red-300"
+                <div class="glass-panel flex justify-between items-center">
+                    <div>
+                        <p class="text-white font-medium">
+                            {$currentTranslations.doctorAvailability.days[slot.day_of_week]}
+                        </p>
+                        <p class="text-gray-400">
+                            {slot.start_time} - {slot.end_time}
+                        </p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button 
+                            class="glass-button-danger"
                             on:click={() => deleteAvailability(slot.id)}
-                            aria-label="Delete availability slot"
                         >
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
+                            {$currentTranslations.doctorAvailability.table.delete}
                         </button>
                     </div>
                 </div>
             {/each}
+        </div>
+    {/if}
+
+    {#if showAddForm}
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4" transition:fade>
+            <div class="glass-card w-full max-w-md">
+                <h3 class="text-xl font-bold text-white mb-4">
+                    {$currentTranslations.doctorAvailability.form.title}
+                </h3>
+                <form on:submit|preventDefault={addAvailability}>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-300 mb-2">
+                                {$currentTranslations.doctorAvailability.form.dayOfWeek}
+                            </label>
+                            <select bind:value={newSlot.day_of_week} class="glass-select w-full">
+                                {#each Array(7) as _, i}
+                                    <option value={i}>
+                                        {$currentTranslations.doctorAvailability.days[i]}
+                                    </option>
+                                {/each}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="start-time" class="block text-gray-300 mb-2">Start Time</label>
+                            <input
+                                id="start-time"
+                                type="time"
+                                bind:value={newSlot.start_time}
+                                class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
+                            />
+                        </div>
+                        <div>
+                            <label for="end-time" class="block text-gray-300 mb-2">End Time</label>
+                            <input
+                                id="end-time"
+                                type="time"
+                                bind:value={newSlot.end_time}
+                                class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
+                            />
+                        </div>
+                        
+                        <div class="flex justify-end gap-2 mt-6">
+                            <button 
+                                type="button" 
+                                class="glass-button"
+                                on:click={() => showAddForm = false}
+                            >
+                                {$currentTranslations.doctorAvailability.form.cancel}
+                            </button>
+                            <button 
+                                type="submit" 
+                                class="glass-button-primary"
+                            >
+                                {$currentTranslations.doctorAvailability.form.submit}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     {/if}
 </div>

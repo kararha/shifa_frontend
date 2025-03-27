@@ -9,6 +9,8 @@
   import ReviewForm from '$lib/reviews/ReviewForm.svelte';
   import 'tailwindcss/tailwind.css';
   import { DEFAULT_DOCTOR_AVATAR, BACKEND_URL } from '$lib/constants';
+  import { t } from '$lib/utils/i18n';
+  import { currentLanguage, currentTranslations } from '$lib/stores/translations';
 
   interface Doctor {
     id: number;
@@ -127,13 +129,15 @@
   $: displayImage = (!doctor?.profile_picture_url || imageError) 
     ? DEFAULT_DOCTOR_AVATAR 
     : getImageUrl(doctor.profile_picture_url);
+
+  $: translations = $currentTranslations;
 </script>
 
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
   {#if error}
     <div class="max-w-4xl mx-auto mb-6" transition:fade>
       <div class="bg-red-50 border-l-4 border-red-400 p-4">
-        <p class="text-sm text-red-700">{error}</p>
+        <p class="text-sm text-red-700">{$t('doctorProfile.error')}</p>
       </div>
     </div>
   {/if}
@@ -141,6 +145,7 @@
   {#if loading}
     <div class="flex justify-center items-center h-64">
       <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
+      <span class="ml-3 text-white">{$t('doctorProfile.loading')}</span>
     </div>
   {:else if doctor}
     <div class="max-w-7xl mx-auto glass-card" transition:fade>
@@ -182,10 +187,14 @@
           </div>
         </div>
         <div class="mt-4 md:mt-0 flex flex-col items-end">
-          <span class="text-2xl font-bold text-white">${doctor.consultation_fee}/consultation</span>
+          <span class="text-2xl font-bold text-white">
+            {$t('doctorsPage.filters.currency')} {doctor.consultation_fee}/{$t('doctorProfile.consultationFee')}
+          </span>
           <span class={`px-3 py-1 rounded-full text-sm mt-2 
             ${doctor.is_available ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-            {doctor.is_available ? 'Available' : 'Unavailable'}
+            {doctor.is_available ? 
+              $t('doctorProfile.status.available') : 
+              $t('doctorProfile.status.unavailable')}
           </span>
         </div>
       </div>
@@ -196,7 +205,7 @@
             href="/doctors/dashboard"
             class="dashboard-link"
           >
-            View Dashboard
+            {$t('doctorProfile.actions.viewDashboard')}
           </a>
         </div>
       {/if}
@@ -207,18 +216,18 @@
         {#if doctor}
           <div class="col-span-2 space-y-6">
             <div class="glass-panel">
-              <h2 class="text-xl font-semibold text-white mb-4">About</h2>
-              <p class="text-gray-300">{doctor.bio}</p>
+              <h2 class="text-xl font-semibold text-white mb-4">{$t('doctorProfile.about.title')}</h2>
+              <p class="text-gray-300">{doctor.bio || $t('doctorProfile.about.empty')}</p>
             </div>
 
             <div class="glass-panel">
-              <h2 class="text-xl font-semibold text-white mb-4">Qualifications</h2>
-              <p class="text-gray-300">{doctor.qualifications}</p>
+              <h2 class="text-xl font-semibold text-white mb-4">{$t('doctorProfile.qualifications.title')}</h2>
+              <p class="text-gray-300">{doctor.qualifications || $t('doctorProfile.qualifications.empty')}</p>
             </div>
 
             <div class="glass-panel">
-              <h2 class="text-xl font-semibold text-white mb-4">Achievements</h2>
-              <p class="text-gray-300">{doctor.achievements}</p>
+              <h2 class="text-xl font-semibold text-white mb-4">{$t('doctorProfile.achievements.title')}</h2>
+              <p class="text-gray-300">{doctor.achievements || $t('doctorProfile.achievements.empty')}</p>
             </div>
           </div>
         {/if}
@@ -226,39 +235,37 @@
         <!-- Right Column -->
         <div class="space-y-6">
           <div class="glass-panel">
-            <h2 class="text-xl font-semibold text-white mb-4">Professional Info</h2>
+            <h2 class="text-xl font-semibold text-white mb-4">{$t('doctorProfile.professionalInfo.title')}</h2>
             <div class="space-y-3">
               <div class="flex justify-between">
-                <span class="text-gray-400">Experience</span>
-                <span class="text-white">{doctor.experience_years} years</span>
+                <span class="text-gray-400">{$t('doctorProfile.professionalInfo.experience')}</span>
+                <span class="text-white">{doctor.experience_years} {$t('doctorProfile.professionalInfo.years')}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">License</span>
+                <span class="text-gray-400">{$t('doctorProfile.professionalInfo.license')}</span>
                 <span class="text-white">{doctor.license_number}</span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">Service Type</span>
+                <span class="text-gray-400">{$t('doctorProfile.professionalInfo.serviceType')}</span>
                 <span class="text-white">{doctor.service_type?.Name || 'N/A'}</span>
               </div>
             </div>
           </div>
 
           <button
-            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 
-              transition-colors duration-200 font-semibold text-lg shadow-lg disabled:opacity-50"
+            class="w-full glass-button"
             disabled={!doctor.is_available}
             on:click={() => showAppointmentModal = true}
           >
-            Book Appointment
+            {$t('doctorProfile.actions.bookAppointment')}
           </button>
 
           <button
-            class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 
-              transition-colors duration-200 font-semibold text-lg shadow-lg disabled:opacity-50"
+            class="w-full glass-button"
             disabled={!doctor.is_available}
             on:click={() => showConsultationModal = true}
           >
-            Start Consultation
+            {$t('doctorProfile.actions.startConsultation')}
           </button>
         </div>
       </div>
@@ -266,6 +273,7 @@
       <!-- Reviews Section -->
       {#if doctor?.user_id}
         <div class="mt-8">
+          <h2 class="text-2xl font-semibold text-white mb-4">{$t('doctorProfile.reviews.title')}</h2>
           <ReviewList 
             entityId={doctor.user_id.toString()}
             entityType="doctor"

@@ -2,6 +2,8 @@
     import { enhance } from '$app/forms';
     import { goto } from '$app/navigation';
     import { authStore } from '$lib/stores/authStore';
+    import { t } from '$lib/utils/i18n';
+    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
     
     // Change from export let to export const
     export const form = null;
@@ -69,6 +71,8 @@
             showDiagnostics = true;
         }
     }
+
+    $: translations = $currentTranslations;
 </script>
 
 <style>
@@ -310,7 +314,7 @@
 <div class="min-h-screen w-full flex items-center justify-center px-4 py-6 sm:px-6 sm:py-12 overflow-hidden">
     <div class="login-container">
         <div class="blob"></div>
-        <h2>Login</h2>
+        <h2>{$t('login.title')}</h2>
         <form 
             method="POST" 
             use:enhance={() => {
@@ -320,33 +324,33 @@
             }}
         >
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">{$t('login.email')}</label>
                 <input 
                     type="email" 
                     id="email"
                     name="email"
-                    placeholder="Enter your email"
+                    placeholder={$t('login.emailPlaceholder')}
                     required
                 />
             </div>
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">{$t('login.password')}</label>
                 <input 
                     type="password" 
                     id="password"
                     name="password"
-                    placeholder="Enter your password"
+                    placeholder={$t('login.passwordPlaceholder')}
                     required
                     minlength="8"
                 />
             </div>
             {#if form?.error}
-                <div class="error-message">{form.error}</div>
+                <div class="error-message">{$t('login.error')}</div>
             {/if}
-            <button type="submit">Login</button>
+            <button type="submit">{$t('login.submit')}</button>
             <div class="links">
-                <a href="/register">Create an account</a>
-                <a href="/forgot-password">Forgot Password?</a>
+                <a href="/register">{$t('login.createAccount')}</a>
+                <a href="/forgot-password">{$t('login.forgotPassword')}</a>
             </div>
         </form>
     </div>
@@ -356,12 +360,12 @@
 {#if showDiagnostics}
     <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 text-white p-3 sm:p-4 max-h-48 sm:max-h-64 overflow-auto">
         <div class="flex justify-between items-center mb-2">
-            <h3 class="text-base sm:text-lg font-bold">Login Diagnostics</h3>
+            <h3 class="text-base sm:text-lg font-bold">{$t('login.diagnostics.title')}</h3>
             <button 
                 class="text-xs sm:text-sm bg-red-500/50 px-2 py-1 rounded"
                 on:click={() => showDiagnostics = false}
             >
-                Close
+                {$t('login.diagnostics.close')}
             </button>
         </div>
         <div class="space-y-1 text-xs sm:text-sm font-mono">
