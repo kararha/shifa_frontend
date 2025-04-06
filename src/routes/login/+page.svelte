@@ -2,11 +2,11 @@
     import { enhance } from '$app/forms';
     import { goto } from '$app/navigation';
     import { authStore } from '$lib/stores/authStore';
-    import { t } from '$lib/utils/i18n';
-    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+    import { t, currentLanguage } from '$lib/i18n';
+    import { currentTranslations } from '$lib/stores/translations';
+    import { browser } from '$app/environment';
     
-    // Change from export let to export const
-    export const form = null;
+    export let form;
 
     // Diagnostic state
     let diagnosticLogs: string[] = [];
@@ -18,62 +18,150 @@
         console.log(`Login diagnostic: ${message}`);
     }
 
-    async function handleLoginSuccess(result: { type: string; status?: number; data?: any; error?: any }) {
+    async function handleLoginSuccess(result) {
         logDiagnostic('Login result received: ' + JSON.stringify(result));
 
-        if (result.type === 'success' && result.data?.data) {
+        // Check if login was successful
+        if (result.type === 'success') {
             try {
-                const { user: userData, token, refresh_token } = result.data.data;
+                // Access the correct data structure
+                const userData = result.data?.user;
+                const token = result.data?.token;
                 
                 if (!userData?.id || !userData?.role || !token) {
-                    throw new Error('Invalid response data');
+                    throw new Error('Invalid response data: ' + JSON.stringify(result.data));
                 }
 
-                // Update auth store and wait a moment
-                authStore.login(userData, token, refresh_token);
-                await new Promise(resolve => setTimeout(resolve, 100));
-
-                // Handle admin redirect specially
-                if (userData.role.toLowerCase() === 'admin') {
-                    logDiagnostic('Admin login - redirecting to dashboard');
-                    window.location.replace('/admin/dashboard');
-                    return;
+                logDiagnostic(`User authenticated: ID=${userData.id}, Role=${userData.role}`);
+                
+                // Store in localStorage for persistence
+                if (browser) {
+                    localStorage.setItem('user', JSON.stringify(userData));
+                    localStorage.setItem('token', token);
+                    if (result.data.refresh_token) {
+                        localStorage.setItem('refresh_token', result.data.refresh_token);
+                    }
                 }
 
-                // Handle other roles...
-                const role = userData.role.toLowerCase();
-                logDiagnostic('User role: ' + role);
+                // Update auth store
+                authStore.login(userData, token);
+                logDiagnostic('Auth store updated');
+                
+                // Short delay to allow store to update
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 // Handle redirects based on role
+                const role = userData.role.toLowerCase();
+                logDiagnostic(`Redirecting ${role} to appropriate page`);
+                
+                // Use role-based redirection
                 switch (role) {
+                    case 'admin':
+                        logDiagnostic('Admin redirect to: /admin/dashboard');
+                        window.location.href = '/admin/dashboard';
+                        break;
                     case 'doctor':
-                        logDiagnostic('Doctor user - redirecting to doctor dashboard');
+                        logDiagnostic(`Doctor redirect to: /doctors/${userData.id}`);
                         window.location.href = `/doctors/${userData.id}`;
                         break;
                     case 'patient':
+                        logDiagnostic(`Patient redirect to: /patients/${userData.id}`);
                         window.location.href = `/patients/${userData.id}`;
                         break;
                     case 'home_care_provider':
+                        logDiagnostic(`Provider redirect to: /providers/${userData.id}`);
                         window.location.href = `/providers/${userData.id}`;
                         break;
                     default:
-                        logDiagnostic('Unknown role - redirecting to home');
+                        logDiagnostic('Unknown role - redirect to home');
                         window.location.href = '/';
                 }
-
             } catch (err) {
-                console.error('Login error:', err);
-                logDiagnostic('Login error: ' + err.message);
+                logDiagnostic(`Error during login: ${err.message}`);
+                console.error('Login handler error:', err);
                 showDiagnostics = true;
             }
         } else {
-            logDiagnostic('Login failed - invalid response');
+            logDiagnostic(`Login failed - Result type: ${result.type}, Error: ${result.error || 'Unknown error'}`);
             showDiagnostics = true;
         }
     }
 
     $: translations = $currentTranslations;
 </script>
+
+<div class="min-h-screen w-full flex items-center justify-center px-4 py-6 sm:px-6 sm:py-12 overflow-hidden">
+    <div class="login-container">
+        <div class="blob"></div>
+        <h2>{$t('login.title')}</h2>
+        
+        <form method="POST" use:enhance={
+            () => {
+                return async ({ result }) => {
+                    logDiagnostic(`Form submitted: ${JSON.stringify(result)}`);
+                    
+                    if (result.type === 'success') {
+                        // For debugging purposes
+                        logDiagnostic(`Form data: ${JSON.stringify(result.data)}`);
+                    }
+                    
+                    handleLoginSuccess(result);
+                };
+            }
+        }>
+            <div class="form-group">
+                <label for="email">{$t('login.email')}</label>
+                <input 
+                    type="email" 
+                    id="email"
+                    name="email"
+                    placeholder={$t('login.emailPlaceholder')}
+                    required
+                />
+            </div>
+            <div class="form-group">
+                <label for="password">{$t('login.password')}</label>
+                <input 
+                    type="password" 
+                    id="password"
+                    name="password"
+                    placeholder={$t('login.passwordPlaceholder')}
+                    required
+                    minlength="8"
+                />
+            </div>
+            
+            {#if form?.error}
+                <div class="error-message">{form.error}</div>
+            {/if}
+            
+            <button type="submit">{$t('login.submit')}</button>
+            <div class="links">
+                <a href="/register">{$t('login.createAccount')}</a>
+                <a href="/forgot-password">{$t('login.forgotPassword')}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{#if showDiagnostics}
+    <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 text-white p-3 sm:p-4 max-h-48 sm:max-h-64 overflow-auto">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-base sm:text-lg font-bold">{$t('login.diagnostics.title')}</h3>
+            <button 
+                class="text-xs sm:text-sm bg-red-500/50 px-2 py-1 rounded"
+                on:click={() => showDiagnostics = false}
+            >
+                {$t('login.diagnostics.close')}
+            </button>
+        </div>
+        <div class="space-y-1 text-xs sm:text-sm font-mono">
+            {#each diagnosticLogs as log}
+                <div class="border-l-2 border-blue-500 pl-2">{log}</div>
+            {/each}
+        </div>
+    </div>
+{/if}
 
 <style>
     .login-container {
@@ -309,69 +397,3 @@
         }
     }
 </style>
-
-<!-- Wrap the container in a responsive wrapper -->
-<div class="min-h-screen w-full flex items-center justify-center px-4 py-6 sm:px-6 sm:py-12 overflow-hidden">
-    <div class="login-container">
-        <div class="blob"></div>
-        <h2>{$t('login.title')}</h2>
-        <form 
-            method="POST" 
-            use:enhance={() => {
-                return async ({ result }) => {
-                    handleLoginSuccess(result);
-                };
-            }}
-        >
-            <div class="form-group">
-                <label for="email">{$t('login.email')}</label>
-                <input 
-                    type="email" 
-                    id="email"
-                    name="email"
-                    placeholder={$t('login.emailPlaceholder')}
-                    required
-                />
-            </div>
-            <div class="form-group">
-                <label for="password">{$t('login.password')}</label>
-                <input 
-                    type="password" 
-                    id="password"
-                    name="password"
-                    placeholder={$t('login.passwordPlaceholder')}
-                    required
-                    minlength="8"
-                />
-            </div>
-            {#if form?.error}
-                <div class="error-message">{$t('login.error')}</div>
-            {/if}
-            <button type="submit">{$t('login.submit')}</button>
-            <div class="links">
-                <a href="/register">{$t('login.createAccount')}</a>
-                <a href="/forgot-password">{$t('login.forgotPassword')}</a>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Update diagnostic panel for better mobile view -->
-{#if showDiagnostics}
-    <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 text-white p-3 sm:p-4 max-h-48 sm:max-h-64 overflow-auto">
-        <div class="flex justify-between items-center mb-2">
-            <h3 class="text-base sm:text-lg font-bold">{$t('login.diagnostics.title')}</h3>
-            <button 
-                class="text-xs sm:text-sm bg-red-500/50 px-2 py-1 rounded"
-                on:click={() => showDiagnostics = false}
-            >
-                {$t('login.diagnostics.close')}
-            </button>
-        </div>
-        <div class="space-y-1 text-xs sm:text-sm font-mono">
-            {#each diagnosticLogs as log}
-                <div class="border-l-2 border-blue-500 pl-2">{log}</div>
-            {/each}
-        </div>
-    </div>
-{/if}

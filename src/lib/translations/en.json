@@ -1,269 +1,852 @@
 {
-  "nav": {
-    "home": "Home",
-    "providers": "Home Care Providers",
-    "doctors": "Doctors",
-    "ai": "AI",
-    "about": "About",
-    "payments": "Payments",
-    "login": "Login",
-    "register": "Register",
-    "logout": "Logout",
-    "dashboard": "Dashboard",
-    "loggingOut": "Logging out..."
-  },
-  "hero": {
-    "title": "Complete Healthcare Solutions",
-    "subtitle": "Connect with top healthcare professionals and home care providers for comprehensive care.",
-    "findDoctor": "Find a Doctor",
-    "findHomeCare": "Find Home Care"
-  },
-  "stats": {
-    "registeredDoctors": "500+ Registered Doctors",
-    "careProviders": "300+ Care Providers",
-    "happyPatients": "10,000+ Happy Patients",
-    "specialties": "50+ Specialties"
-  },
-  "doctors": {
-    "title": "Medical Professionals",
-    "subtitle": "Expert healthcare from qualified doctors",
-    "specialtiesSection": "Our Medical Specialties",
+    "nav": {
+        "home": "Home",
+        "doctors": "Find Doctors",
+        "providers": "Care Providers",
+        "ai": "AI Assistant",
+        "about": "About",
+        "login": "Login",
+        "register": "Register",
+        "dashboard": "Dashboard",
+        "payments": "Payments",
+        "logout": "Logout",
+        "loggingOut": "Logging out..."
+    },
+    "hero": {
+        "title": "Complete Healthcare Solutions",
+        "subtitle": "Connect with top healthcare professionals and home care providers",
+        "findDoctor": "Find a Doctor",
+        "findHomeCare": "Find Home Care",
+        "findCare": "Find Home Care"
+    },
+    "stats": {
+        "registeredDoctors": "500+ Registered Doctors",
+        "careProviders": "300+ Care Providers",
+        "happyPatients": "10,000+ Happy Patients",
+        "specialties": "50+ Specialties"
+    },
+    "doctors": {
+        "title": "Medical Professionals",
+        "subtitle": "Expert healthcare from qualified doctors",
+        "specialtiesSection": "Our Medical Specialties",
+        "specialties": {
+            "cardiology": {
+                "title": "Cardiology",
+                "count": "24"
+            },
+            "neurology": {
+                "title": "Neurology",
+                "count": "18"
+            },
+            "pediatrics": {
+                "title": "Pediatrics",
+                "count": "32"
+            },
+            "orthopedics": {
+                "title": "Orthopedics",
+                "count": "15"
+            },
+            "dentistry": {
+                "title": "Dentistry",
+                "count": "28"
+            },
+            "ophthalmology": {
+                "title": "Ophthalmology",
+                "count": "20"
+            },
+            "dermatology": {
+                "title": "Dermatology",
+                "count": "22"
+            },
+            "psychology": {}
+        },
+        "doctorsCount": "Doctors",
+        "featuredDoctors": {
+            "title": "Featured Doctors",
+            "loading": "Loading doctors...",
+            "noResults": "No featured doctors available"
+        },
+        "viewAll": "View All Doctors",
+        "viewProfile": "View Profile",
+        "noDoctors": "No doctors available",
+        "specialtyCard": {
+            "doctor": "Doctor",
+            "doctors": "Doctors"
+        }
+    },
+    "homeCare": {
+        "title": "Home Care Services",
+        "subtitle": "Professional care in the comfort of your home",
+        "servicesSection": "Our Care Services",
+        "services": {
+            "elderlyCare": {
+                "title": "Elderly Care",
+                "count": "45 Providers"
+            },
+            "rehabilitation": {
+                "title": "Rehabilitation",
+                "count": "30 Providers"
+            },
+            "personalCare": {
+                "title": "Personal Care",
+                "count": "25 Providers"
+            },
+            "skilledNursing": {
+                "title": "Skilled Nursing",
+                "count": "20 Providers"
+            }
+        },
+        "featuredProviders": {
+            "title": "Featured Care Providers",
+            "loading": "Loading providers...",
+            "noResults": "No featured providers available"
+        },
+        "viewAll": "View All Care Providers",
+        "perHour": "/hour",
+        "provider": "Care Provider",
+        "providersCount": "Care Providers",
+        "hour": "hour",
+        "ourServices": "Our Services",
+        "noProviders": "No care providers available",
+        "serviceCard": {
+            "providers": "Service Providers"
+        }
+    },
+    "faq": {
+        "title": "Frequently Asked Questions",
+        "subtitle": "Find answers to common questions about our services",
+        "questions": [
+            {
+                "question": "How can I book an appointment with a doctor?",
+                "answer": "You can book an appointment by visiting the doctor's profile and selecting your preferred time slot. We'll confirm your appointment within 24 hours."
+            },
+            {
+                "question": "What types of home care services do you offer?",
+                "answer": "We offer various services including elderly care, rehabilitation, personal care, and skilled nursing. Each service is provided by qualified professionals."
+            },
+            {
+                "question": "Are all healthcare providers verified?",
+                "answer": "Yes, all our healthcare providers undergo thorough background checks and credential verification before joining our platform."
+            },
+            {
+                "question": "How can I pay for services?",
+                "answer": "We offer secure payment options through our platform. You can pay using credit cards, debit cards, or other supported payment methods."
+            }
+        ]
+    },
     "specialties": {
-      "cardiology": {
-        "title": "Cardiology",
-        "count": "24"
-      },
-      "neurology": {
-        "title": "Neurology",
-        "count": "18"
-      },
-      "pediatrics": {
-        "title": "Pediatrics",
-        "count": "32"
-      },
-      "orthopedics": {
-        "title": "Orthopedics",
-        "count": "15"
-      },
-      "dentistry": {
-        "title": "Dentistry",
-        "count": "28"
-      },
-      "ophthalmology": {
-        "title": "Ophthalmology",
-        "count": "20"
-      },
-      "dermatology": {
-        "title": "Dermatology",
-        "count": "22"
-      },
-      "psychology": {
-        "title": "Psychology",
-        "count": "19"
-      }
+        "cardiology": "Cardiology",
+        "neurology": "Neurology",
+        "pediatrics": "Pediatrics",
+        "orthopedics": "Orthopedics",
+        "dentistry": "Dentistry",
+        "ophthalmology": "Ophthalmology",
+        "dermatology": "Dermatology",
+        "psychology": "Psychology",
+        "doctors": "Doctors"
     },
-    "doctorsCount": "Doctors",
-    "featuredDoctors": {
-      "title": "Featured Doctors",
-      "loading": "Loading...",
-      "noResults": "No featured doctors available"
+    "sections": {
+        "doctors": {
+            "title": "Medical Professionals",
+            "subtitle": "Expert healthcare from qualified doctors",
+            "specialties": "Our Medical Specialties",
+            "featured": "Featured Doctors"
+        },
+        "homeCare": {
+            "title": "Home Care Services",
+            "subtitle": "Professional care in the comfort of your home",
+            "services": "Our Services",
+            "featured": "Featured Care Providers",
+            "provider": "Care Provider",
+            "hourlyRate": "$/hour"
+        },
+        "medicalProfessionals": {
+            "title": "Medical Professionals",
+            "subtitle": "Expert healthcare from qualified doctors"
+        },
+        "featuredDoctors": {
+            "title": "Featured Doctors",
+            "loading": "Loading...",
+            "noResults": "No featured doctors available"
+        },
+        "featuredProviders": {
+            "title": "Featured Care Providers",
+            "loading": "Loading...",
+            "noResults": "No featured care providers available"
+        }
     },
-    "viewAll": "View All Doctors",
-    "viewProfile": "View Profile",
-    "noDoctors": "No doctors available"
-  },
-  "homeCare": {
-    "title": "Home Care Services",
-    "subtitle": "Professional care in the comfort of your home",
-    "servicesSection": "Our Care Services",
-    "services": {
-      "elderlyCare": {
-        "title": "Elderly Care",
-        "count": "45 Providers"
-      },
-      "rehabilitation": {
-        "title": "Rehabilitation",
-        "count": "30 Providers"
-      },
-      "personalCare": {
-        "title": "Personal Care",
-        "count": "25 Providers"
-      },
-      "skilledNursing": {
-        "title": "Skilled Nursing",
-        "count": "20 Providers"
-      }
+    "cta": {
+        "title": "Ready to Get Started?",
+        "search": "Search Professionals",
+        "join": "Join Our Network"
     },
-    "featuredProviders": {
-      "title": "Featured Care Providers",
-      "loading": "Loading...",
-      "noResults": "No featured providers available"
-    },
-    "viewAll": "View All Providers",
-    "perHour": "/hour",
-    "provider": "Home Care Provider",
-    "providersCount": "Providers",
-    "hour": "hour",
-    "ourServices": "Our Care Services",
-    "noProviders": "No providers available"
-  },
-  "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Find answers to common questions about our services",
-    "questions": [
-      {
-        "question": "How do I book an appointment with a doctor?",
-        "answer": "You can book an appointment by visiting the doctor's profile and selecting your preferred time slot. We'll confirm your appointment within 24 hours."
-      },
-      {
-        "question": "What types of home care services do you offer?",
-        "answer": "We offer various home care services including elderly care, rehabilitation, personal care, and skilled nursing."
-      },
-      {
-        "question": "Are all healthcare providers verified?",
-        "answer": "Yes, all our healthcare providers undergo thorough background checks and credential verification before joining our platform."
-      },
-      {
-        "question": "How do I pay for services?",
-        "answer": "We offer secure online payment options through our platform. You can pay using credit cards, debit cards, or other supported payment methods."
-      }
-    ]
-  },
-  "cta": {
-    "title": "Ready to Get Started?",
-    "search": "Search Professionals",
-    "join": "Join Our Network"
-  },
-  "common": {
-    "loading": "Loading...",
-    "error": "An error occurred",
-    "success": "Operation successful",
-    "save": "Save",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "delete": "Delete",
-    "view": "View",
-    "search": "Search",
-    "filter": "Filter",
-    "sort": "Sort",
-    "currency": "SAR",
-    "select": "Select",
-    "required": "Required"
-  },
-  "ratings": {
-    "outOf": "out of 5",
-    "reviews": "reviews"
-  },
-  "specialties": {
-    "cardiology": "Cardiology",
-    "neurology": "Neurology",
-    "pediatrics": "Pediatrics",
-    "orthopedics": "Orthopedics",
-    "dentistry": "Dentistry",
-    "ophthalmology": "Ophthalmology",
-    "dermatology": "Dermatology",
-    "psychology": "Psychology"
-  },
-  "currency": {
-    "SAR": "$"
-  },
-  "buttons": {
-    "viewProfile": "View Profile",
-    "viewAll": "View All"
-  },
-  "about": {
-    "title": "About Shfia",
-    "missionTitle": "Our Mission",
-    "missionDescription": "We are dedicated to providing complete healthcare solutions through a network of qualified professionals.",
-    "offerTitle": "What We Offer",
-    "offerItem1": "Wide range of medical specialties",
-    "offerItem2": "Advanced healthcare technology",
-    "offerItem3": "Personalized patient care",
-    "offerItem4": "Home care services",
-    "offerItem5": "Continuous support",
-    "providersTitle": "For Healthcare Providers",
-    "providersDescription": "Join our network to reach more patients and provide top-notch care.",
-    "patientsTitle": "For Patients",
-    "patientsDescription": "Access experienced doctors and professional home care services conveniently."
-  },
-  "providers": {
-    "findYourProvider": "Find Your Provider",
-    "registerAsProvider": "Register as Provider",
-    "searchPlaceholder": "Search providers...",
-    "noProvidersFound": "No providers found",
-    "resetFilters": "Reset Filters",
-    "rateSymbol": "Rate: ${rate}",
-    "available": "Available",
-    "unavailable": "Unavailable"
-  },
-  "professional": {
     "common": {
-      "available": "Available",
-      "verified": "✓",
-      "viewProfile": "View Profile",
-      "perHour": "per hour"
+        "loading": "Loading...",
+        "noResults": "No results found",
+        "viewAll": "View All",
+        "search": "Search",
+        "filter": "Filter",
+        "sort": "Sort",
+        "priceRange": "Price Range",
+        "rating": "Rating",
+        "location": "Location",
+        "availability": "Availability",
+        "experience": "Experience",
+        "years": "Years",
+        "error": "An error occurred",
+        "success": "Operation successful",
+        "save": "Save",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "delete": "Delete",
+        "view": "View",
+        "select": "Select",
+        "required": "Required"
+    },
+    "ratings": {
+        "outOf": "out of 5",
+        "reviews": "reviews"
+    },
+    "currency": {
+        "SAR": "$"
+    },
+    "buttons": {
+        "viewProfile": "View Profile",
+        "searchProfessionals": "Search Professionals",
+        "joinNetwork": "Join Our Network",
+        "scrollTop": "Back to Top",
+        "viewAll": "View All"
+    },
+    "about": {
+        "title": "About Shfia",
+        "missionTitle": "Our Vision and Mission",
+        "missionDescription": "We are committed to providing comprehensive healthcare solutions through a network of qualified professionals.",
+        "offerTitle": "What We Offer",
+        "offerItem1": "Wide range of medical specialties",
+        "offerItem2": "Advanced healthcare technology",
+        "offerItem3": "Personalized patient care",
+        "offerItem4": "Home care services",
+        "offerItem5": "Continuous support",
+        "providersTitle": "For Healthcare Providers",
+        "providersDescription": "Join our network to reach more patients and provide exceptional care.",
+        "patientsTitle": "For Patients",
+        "patientsDescription": "Access experienced doctors and professional home care services easily."
     },
     "providers": {
-      "chronicIllness": {
-        "title": "Skilled in chronic illness management and palliative care",
-        "description": "Skilled in chronic illness management and palliative care",
-        "rating": "★ ★ ★ 4.9",
-        "rate": "$23 per hour"
-      },
-      "physicalTherapist": {
-        "title": "Licensed physical therapist with a focus on rehabilitation",
-        "description": "Licensed physical therapist with a focus on rehabilitation",
-        "rating": "★ ★ ★ 4.8",
-        "rate": "$25 per hour"
-      },
-      "dementiaSpecialist": {
-        "title": "Experienced in dementia care and daily living assistance",
-        "description": "Experienced in dementia care and daily living assistance",
-        "rating": "★ ★ ★ 4.7",
-        "rate": "$19 per hour"
-      },
-      "pediatricCare": {
-        "title": "Certified in pediatric home care and nutrition",
-        "description": "Certified in pediatric home care and nutrition",
-        "rating": "★ ★ ★ 4.6", 
-        "rate": "$22 per hour"
-      },
-      "seniorCompanion": {
-        "title": "Experienced caregiver specializing in senior companionship",
-        "description": "Experienced caregiver specializing in senior companionship",
-        "rating": "★ ★ ★ 4.6",
-        "rate": "$18.5 per hour"
-      },
-      "elderlyCareNurse": {
-        "title": "Certified nurse with specialization in elderly care",
-        "description": "Certified nurse with specialization in elderly care",
-        "rating": "★ ★ ★ 4.5",
-        "rate": "$20 per hour"
-      },
-      "respiratoryTherapist": {
-        "title": "Certified respiratory therapist for home ventilation needs",
-        "description": "Certified respiratory therapist for home ventilation needs",
-        "rating": "★ ★ ★ 4.5",
-        "rate": "$26 per hour"
-      },
-      "postoperativeCare": {
-        "title": "Specialized in postoperative home care",
-        "description": "Specialized in postoperative home care",
-        "rating": "★ ★ ★ 4.4",
-        "rate": "$21 per hour"
-      },
-      "mobilityAssistant": {
-        "title": "Experienced caregiver with training in mobility assistance",
-        "description": "Experienced caregiver with training in mobility assistance",
-        "rating": "★ ★ ★ 4.3",
-        "rate": "$18 per hour"
-      },
-      "physicalTherapyPost": {
-        "title": "Trained in post-surgery physical therapy",
-        "description": "Trained in post-surgery physical therapy",
-        "rating": "★ ★ ★ 4.3",
-        "rate": "$20 per hour"
-      }
+        "title": "Home Care Providers",
+        "subtitle": "Professional care in your home",
+        "findYourProvider": "Find Your Provider",
+        "registerButton": "Register as Provider",
+        "registerAsProvider": "Register as Provider",
+        "searchPlaceholder": "Search for care providers...",
+        "loading": "Loading...",
+        "noResults": "No results found",
+        "noProvidersFound": "No care providers found",
+        "resetFilters": "Reset Filters",
+        "filters": {
+            "title": "Filters",
+            "specialties": "Specialties",
+            "rating": "Rating",
+            "availability": "Availability",
+            "priceRange": "Price Range"
+        },
+        "status": {
+            "available": "Available",
+            "unavailable": "Unavailable"
+        },
+        "viewProfile": "View Profile",
+        "perHour": "per hour",
+        "verified": "Verified",
+        "experience": "Years of Experience",
+        "bio": "Bio",
+        "rating": "Rating",
+        "hourlyRate": "$/hour",
+        "error": {
+            "loading": "Error loading care providers",
+            "search": "Error during search"
+        },
+        "rateSymbol": "Rate: ${rate}",
+        "viewAll": "View All Care Providers"
+    },
+    "services": {
+        "elderlyCare": "Elderly Care",
+        "rehabilitation": "Rehabilitation",
+        "personalCare": "Personal Care",
+        "skilledNursing": "Skilled Nursing",
+        "providers": "Providers"
+    },
+    "profile": {
+        "about": "About Me",
+        "education": "Education",
+        "experience": "Experience",
+        "services": "Services",
+        "location": "Location",
+        "contact": "Contact",
+        "bookAppointment": "Book Appointment",
+        "sendMessage": "Send Message",
+        "availability": "Working Hours",
+        "reviews": "Reviews",
+        "certificates": "Certificates",
+        "languages": "Languages",
+        "viewHours": "View Hours",
+        "sendInquiry": "Send Inquiry",
+        "hourlyRate": "Hourly Rate",
+        "yearsExp": "Years of Experience",
+        "specialization": "Specialization"
+    },
+    "login": {
+        "title": "Login",
+        "email": "Email",
+        "emailPlaceholder": "Enter your email",
+        "password": "Password",
+        "passwordPlaceholder": "Enter your password",
+        "submit": "Login",
+        "createAccount": "Create New Account",
+        "forgotPassword": "Forgot Password?",
+        "loading": "Logging in...",
+        "error": "Login error",
+        "diagnostics": {
+            "title": "Login Diagnostics",
+            "close": "Close"
+        }
+    },
+    "register": {
+        "title": "Register",
+        "userRegistration": "New User Registration",
+        "basicInfo": {
+            "title": "Basic Information",
+            "fullName": "Full Name",
+            "email": "Email",
+            "password": "Password",
+            "next": "Next"
+        },
+        "roleSelection": {
+            "title": "Choose Account Type",
+            "patient": "Patient",
+            "doctor": "Doctor",
+            "provider": "Home Care Provider",
+            "admin": "System Admin",
+            "back": "Back"
+        },
+        "roleDetails": {
+            "back": "Back",
+            "continue": "Continue Registration",
+            "registering": "Registering...",
+            "patient": {
+                "dateOfBirth": "Date of Birth",
+                "gender": "Gender",
+                "phone": "Phone Number",
+                "genderOptions": {
+                    "male": "Male",
+                    "female": "Female",
+                    "other": "Other"
+                }
+            },
+            "doctor": {
+                "specialty": "Specialty",
+                "licenseNumber": "License Number",
+                "experienceYears": "Years of Experience",
+                "consultationFee": "Consultation Fee",
+                "serviceType": "Service Type"
+            },
+            "provider": {
+                "certificationNumber": "Certification Number",
+                "experienceYears": "Years of Experience",
+                "hourlyRate": "Hourly Rate"
+            }
+        },
+        "validation": {
+            "required": "This field is required",
+            "email": "Invalid email address",
+            "password": "Password must contain uppercase, lowercase, numbers, and special characters",
+            "minLength": "Must be at least {min} characters long",
+            "phone": "Invalid phone number"
+        },
+        "error": {
+            "submit": "Registration error",
+            "general": "An error occurred, please try again"
+        }
+    },
+    "doctorsPage": {
+        "title": "Find Your Doctor",
+        "registerButton": "Register as Doctor",
+        "search": {
+            "placeholder": "Search for doctors...",
+            "noResults": "No doctors found",
+            "loading": "Searching..."
+        },
+        "filters": {
+            "title": "Filters",
+            "specialty": "Specialty",
+            "allSpecialties": "All Specialties",
+            "sortBy": "Sort by",
+            "sortOptions": {
+                "rating": "Rating",
+                "price": "Price",
+                "recent": "Most Recent"
+            },
+            "availableOnly": "Available Only",
+            "minRating": "Minimum Rating",
+            "priceRange": "Price Range",
+            "currency": "USD"
+        },
+        "status": {
+            "available": "Available",
+            "unavailable": "Unavailable"
+        },
+        "doctor": {
+            "verified": "Verified",
+            "experience": "Years of Experience",
+            "consultation": "Consultation Fee",
+            "viewProfile": "View Profile",
+            "rating": "Rating",
+            "yearsExp": "Years Experience",
+            "perConsultation": "per consultation"
+        },
+        "searchResults": {
+            "foundCount": "{count} doctors"
+        },
+        "error": {
+            "loading": "Error loading doctors",
+            "tryAgain": "Try Again"
+        },
+        "pagination": {
+            "previous": "Previous",
+            "next": "Next",
+            "page": "Page",
+            "of": "of"
+        }
+    },
+    "doctorProfile": {
+        "loading": "Loading doctor information...",
+        "error": "Error loading doctor information",
+        "consultationFee": "Consultation Fee",
+        "status": {
+            "available": "Available",
+            "unavailable": "Unavailable"
+        },
+        "verified": "Verified",
+        "about": {
+            "title": "About Me",
+            "empty": "No description available"
+        },
+        "qualifications": {
+            "title": "Academic Qualifications",
+            "empty": "No qualifications added"
+        },
+        "achievements": {
+            "title": "Achievements",
+            "empty": "No achievements added"
+        },
+        "professionalInfo": {
+            "title": "Professional Information",
+            "experience": "Experience",
+            "years": "years",
+            "license": "License Number",
+            "serviceType": "Service Type"
+        },
+        "actions": {
+            "bookAppointment": "Book Appointment",
+            "startConsultation": "Start Consultation",
+            "viewDashboard": "View Dashboard",
+            "unavailableButton": "Currently Unavailable"
+        },
+        "reviews": {
+            "title": "Reviews",
+            "outOf": "out of",
+            "totalReviews": "reviews",
+            "writeReview": "Write a Review",
+            "loginToReview": "Login to write a review",
+            "onlyPatients": "Only patients can write reviews"
+        }
+    },
+    "doctorDashboard": {
+        "title": "Doctor Dashboard",
+        "appointments": {
+            "loading": "Loading appointments...",
+            "error": "Error loading appointments",
+            "noAppointments": "No appointments for this date",
+            "tabs": {
+                "upcoming": "Upcoming",
+                "completed": "Completed",
+                "cancelled": "Cancelled"
+            },
+            "actions": {
+                "complete": "Complete",
+                "cancel": "Cancel",
+                "confirmCancel": "Are you sure you want to cancel this appointment?",
+                "enterCancelReason": "Please enter cancellation reason:"
+            },
+            "status": {
+                "scheduled": "Scheduled",
+                "completed": "Completed",
+                "cancelled": "Cancelled",
+                "pending": "Pending"
+            }
+        },
+        "availability": {
+            "title": "Available Time Slots",
+            "addTimeSlot": "Add New Time Slot",
+            "cancel": "Cancel",
+            "noSlots": "No available time slots set",
+            "form": {
+                "day": "Day",
+                "startTime": "Start Time",
+                "endTime": "End Time",
+                "addSlot": "Add Time Slot"
+            },
+            "days": {
+                "sunday": "Sunday",
+                "monday": "Monday",
+                "tuesday": "Tuesday",
+                "wednesday": "Wednesday",
+                "thursday": "Thursday",
+                "friday": "Friday",
+                "saturday": "Saturday"
+            }
+        },
+        "stats": {
+            "totalAppointments": "Total Appointments",
+            "averageRating": "Average Rating",
+            "highRatings": "High Ratings"
+        }
+    },
+    "reviews": {
+        "title": "Reviews and Ratings",
+        "noReviews": "No reviews yet",
+        "beFirst": "Be the first to share your experience",
+        "writeReview": "Write a Review",
+        "totalReviews": "Total Reviews",
+        "averageRating": "Average Rating",
+        "highRatings": "High Ratings",
+        "cancel": "Cancel"
+    },
+    "providerProfile": {
+        "title": "Care Provider Profile",
+        "loading": "Loading provider information...",
+        "error": "Error loading provider information",
+        "verified": "Verified",
+        "status": {
+            "available": "Available",
+            "unavailable": "Unavailable"
+        },
+        "hourlyRate": "Hourly Rate",
+        "sections": {
+            "about": {
+                "title": "About Me",
+                "empty": "No description available"
+            },
+            "services": {
+                "title": "Services",
+                "empty": "No services added"
+            },
+            "qualifications": {
+                "title": "Qualifications",
+                "empty": "No qualifications added"
+            },
+            "experience": {
+                "title": "Professional Experience",
+                "years": "years",
+                "yearsExp": "years of experience"
+            }
+        },
+        "actions": {
+            "book": "Book Appointment",
+            "contact": "Contact Us",
+            "unavailable": "Currently Unavailable",
+            "viewDashboard": "View Dashboard"
+        },
+        "info": {
+            "certificationNumber": "Certification Number",
+            "specialties": "Specialties",
+            "languages": "Languages",
+            "location": "Location"
+        },
+        "availability": {
+            "title": "Available Time Slots",
+            "noSlots": "No available time slots"
+        },
+        "reviews": {
+            "title": "Reviews",
+            "writeReview": "Write a Review",
+            "loginToReview": "Login to write a review",
+            "onlyPatients": "Only patients can write reviews",
+            "rating": "Rating",
+            "outOf": "out of",
+            "totalReviews": "reviews"
+        }
+    },
+    "loading": {
+        "text": "Loading..."
+    },
+    "empty": {
+        "doctors": "No doctors available",
+        "providers": "No care providers available"
+    },
+    "professional": {
+        "common": {
+            "available": "Available",
+            "verified": "✓",
+            "viewProfile": "View Profile",
+            "perHour": "per hour"
+        },
+        "providers": {
+            "chronicIllness": {
+                "title": "Specialist in chronic illness management and palliative care",
+                "description": "Specialist in chronic illness management and palliative care",
+                "rating": "★ ★ ★ 4.9",
+                "rate": "$23 per hour",
+                "motto": "Striving to improve comfort and well-being"
+            },
+            "physicalTherapist": {
+                "title": "Licensed physical therapist specializing in rehabilitation",
+                "description": "Committed to improving patients' quality of life",
+                "rating": "★ ★ ★ 4.8",
+                "rate": "$25 per hour"
+            },
+            "dementiaSpecialist": {
+                "title": "Expert in dementia care and daily living assistance",
+                "description": "Providing compassionate care for seniors",
+                "rating": "★ ★ ★ 4.7",
+                "rate": "$19 per hour"
+            },
+            "pediatricCare": {
+                "title": "Certified in pediatric home care and nutrition",
+                "description": "Caring for young patients with chronic conditions",
+                "rate": "$22 per hour",
+                "rating": "★ ★ ★ 4.6"
+            },
+            "seniorCompanion": {
+                "title": "Care provider specializing in senior companionship",
+                "description": "Providing emotional and physical support",
+                "rate": "$18.5 per hour",
+                "rating": "★ ★ ★ 4.6"
+            },
+            "elderlyCareNurse": {
+                "title": "Certified nurse specializing in elderly care",
+                "description": "Passionate about providing high-quality home care",
+                "rate": "$20 per hour",
+                "rating": "★ ★ ★ 4.5"
+            },
+            "respiratoryTherapist": {
+                "title": "Certified respiratory therapist for home ventilation needs",
+                "description": "Specialist in respiratory health and care",
+                "rate": "$26 per hour",
+                "rating": "★ ★ ★ 4.5"
+            },
+            "postoperativeCare": {
+                "title": "Specialist in postoperative home care",
+                "description": "Helping patients recover safely at home",
+                "rate": "$21 per hour",
+                "rating": "★ ★ ★ 4.4"
+            },
+            "mobilityAssistant": {
+                "title": "Experienced care provider in mobility assistance",
+                "description": "Committed to helping patients regain independence",
+                "rate": "$18 per hour",
+                "rating": "★ ★ ★ 4.3"
+            },
+            "physicalTherapyPost": {
+                "title": "Trained in post-surgery physical therapy",
+                "description": "Helping patients regain strength and mobility",
+                "rate": "$20 per hour",
+                "rating": "★ ★ ★ 4.3"
+            }
+        }
+    },
+    "home": {
+        "hero": {
+            "title": "Complete Healthcare Solutions",
+            "subtitle": "Connect with top healthcare professionals and home care providers",
+            "searchPlaceholder": "Search for doctors or services...",
+            "findDoctor": "Find a Doctor",
+            "findCare": "Find Home Care"
+        },
+        "stats": {
+            "doctors": "500+ Registered Doctors",
+            "providers": "300+ Care Providers",
+            "patients": "10,000+ Happy Patients",
+            "specialties": "50+ Medical Specialties"
+        },
+        "specialties": {
+            "title": "Our Medical Specialties",
+            "subtitle": "Expert care across various medical fields",
+            "viewAll": "View All Specialties",
+            "cardiology": "Cardiology",
+            "neurology": "Neurology",
+            "pediatrics": "Pediatrics",
+            "orthopedics": "Orthopedics",
+            "dentistry": "Dentistry",
+            "ophthalmology": "Ophthalmology",
+            "count": {
+                "doctors": "Doctors"
+            }
+        },
+        "featuredDoctors": {
+            "title": "Featured Doctors",
+            "subtitle": "Top-rated healthcare professionals",
+            "viewAll": "View All Doctors",
+            "loading": "Loading doctors...",
+            "noResults": "No featured doctors available"
+        },
+        "homeCare": {
+            "title": "Home Care Services",
+            "subtitle": "Professional care in the comfort of your home",
+            "viewAll": "View All Services",
+            "services": {
+                "elderCare": "Elderly Care",
+                "nursing": "Skilled Nursing",
+                "physicalTherapy": "Physical Therapy",
+                "postOperative": "Post-Operative Care",
+                "pediatricCare": "Pediatric Care",
+                "palliativeCare": "Palliative Care"
+            }
+        },
+        "featuredProviders": {
+            "title": "Featured Care Providers",
+            "subtitle": "Experienced home care professionals",
+            "viewAll": "View All Providers",
+            "loading": "Loading providers...",
+            "noResults": "No featured providers available"
+        },
+        "howItWorks": {
+            "title": "How It Works",
+            "subtitle": "Simple steps to get the care you need",
+            "steps": {
+                "search": {
+                    "title": "Search",
+                    "description": "Find the right healthcare professional for your needs"
+                },
+                "book": {
+                    "title": "Book",
+                    "description": "Schedule an appointment at your preferred time"
+                },
+                "consult": {
+                    "title": "Get Care",
+                    "description": "Receive quality care from verified professionals"
+                }
+            }
+        },
+        "testimonials": {
+            "title": "What Our Patients Say",
+            "subtitle": "Real experiences from our community",
+            "loading": "Loading testimonials...",
+            "noResults": "No testimonials available"
+        },
+        "cta": {
+            "doctors": {
+                "title": "Are you a Healthcare Professional?",
+                "subtitle": "Join our network and reach more patients",
+                "button": "Join as Doctor"
+            },
+            "providers": {
+                "title": "Are you a Care Provider?",
+                "subtitle": "Provide home care services through our platform",
+                "button": "Join as Provider"
+            }
+        },
+        "features": {
+            "title": "Why Choose Shfia",
+            "verified": {
+                "title": "Verified Professionals",
+                "description": "All healthcare providers are thoroughly vetted"
+            },
+            "available": {
+                "title": "24/7 Availability",
+                "description": "Access care whenever you need it"
+            },
+            "secure": {
+                "title": "Secure Platform",
+                "description": "Your health information is protected"
+            },
+            "quality": {
+                "title": "Quality Care",
+                "description": "High standards of healthcare delivery"
+            }
+        },
+        "download": {
+            "title": "Get the Shfia App",
+            "subtitle": "Access healthcare services on the go",
+            "android": "Get it on Google Play",
+            "ios": "Download on App Store"
+        }
+    },
+    "ai": {
+        "title": "AI Health Assistant",
+        "subtitle": "Your personal health companion powered by artificial intelligence",
+        "welcome": "Hello! I'm your AI health assistant. How can I help you today?",
+        "note": "Note: This assistant is for informational purposes only and does not replace professional medical advice.",
+        "symptoms": "Detected symptoms",
+        "typeMessage": "Type your message here...",
+        "sendMessage": "Send",
+        "error": "Sorry, an error occurred. Please try again.",
+        "chat": {
+            "placeholder": "Ask me about your health concerns...",
+            "start": "Start a conversation",
+            "thinking": "Thinking...",
+            "error": "Sorry, an error occurred. Please try again.",
+            "reconnect": "Reconnect",
+            "newChat": "New Chat",
+            "loading": "Loading conversation...",
+            "empty": "No messages yet. Start by asking a question.",
+            "disclaimer": "AI responses are for informational purposes only and should not replace professional medical advice."
+        },
+        "features": {
+            "title": "How I Can Help",
+            "symptomCheck": {
+                "title": "Symptom Assessment",
+                "description": "Describe your symptoms for initial guidance"
+            },
+            "medicationInfo": {
+                "title": "Medication Information",
+                "description": "Learn about medications and potential interactions"
+            },
+            "healthTips": {
+                "title": "Health Tips",
+                "description": "Get personalized health recommendations"
+            },
+            "nutrition": {
+                "title": "Nutritional Advice",
+                "description": "Get guidance on diet and nutrition"
+            }
+        },
+        "privacy": {
+            "title": "Your Privacy Matters",
+            "description": "Your conversations are private and secure. We do not store personal health information.",
+            "learn": "Learn More"
+        },
+        "feedback": {
+            "title": "Was this helpful?",
+            "yes": "Yes",
+            "no": "No",
+            "thanks": "Thank you for your feedback",
+            "improve": "Help us improve",
+            "comment": "Leave a comment"
+        },
+        "warnings": {
+            "emergency": "For emergencies, please contact emergency services immediately.",
+            "notMedical": "This is not a substitute for professional medical advice.",
+            "consult": "Always consult healthcare professionals for medical decisions."
+        },
+        "status": {
+            "online": "Assistant Online",
+            "offline": "Assistant Offline",
+            "connecting": "Connecting...",
+            "error": "Connection Error"
+        },
+        "actions": {
+            "clearChat": "Clear Chat",
+            "export": "Export Conversation",
+            "settings": "Chat Settings",
+            "help": "Help & FAQ"
+        },
+        "settings": {
+            "title": "Assistant Settings",
+            "language": "Response Language",
+            "detail": "Response Detail Level",
+            "theme": "Chat Theme",
+            "notifications": "Notifications",
+            "save": "Save Settings"
+        }
     }
-  }
 }

@@ -1,8 +1,7 @@
 <script lang="ts">
     import { z } from 'zod';
     import { goto } from '$app/navigation';
-    import { t } from '$lib/utils/i18n';
-    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+    import { t, currentLanguage } from '$lib/i18n';  // Only import t and currentLanguage
 
     // User role type
     type UserRole = 'patient' | 'doctor' | 'home_care_provider' | 'admin';
@@ -167,8 +166,6 @@
             handleBasicInfoSubmit(event);
         }
     }
-
-    $: translations = $currentTranslations;
 </script>
 
 <div class="registration-container">

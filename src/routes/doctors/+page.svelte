@@ -2,8 +2,7 @@
   import { onMount } from 'svelte';
   import type { Doctor } from '$lib/types'; // Ensure the Doctor type is imported
   import { DEFAULT_DOCTOR_AVATAR, BACKEND_URL } from '$lib/constants';
-  import { t } from '$lib/utils/i18n';
-  import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+  import { t, currentLanguage, currentTranslations } from '$lib/i18n';
 
   let doctors: Doctor[] = []; // Correctly declare the doctors array
 

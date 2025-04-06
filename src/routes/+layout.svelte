@@ -6,34 +6,25 @@
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
     import '../lib/styles/rtl.css';
-    import { initI18n } from '$lib/i18n';
-    import { locale, waitLocale } from 'svelte-i18n';
-    import { t } from '$lib/utils/i18n';
     import { browser } from '$app/environment';
-    import { 
-        changeLanguage, 
-        initializeTranslations, 
-        currentLanguage,
-        documentDirection,
-        type SupportedLanguages 
-    } from '$lib/stores/translations';
-    import LanguageSwitch from '$lib/components/LanguageSwitch.svelte';
+    import { initializeLanguage, i18n, currentLanguage, t } from '$lib/i18n';
+    import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte';
     
     let isMenuOpen = false;
     let isLoading = true;
-    let initialized = false;
 
     $: user = $authStore.user;
     $: isAuthenticated = $authStore.isAuthenticated;
 
     // Initialize translations before rendering anything
     onMount(() => {
+        if (browser) {
+            initializeLanguage();
+        }
+        
         async function initialize() {
             if (browser) {
                 try {
-                    await initI18n();
-                    await initializeTranslations();
-
                     // Check auth status
                     const storedUser = localStorage.getItem('user');
                     const token = localStorage.getItem('token');
@@ -42,7 +33,6 @@
                     if (storedUser && token) {
                         const userData = JSON.parse(storedUser);
                         authStore.login(userData, token);
-                        console.log('Auth restored:', { userData, path: currentPath });
                     }
 
                     // Define routes
@@ -50,17 +40,13 @@
                     const adminRoutes = ['/admin', '/admin/dashboard'];
                     const userRole = $authStore.user?.role?.toLowerCase();
 
-                    console.log('Route check:', { path: currentPath, role: userRole });
-
                     // Handle route access
                     if (adminRoutes.some(route => currentPath.startsWith(route))) {
                         if (userRole !== 'admin') {
-                            console.log('Admin access denied');
                             await goto('/login');
                             return;
                         }
                     } else if (!publicRoutes.includes(currentPath) && !$authStore.isAuthenticated) {
-                        console.log('Protected route - redirecting to login');
                         await goto('/login');
                         return;
                     }
@@ -158,10 +144,6 @@
     $: metaDescription = $currentLanguage === 'ar' 
         ? 'منصة شفاء للرعاية الصحية - اتصل بأفضل الأطباء ومقدمي الرعاية المنزلية'
         : 'Shfia Healthcare Platform - Connect with top healthcare professionals and home care providers';
-
-    onMount(() => {
-        initializeTranslations();
-    });
 </script>
 
 <svelte:head>
@@ -177,9 +159,9 @@
 </svelte:head>
 
 {#if isLoading && browser}
-    <div class="loading">Loading...</div>
+    <div class="loading">{$t('common.loading')}</div>
 {:else}
-    <div dir={$documentDirection} lang={$currentLanguage} class="app layout">
+    <div class="app layout" lang={$currentLanguage} dir={$currentLanguage === 'ar' ? 'rtl' : 'ltr'}>
         <nav>
             <div class="nav-content">
                 <div class="left-section">
@@ -193,15 +175,14 @@
                     </svg>
                 </button>
                 <div class="nav-links" class:open={isMenuOpen}>
-                    <a href="/">{ $t('nav.home') }</a>
-                    <a href="/providers">{ $t('nav.providers') }</a>
-                    <a href="/doctors">{ $t('nav.doctors') }</a>
-                    <a href="/AI">{ $t('nav.ai') }</a>
-                    <a href="/about">{ $t('nav.about') }</a>
-                    <!-- <a href="/contact">Contact</a> -->
+                    <a href="/">{$t('nav.home')}</a>
+                    <a href="/providers">{$t('nav.providers')}</a>
+                    <a href="/doctors">{$t('nav.doctors')}</a>
+                    <a href="/AI">{$t('nav.ai')}</a>
+                    <a href="/about">{$t('nav.about')}</a>
                     
                     {#if isAuthenticated && user}
-                        <a href="/payments">{ $t('nav.payments') }</a>
+                        <a href="/payments">{$t('nav.payments')}</a>
                         <div class="user-profile">
                             <img 
                                 src={getImageUrl(user?.profile_picture_url)}
@@ -227,12 +208,12 @@
                         </div>
                     {:else}
                         <div class="auth-buttons">
-                            <a href="/login" class="login-btn">{ $t('nav.login') }</a>
-                            <a href="/register" class="register-btn">{ $t('nav.register') }</a>
+                            <a href="/login" class="login-btn">{$t('nav.login')}</a>
+                            <a href="/register" class="register-btn">{$t('nav.register')}</a>
                         </div>
                     {/if}
                 </div>
-                <LanguageSwitch />
+                <LanguageSwitcher />
             </div>
         </nav>
 

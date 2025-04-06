@@ -2,8 +2,7 @@
     import { onMount } from 'svelte';
     import { fade } from 'svelte/transition';
     import { BACKEND_URL } from '$lib/constants';
-    import { t } from '$lib/utils/i18n';
-    import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+    import { t, currentLanguage, currentTranslations } from '$lib/i18n';
     export let entityId: string;
     export let entityType: 'doctor' | 'home-care-provider';
     export let submitParams: any = null;

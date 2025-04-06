@@ -1,9 +1,9 @@
-import type { User } from '$lib/types';
+import type { User } from '$lib/types/index';
 import { browser } from '$app/environment';
 import { goto } from '$app/navigation';
 import { fetchWithTranslation } from '$lib/utils/apiWrapper';
 import { get } from 'svelte/store';
-import { currentLanguage } from '$lib/store/i18n';
+import { currentLanguage } from '$lib/stores/i18n';
 
 const BASE_URL = '/api'; // Uses Vite proxy configuration
 

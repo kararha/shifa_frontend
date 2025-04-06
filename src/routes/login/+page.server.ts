@@ -50,12 +50,12 @@ export const actions = {
                 return fail(500, { error: 'Invalid server response' });
             }
 
+            // Return a consistent data structure
             return {
                 success: true,
-                data: {
-                    user: result.user,
-                    token: result.token
-                }
+                user: result.user,
+                token: result.token,
+                refresh_token: result.refresh_token
             };
         } catch (error) {
             console.error('Server error:', error);

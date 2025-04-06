@@ -6,8 +6,7 @@
   // import ProviderCard from '$lib/components/ProviderCard.svelte';
   import SearchFilter from '$lib/components/SearchFilter.svelte';
   import { DEFAULT_DOCTOR_AVATAR } from '$lib/constants';
-  import { t } from '$lib/utils/i18n';
-  import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+  import { t, currentLanguage, currentTranslations } from '$lib/i18n';
 
   interface Provider {
     user_id: number;
