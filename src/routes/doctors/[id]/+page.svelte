@@ -9,8 +9,7 @@
   import ReviewForm from '$lib/reviews/ReviewForm.svelte';
   import 'tailwindcss/tailwind.css';
   import { DEFAULT_DOCTOR_AVATAR, BACKEND_URL } from '$lib/constants';
-  import { t } from '$lib/utils/i18n';
-  import { currentLanguage, currentTranslations } from '$lib/stores/translations';
+  import { t, currentLanguage, currentTranslations } from '$lib/i18n';
 
   interface Doctor {
     id: number;

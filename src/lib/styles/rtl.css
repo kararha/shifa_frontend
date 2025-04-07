@@ -91,3 +91,30 @@
         }
     }
 }
+
+/* General RTL adjustments */
+body[dir="rtl"] {
+    direction: rtl;
+    text-align: right;
+}
+
+body[dir="rtl"] .container {
+    flex-direction: row-reverse;
+}
+
+body[dir="rtl"] .stat-card {
+    text-align: right;
+}
+
+body[dir="rtl"] .quick-action-card {
+    text-align: right;
+}
+
+body[dir="rtl"] .table th,
+body[dir="rtl"] .table td {
+    text-align: right;
+}
+
+body[dir="rtl"] .pagination-controls {
+    flex-direction: row-reverse;
+}

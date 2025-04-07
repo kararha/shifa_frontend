@@ -1,22 +1,9 @@
 import type { Actions } from './$types';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import { PUBLIC_API_URL } from '$env/static/public';
 
-interface LoginResponse {
-    token: string;
-    refresh_token: string;
-    user: {
-        id: number;
-        email: string;
-        name: string;
-        role: string;
-    };
-    message?: string;
-    error?: string;
-}
-
 export const actions = {
-    default: async ({ request, fetch }) => {
+    default: async ({ request, fetch, cookies }) => {
         try {
             const data = await request.formData();
             const email = data.get('email')?.toString();
@@ -50,7 +37,36 @@ export const actions = {
                 return fail(500, { error: 'Invalid server response' });
             }
 
-            // Return a consistent data structure
+            // Set cookies for server-side authentication
+            cookies.set('token', result.token, {
+                path: '/',
+                httpOnly: true,
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24 * 7 // 1 week
+            });
+            
+            // Set user data in cookie for server components
+            cookies.set('user', JSON.stringify(result.user), {
+                path: '/',
+                httpOnly: true,
+                sameSite: 'lax',
+                maxAge: 60 * 60 * 24 * 7 // 1 week
+            });
+
+            // Add admin redirect flag to return data for client-side handling
+            if (result.user.role === 'admin') {
+                console.log('Admin user detected, preparing client redirect');
+                // Return success with redirect info instead of throwing redirect
+                return {
+                    success: true,
+                    user: result.user,
+                    token: result.token,
+                    refresh_token: result.refresh_token,
+                    adminRedirect: true
+                };
+            }
+
+            // Return a consistent data structure for non-admin users
             return {
                 success: true,
                 user: result.user,

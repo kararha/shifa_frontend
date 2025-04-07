@@ -5,6 +5,8 @@
     import { t, currentLanguage } from '$lib/i18n';
     import { currentTranslations } from '$lib/stores/translations';
     import { browser } from '$app/environment';
+    import { logAuth, showAuthDebugPanel, repairAuthState } from '$lib/utils/authDebug';
+    import { onMount } from 'svelte';
     
     export let form;
 
@@ -16,9 +18,65 @@
         const timestamp = new Date().toISOString();
         diagnosticLogs = [...diagnosticLogs, `[${timestamp}] ${message}`];
         console.log(`Login diagnostic: ${message}`);
+        // Also log to auth debug
+        logAuth('login', message);
+    }
+
+    onMount(() => {
+        logDiagnostic('Login page mounted');
+        
+        // Check if user is already logged in
+        if (browser) {
+            repairAuthState();
+            if ($authStore.isAuthenticated) {
+                const role = $authStore.user?.role;
+                logDiagnostic(`User already authenticated as ${role}, redirecting`);
+                
+                // Redirect to appropriate page
+                setTimeout(() => {
+                    redirectBasedOnRole($authStore.user);
+                }, 200);
+            }
+            
+            // Show debug panel if on localhost
+            if (location.hostname === 'localhost') {
+                showAuthDebugPanel();
+            }
+        }
+    });
+
+    function redirectBasedOnRole(user) {
+        if (!user?.role) {
+            logDiagnostic('No role found for redirect');
+            return;
+        }
+        
+        logDiagnostic(`Redirecting based on role: ${user.role}`);
+        
+        // Use forceful redirect method
+        let redirectUrl = '/';
+        
+        switch (user.role.toLowerCase()) {
+            case 'admin':
+                redirectUrl = '/admin/dashboard';
+                break;
+            case 'doctor':
+                redirectUrl = `/doctors/${user.id}`;
+                break;
+            case 'patient':
+                redirectUrl = `/patients/${user.id}`;
+                break;
+            case 'home_care_provider':
+                redirectUrl = `/providers/${user.id}`;
+                break;
+        }
+        
+        logDiagnostic(`Redirecting to: ${redirectUrl}`);
+        window.location.href = redirectUrl;
     }
 
     async function handleLoginSuccess(result) {
+        // This function will now only be called for non-redirect responses
         logDiagnostic('Login result received: ' + JSON.stringify(result));
 
         // Check if login was successful
@@ -34,12 +92,22 @@
 
                 logDiagnostic(`User authenticated: ID=${userData.id}, Role=${userData.role}`);
                 
-                // Store in localStorage for persistence
+                // Store in localStorage for persistence and client-side checks
                 if (browser) {
                     localStorage.setItem('user', JSON.stringify(userData));
                     localStorage.setItem('token', token);
                     if (result.data.refresh_token) {
                         localStorage.setItem('refresh_token', result.data.refresh_token);
+                    }
+                    
+                    // Use double cookie setting for extra reliability
+                    document.cookie = `token=${token}; path=/; max-age=86400`;
+                    document.cookie = `user=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=86400`;
+                    
+                    // For admin, we delay the redirect a bit to ensure storage is complete
+                    if (userData.role === 'admin') {
+                        logDiagnostic('Admin user detected, delaying redirect');
+                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
                 }
 
@@ -47,35 +115,18 @@
                 authStore.login(userData, token);
                 logDiagnostic('Auth store updated');
                 
-                // Short delay to allow store to update
-                await new Promise(resolve => setTimeout(resolve, 200));
-
-                // Handle redirects based on role
-                const role = userData.role.toLowerCase();
-                logDiagnostic(`Redirecting ${role} to appropriate page`);
-                
-                // Use role-based redirection
-                switch (role) {
-                    case 'admin':
-                        logDiagnostic('Admin redirect to: /admin/dashboard');
-                        window.location.href = '/admin/dashboard';
-                        break;
-                    case 'doctor':
-                        logDiagnostic(`Doctor redirect to: /doctors/${userData.id}`);
-                        window.location.href = `/doctors/${userData.id}`;
-                        break;
-                    case 'patient':
-                        logDiagnostic(`Patient redirect to: /patients/${userData.id}`);
-                        window.location.href = `/patients/${userData.id}`;
-                        break;
-                    case 'home_care_provider':
-                        logDiagnostic(`Provider redirect to: /providers/${userData.id}`);
-                        window.location.href = `/providers/${userData.id}`;
-                        break;
-                    default:
-                        logDiagnostic('Unknown role - redirect to home');
-                        window.location.href = '/';
+                // Verify auth store update
+                if (!$authStore.isAuthenticated) {
+                    logDiagnostic('WARNING: Auth store not showing authenticated after update');
+                    // Force repair
+                    repairAuthState();
                 }
+                
+                // Short delay to allow store to update
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Use direct redirect for more reliability
+                redirectBasedOnRole(userData);
             } catch (err) {
                 logDiagnostic(`Error during login: ${err.message}`);
                 console.error('Login handler error:', err);
@@ -97,15 +148,61 @@
         
         <form method="POST" use:enhance={
             () => {
-                return async ({ result }) => {
-                    logDiagnostic(`Form submitted: ${JSON.stringify(result)}`);
-                    
-                    if (result.type === 'success') {
-                        // For debugging purposes
-                        logDiagnostic(`Form data: ${JSON.stringify(result.data)}`);
+                return async ({ result, update }) => {
+                    try {
+                        // Log the submission attempt
+                        logDiagnostic(`Form submitted with result type: ${result.type}`);
+                        
+                        // Handle successful login
+                        if (result.type === 'success') {
+                            logDiagnostic(`Form data: ${JSON.stringify(result.data)}`);
+                            
+                            // Check for admin redirect
+                            if (result.data?.adminRedirect) {
+                                logDiagnostic('Admin redirect detected, redirecting immediately');
+                                
+                                // Store data in localStorage
+                                if (browser) {
+                                    localStorage.setItem('user', JSON.stringify(result.data.user));
+                                    localStorage.setItem('token', result.data.token);
+                                    if (result.data.refresh_token) {
+                                        localStorage.setItem('refresh_token', result.data.refresh_token);
+                                    }
+                                    
+                                    // Also set cookies (double redundancy)
+                                    document.cookie = `token=${result.data.token}; path=/; max-age=86400`;
+                                    document.cookie = `user=${encodeURIComponent(JSON.stringify(result.data.user))}; path=/; max-age=86400`;
+                                }
+                                
+                                // Update auth store
+                                authStore.login(result.data.user, result.data.token);
+                                
+                                // Force redirect after a short delay
+                                setTimeout(() => {
+                                    logDiagnostic('Executing admin redirect');
+                                    window.location.href = '/admin/dashboard';
+                                }, 200);
+                                
+                                return;
+                            }
+                            
+                            // Handle regular successful login
+                            await handleLoginSuccess(result);
+                        } else if (result.type === 'failure') {
+                            logDiagnostic(`Login failed: ${JSON.stringify(result.data)}`);
+                            update();
+                        } else if (result.type === 'redirect') {
+                            logDiagnostic(`Server redirecting to: ${result.location}`);
+                            update();
+                        } else {
+                            logDiagnostic(`Unknown result type: ${result.type}`);
+                            update();
+                        }
+                    } catch (error) {
+                        logDiagnostic(`Error during form handling: ${error}`);
+                        showDiagnostics = true;
+                        update();
                     }
-                    
-                    handleLoginSuccess(result);
                 };
             }
         }>
@@ -143,6 +240,17 @@
         </form>
     </div>
 </div>
+
+{#if browser && location.hostname === 'localhost'}
+    <div class="fixed bottom-4 right-4 z-50">
+        <button 
+            class="px-4 py-2 bg-blue-500/60 hover:bg-blue-500/80 rounded-lg text-white text-sm"
+            on:click={() => showAuthDebugPanel()}
+        >
+            Auth Debug
+        </button>
+    </div>
+{/if}
 
 {#if showDiagnostics}
     <div class="fixed bottom-0 left-0 right-0 bg-gray-900/95 text-white p-3 sm:p-4 max-h-48 sm:max-h-64 overflow-auto">

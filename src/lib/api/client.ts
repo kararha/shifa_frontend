@@ -1,3 +1,6 @@
+import axios from 'axios';
+import { browser } from '$app/environment';
+import { BACKEND_URL } from '$lib/constants';
 import { authStore } from '../stores/authStore';  // Update this import
 import { get } from 'svelte/store';
 
@@ -16,6 +19,44 @@ export const API_ENDPOINTS = {
     PATIENTS: 'patients',
     USERS: 'users'
 } as const;
+
+const api = axios.create({
+  baseURL: BACKEND_URL + '/api',
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    if (browser) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for error handling
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    // Handle token refresh or auth errors here if needed
+    console.error('API error:', error);
+    return Promise.reject(error);
+  }
+);
+
+export { api };
 
 export class ApiClient {
     private static async fetch<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
@@ -96,5 +137,3 @@ export class ApiClient {
         return this.fetch(endpoint, { method: 'DELETE' });
     }
 }
-
-export const api = ApiClient;

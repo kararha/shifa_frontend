@@ -60,6 +60,10 @@
         }
 
         initialize();
+        
+        // Add the HTML direction attribute setting
+        const htmlElement = document.documentElement;
+        htmlElement.dir = $currentLanguage === 'ar' ? 'rtl' : 'ltr';
     });
 
     async function logout() {

@@ -16,7 +16,7 @@
   onMount(async () => {
     try {
       // Fetch all doctors without pagination
-      const response = await fetch(`${BACKEND_URL}/api/doctors?limit=1000`);
+      const response = await fetch(`${BACKEND_URL}/api/doctors?limit=2000`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
