@@ -848,5 +848,51 @@
             "notifications": "Notifications",
             "save": "Save Settings"
         }
+    },
+    "consultationPage": {
+        "details": {
+            "title": "Consultation Details",
+            "requestDetails": "Request Details",
+            "requestDetailsPlaceholder": "Enter request details",
+            "noRequestDetails": "No request details provided",
+            "symptoms": "Symptoms",
+            "symptomsPlaceholder": "Enter patient symptoms",
+            "noSymptoms": "No symptoms provided",
+            "diagnosis": "Diagnosis",
+            "diagnosisPlaceholder": "Enter your diagnosis",
+            "noDiagnosis": "No diagnosis provided",
+            "prescription": "Prescription",
+            "prescriptionPlaceholder": "Enter prescription details",
+            "noPrescription": "No prescription provided",
+            "notes": "Notes",
+            "notesPlaceholder": "Additional notes",
+            "noNotes": "No additional notes",
+            "followUpDate": "Follow-up Date",
+            "noFollowUp": "No follow-up date scheduled",
+            "lastUpdated": "Last updated",
+            "noDetailsYet": "No consultation details have been added yet.",
+            "noDetailsYetPatient": "The doctor has not provided any consultation details yet.",
+            "addDetails": "Add Consultation Details"
+        },
+        "form": {
+            "title": "New Consultation",
+            "step1Title": "Book Consultation",
+            "step2Title": "Consultation Details",
+            "step3Title": "Initial Message",
+            "fee": "Consultation Fee",
+            "reason": "Reason for Consultation",
+            "reasonPlaceholder": "Briefly describe why you're seeking this consultation...",
+            "symptoms": "Symptoms (if any)",
+            "symptomsPlaceholder": "Describe any symptoms you're experiencing...",
+            "symptomsHelp": "Providing this information helps the doctor prepare for your consultation.",
+            "initialMessage": "Initial Message to Doctor (Optional)",
+            "initialMessagePlaceholder": "Type a message to start the conversation...",
+            "initialMessageHelp": "This will be sent as your first message when the chat begins. You can also leave this empty and type your message later.",
+            "howItWorks": "How It Works - Book → Chat → Pay",
+            "step1": "Book a consultation with the doctor now",
+            "step2": "Start chatting immediately",
+            "step3": "Pay for the consultation during or after your chat",
+            "paymentNote": "We use a delayed payment system to ensure you only pay after you've received value from the consultation."
+        }
     }
 }

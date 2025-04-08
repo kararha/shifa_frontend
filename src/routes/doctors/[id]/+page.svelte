@@ -265,6 +265,9 @@
             on:click={() => showConsultationModal = true}
           >
             {$t('doctorProfile.actions.startConsultation')}
+            <span class="block text-xs text-blue-200 mt-1">
+              Chat now, pay later - ${doctor.consultation_fee}
+            </span>
           </button>
         </div>
       </div>
