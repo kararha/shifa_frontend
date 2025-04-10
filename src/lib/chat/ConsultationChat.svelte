@@ -1,391 +1,394 @@
-<script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import { BACKEND_URL } from '$lib/constants';
-  import { fade } from 'svelte/transition';
-  import Icon from '@iconify/svelte';
-  import { t } from '$lib/i18n';
+<script>
+  import { onMount } from 'svelte';
+  import { authStore } from '../stores/authStore';
   
-  export let consultationId: number;
-  export let userId: number;
-  export let userRole: 'patient' | 'doctor';
-  export let isPaid: boolean = true; // Use this property to determine if chat is fully functional
+  // Props for consultation ID and user role to store/retrieve messages
+  export let consultationId = "default";
+  export let userRole = "patient"; // "patient" or "doctor"
+  export let doctorId = "doctor"; // Only used when userRole = "doctor"
+  export let doctorName = "Doctor"; // Only used when userRole = "doctor"
   
-  interface ChatMessage {
-    id: number;
-    consultation_id: number;
-    sender_type: 'doctor' | 'patient';
-    sender_id: number;
-    message: string;
-    sent_at: string;
-    is_read: boolean;
-  }
+  // Messages array to hold chat messages
+  let messages = [];
+  let newMessage = "";
+  let chatContainer;
   
-  let messages: ChatMessage[] = [];
-  let newMessage = '';
-  let loading = true;
-  let error = '';
-  let chatContainer: HTMLElement;
-  let unreadCount = 0;
+  // User info (can be replaced with actual auth data)
+  let currentUser = userRole === "doctor" 
+    ? { id: doctorId, name: doctorName } 
+    : { id: 'user', name: 'You' };
   
-  // Auto-scroll chat to bottom when messages change
-  $: if (chatContainer && messages.length) {
-    setTimeout(() => {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }, 50);
-  }
+  let otherUser = userRole === "doctor" 
+    ? { id: 'user', name: 'Patient' } 
+    : { id: 'doctor', name: 'Doctor' };
   
-  onMount(async () => {
-    await loadMessages();
+  // Function to format date correctly
+  function formatMessageTime(timestamp) {
+    if (!timestamp) return '';
     
-    // Set up a polling mechanism for new messages
-    // In a production environment, you might want to use WebSockets instead
-    const intervalId = setInterval(async () => {
-      await checkForNewMessages();
-    }, 5000); // Poll every 5 seconds
+    const date = new Date(timestamp);
+    
+    // Check if date is valid before formatting
+    if (isNaN(date.getTime())) return '';
+    
+    // Format time as HH:MM AM/PM
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12; // Convert 0 to 12 for 12 AM
+    
+    return `${formattedHours}:${minutes} ${ampm}`;
+  }
+  
+  // Load messages from localStorage on component mount
+  onMount(() => {
+    loadMessages();
+    
+    // Subscribe to auth store changes if needed
+    const unsubscribe = authStore.subscribe(auth => {
+      if (auth.user) {
+        if (userRole === "patient") {
+          currentUser = { 
+            id: auth.user.id || 'user',
+            name: auth.user.name || 'You'
+          };
+        }
+      }
+    });
+    
+    // Start auto-refresh of messages (to sync between doctor/patient views)
+    const refreshInterval = setInterval(() => {
+      loadMessages();
+    }, 2000); // Check for new messages every 2 seconds
+    
+    // Scroll to bottom of chat
+    scrollToBottom();
     
     return () => {
-      clearInterval(intervalId);
+      unsubscribe();
+      clearInterval(refreshInterval);
     };
   });
   
-  async function loadMessages() {
+  // Function to save messages to localStorage
+  function saveMessages() {
     try {
-      loading = true;
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-      
-      console.log(`Loading messages for consultation ID: ${consultationId}`);
-      console.log(`API URL: ${BACKEND_URL}/api/chat/messages?consultation_id=${consultationId}`);
-      
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/chat/messages?consultation_id=${consultationId}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        // Log response status for debugging
-        console.log('API response status:', response.status);
-        
-        // If the API returns a 404, it might mean no messages yet, which is not an error
-        if (response.status === 404) {
-          console.log('No messages found for this consultation - this is normal for new chats');
-          messages = [];
-          return;
-        }
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to load messages. Status: ${response.status}. Response: ${errorText}`);
-        }
-        
-        messages = await response.json();
-        console.log(`Loaded ${messages.length} messages`);
-        
-        if (messages.length > 0) {
-          markUnreadMessages();
-        }
-      } catch (apiError) {
-        console.error('API fetch error:', apiError);
-        throw new Error(`Error loading messages: ${apiError.message}`);
-      }
-    } catch (e) {
-      console.error('Error loading messages:', e);
-      error = e instanceof Error ? e.message : 'Failed to load messages';
-    } finally {
-      loading = false;
+      localStorage.setItem(`chat_${consultationId}`, JSON.stringify(messages));
+    } catch (error) {
+      console.error('Failed to save messages:', error);
     }
   }
   
-  async function checkForNewMessages() {
+  // Function to load messages from localStorage
+  function loadMessages() {
     try {
-      if (messages.length === 0) return;
-      
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      
-      // Get the timestamp of the latest message to fetch only newer ones
-      const latestMessageTime = messages.length > 0 
-        ? new Date(messages[messages.length - 1].sent_at).toISOString()
-        : new Date(0).toISOString();
-      
-      const response = await fetch(
-        `${BACKEND_URL}/api/chat/messages?consultation_id=${consultationId}&since=${latestMessageTime}`, 
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      if (!response.ok) return;
-      
-      const newMessages = await response.json();
-      if (newMessages.length > 0) {
-        messages = [...messages, ...newMessages];
-        markUnreadMessages();
+      const savedMessages = localStorage.getItem(`chat_${consultationId}`);
+      if (savedMessages) {
+        messages = JSON.parse(savedMessages);
       }
-    } catch (e) {
-      console.error('Error checking for new messages:', e);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
     }
   }
   
-  async function markUnreadMessages() {
-    // Mark messages from other sender as read
-    const unreadMessages = messages.filter(
-      msg => !msg.is_read && msg.sender_type !== userRole
-    );
-    
-    if (unreadMessages.length === 0) return;
-    
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      
-      for (const message of unreadMessages) {
-        await fetch(`${BACKEND_URL}/api/chat/messages/${message.id}/read`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        // Update local message status
-        message.is_read = true;
-      }
-    } catch (e) {
-      console.error('Error marking messages as read:', e);
-    }
-  }
-  
-  async function getUnreadCount() {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      
-      const response = await fetch(`${BACKEND_URL}/api/chat/unread-count?user_id=${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) return;
-      
-      const data = await response.json();
-      unreadCount = data.count;
-    } catch (e) {
-      console.error('Error getting unread count:', e);
-    }
-  }
-  
-  async function sendMessage() {
+  // Function to send a message
+  function sendMessage() {
     if (!newMessage.trim()) return;
     
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-      
-      const messageData = {
-        consultation_id: consultationId,
-        sender_type: userRole,
-        sender_id: userId,
-        message: newMessage.trim(),
-        sent_at: new Date().toISOString(),
-        is_read: false
-      };
-      
-      // Optimistic UI update with a temporary ID
-      const tempId = Date.now();
-      messages = [...messages, {...messageData, id: tempId}];
-      newMessage = '';
-      
-      const response = await fetch(`${BACKEND_URL}/api/chat/messages`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(messageData)
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-      
-      const savedMessage = await response.json();
-      
-      // Replace the temporary message with the saved one
-      messages = messages.map(msg => 
-        msg.id === tempId ? savedMessage : msg
-      );
-      
-    } catch (e) {
-      console.error('Error sending message:', e);
-      error = e instanceof Error ? e.message : 'Failed to send message';
-      // Remove the failed message from the UI
-      messages = messages.filter(msg => typeof msg.id === 'number');
-    }
-  }
-  
-  function formatTime(dateString: string): string {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
-  
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString);
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const message = {
+      id: Date.now().toString(),
+      sender: currentUser.id,
+      senderName: currentUser.name,
+      text: newMessage.trim(),
+      timestamp: new Date().toISOString() // Store as ISO string for reliable parsing
+    };
     
-    if (date.toDateString() === today.toDateString()) {
-      return 'Today';
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
-    } else {
-      return date.toLocaleDateString();
+    messages = [...messages, message];
+    newMessage = "";
+    
+    // Save messages after adding a new one
+    saveMessages();
+    
+    // Scroll to the bottom of the chat
+    setTimeout(scrollToBottom, 50);
+  }
+  
+  // Function to scroll to the bottom of the chat
+  function scrollToBottom() {
+    if (chatContainer) {
+      chatContainer.scrollTo({
+        top: chatContainer.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }
   
-  // Group messages by date for better UI organization
-  $: groupedMessages = messages.reduce((groups, message) => {
-    const date = new Date(message.sent_at).toDateString();
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(message);
-    return groups;
-  }, {});
+  // Function to handle form submission
+  function handleSubmit(event) {
+    event.preventDefault();
+    sendMessage();
+  }
 </script>
 
-<div class="flex flex-col h-full">
-  <!-- Chat Header -->
-  <div class="bg-white/10 backdrop-filter backdrop-blur-lg p-4 rounded-t-lg border-b border-white/10">
-    <div class="flex items-center justify-between">
-      <h3 class="text-lg font-semibold text-white">
-        {userRole === 'patient' ? $t('chat.withDoctor', 'Chat with Doctor') : $t('chat.withPatient', 'Chat with Patient')}
-      </h3>
-      
-      {#if unreadCount > 0}
-        <span class="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-          {unreadCount} {$t('chat.unread', 'unread')}
-        </span>
-      {/if}
-    </div>
-  </div>
-  
-  {#if userRole === 'doctor' && !isPaid}
-    <div class="bg-yellow-500/10 p-2 border-b border-yellow-500/30">
-      <p class="text-center text-yellow-200 text-sm">
-        <Icon icon="mdi:information-outline" class="inline-block mr-1" />
-        {$t('chat.paymentPending', "Patient hasn't paid for this consultation yet")}
-      </p>
+<div class="chat-container">
+  {#if messages.length === 0}
+    <div class="empty-chat">
+      <div class="empty-chat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+      </div>
+      <h3>No messages yet</h3>
+      <p>{userRole === "doctor" ? "Start the conversation with your patient." : "Start a conversation with your doctor."}</p>
     </div>
   {/if}
-  
-  <!-- Chat Messages -->
-  <div 
-    class="flex-1 overflow-y-auto p-4 space-y-6"
-    bind:this={chatContainer}
-  >
-    {#if loading}
-      <div class="flex justify-center py-8">
-        <div class="w-8 h-8 border-b-2 border-t-2 border-blue-400 rounded-full animate-spin"></div>
-      </div>
-    {:else if error}
-      <div class="bg-red-500/20 border border-red-500/40 text-red-200 p-3 rounded-lg text-center">
-        {error}
-      </div>
-    {:else if messages.length === 0}
-      <div class="text-center py-8 text-gray-400">
-        No messages yet. Start the conversation!
-      </div>
-    {:else}
-      {#each Object.entries(groupedMessages) as [date, dateMessages]}
-        <div class="space-y-3">
-          <div class="flex justify-center">
-            <span class="bg-white/10 text-xs text-gray-300 px-3 py-1 rounded-full">
-              {formatDate(dateMessages[0].sent_at)}
-            </span>
+
+  <div class="chat-messages" bind:this={chatContainer}>
+    {#each messages as message (message.id)}
+      <div class="message {message.sender === currentUser.id ? 'message-outgoing' : 'message-incoming'}" transition:fade={{duration: 150}}>
+        <div class="message-content">
+          <div class="message-sender">{message.sender === currentUser.id ? 'You' : message.senderName || 'Other'}</div>
+          <div class="message-text">{message.text}</div>
+          <div class="message-meta">
+            <span class="message-time">{formatMessageTime(message.timestamp)}</span>
           </div>
-          
-          {#each dateMessages as message}
-            <div 
-              class="flex {message.sender_type === userRole ? 'justify-end' : 'justify-start'}"
-              in:fade={{ duration: 150 }}
-            >
-              <div 
-                class="{message.sender_type === userRole 
-                  ? 'bg-blue-600/60 text-white rounded-tl-lg rounded-tr-lg rounded-bl-lg' 
-                  : 'bg-white/10 text-white rounded-tl-lg rounded-tr-lg rounded-br-lg'} 
-                  p-3 max-w-[80%] break-words"
-              >
-                <div>{message.message}</div>
-                <div class="text-xs mt-1 flex justify-between items-center">
-                  <span class="text-gray-300">{formatTime(message.sent_at)}</span>
-                  {#if message.sender_type === userRole}
-                    <span class="ml-2">
-                      {#if message.is_read}
-                        <Icon icon="mdi:check-all" class="text-blue-300" />
-                      {:else}
-                        <Icon icon="mdi:check" class="text-gray-400" />
-                      {/if}
-                    </span>
-                  {/if}
-                </div>
-              </div>
-            </div>
-          {/each}
         </div>
-      {/each}
-    {/if}
+      </div>
+    {/each}
   </div>
   
-  <!-- Message Input -->
-  <div class="bg-white/10 backdrop-filter backdrop-blur-lg p-4 rounded-b-lg border-t border-white/10">
-    <form on:submit|preventDefault={sendMessage} class="flex gap-2">
-      <input
-        type="text"
-        bind:value={newMessage}
-        placeholder="Type your message..."
-        class="flex-1 bg-white/5 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-      />
-      <button
-        type="submit"
-        class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-        disabled={!newMessage.trim()}
-      >
-        <Icon icon="mdi:send" class="text-xl" />
-      </button>
-    </form>
-  </div>
+  <form class="chat-input" on:submit={handleSubmit}>
+    <input 
+      type="text" 
+      bind:value={newMessage} 
+      placeholder="Type your message..." 
+      class="message-input"
+      aria-label="Message text"
+    />
+    <button type="submit" class="send-button" disabled={!newMessage.trim()} aria-label="Send message">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="send-icon">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+      <span class="send-text">Send</span>
+    </button>
+  </form>
 </div>
 
 <style>
-  /* Custom scrollbar for chat container */
-  div::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  div::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  div::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 3px;
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    border-radius: 0 0 16px 16px;
+    overflow: hidden;
+    background: rgba(13, 15, 48, 0.4);
+    backdrop-filter: blur(var(--glass-blur, 10px));
   }
   
-  div {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    scroll-behavior: smooth;
+  }
+  
+  .empty-chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 3rem;
+  }
+  
+  .empty-chat-icon {
+    margin-bottom: 1.5rem;
+    color: rgba(123, 157, 255, 0.4);
+  }
+  
+  .empty-chat h3 {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0 0 0.5rem 0;
+  }
+  
+  .empty-chat p {
+    font-size: 0.95rem;
+    max-width: 280px;
+    line-height: 1.5;
+  }
+  
+  .message {
+    display: flex;
+    max-width: 80%;
+    margin-bottom: 0.25rem;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .message-outgoing {
+    align-self: flex-end;
+  }
+  
+  .message-incoming {
+    align-self: flex-start;
+  }
+  
+  .message-content {
+    padding: 0.85rem 1.1rem;
+    border-radius: 18px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+  
+  .message-outgoing .message-content {
+    background: linear-gradient(135deg, rgba(123, 157, 255, 0.8), rgba(123, 157, 255, 0.6));
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  
+  .message-incoming .message-content {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    border-bottom-left-radius: 4px;
+  }
+  
+  .message-sender {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    opacity: 0.8;
+  }
+  
+  .message-text {
+    word-break: break-word;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  
+  .message-meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    font-size: 0.7rem;
+    opacity: 0.7;
+  }
+  
+  .chat-input {
+    display: flex;
+    padding: 1rem 1.25rem;
+    background: rgba(13, 15, 48, 0.6);
+    border-top: 1px solid rgba(123, 157, 255, 0.2);
+  }
+  
+  .message-input {
+    flex: 1;
+    padding: 0.9rem 1.2rem;
+    border-radius: 24px;
+    border: 1px solid rgba(123, 157, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+  }
+  
+  .message-input:focus {
+    border-color: rgba(123, 157, 255, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 2px rgba(123, 157, 255, 0.1);
+  }
+  
+  .message-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .send-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.75rem;
+    padding: 0 1.25rem;
+    height: 48px;
+    border-radius: 24px;
+    border: none;
+    background: linear-gradient(135deg, rgba(123, 157, 255, 0.8), rgba(123, 157, 255, 0.6));
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .send-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(123, 157, 255, 0.3);
+  }
+  
+  .send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .send-icon {
+    margin-right: 0.5rem;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .message {
+      max-width: 90%;
+    }
+    
+    .send-text {
+      display: none;
+    }
+    
+    .send-button {
+      width: 48px;
+      padding: 0;
+    }
+    
+    .send-icon {
+      margin-right: 0;
+    }
+    
+    .chat-messages {
+      padding: 1rem;
+    }
+    
+    .chat-input {
+      padding: 0.75rem 1rem;
+    }
+    
+    .empty-chat {
+      padding: 2rem 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .message-content {
+      padding: 0.7rem 0.9rem;
+    }
+    
+    .message-text {
+      font-size: 0.9rem;
+    }
+    
+    .message-input {
+      padding: 0.8rem 1rem;
+    }
   }
 </style>

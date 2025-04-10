@@ -47,53 +47,68 @@
   let notes = '';
   let followUpDate = '';
   
+  // Add payment information
+  let paymentInfo = null;
+  let loadingPayment = false;
+  
   export let params;
-  let consultationId = +params.id;
+  let consultationId = $page.params.id;
 
-  async function startConsultation() {
-    await fetch(`${BACKEND_URL}/api/consultations/${consultationId}`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ status: 'in_progress' })
-    });
-    // ...handle response...
-  }
+  // Add a timer to automatically stop loading after a timeout
+  let loadingTimeout;
+  let bypassLoading = false;
 
-  async function completeConsultation() {
-    await fetch(`${BACKEND_URL}/api/consultations/${consultationId}/complete`, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
-      }
-      // no body needed if your handler sets completed status automatically
-    });
-    // ...handle response...
+  // Add these variables for avatar handling
+  let defaultAvatarPlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='25' fill='%23718096'/%3E%3Ccircle cx='25' cy='18' r='8' fill='%23E2E8F0'/%3E%3Cpath d='M10,40 C14,27 36,27 40,40' fill='%23E2E8F0'/%3E%3C/svg%3E";
+  
+  // Function to safely load images with fallback
+  function getImageSrc(url) {
+    return url || defaultAvatarPlaceholder;
   }
 
   onMount(async () => {
+    // Set a safety timeout to prevent infinite loading state
+    loadingTimeout = setTimeout(() => {
+      console.log("Loading timeout triggered! Setting loading to false.");
+      loading = false;
+      error = "Loading timed out. The server might be unavailable. Please try refreshing the page.";
+    }, 15000); // 15 seconds timeout
+    
     try {
+      console.log("onMount started");
+      
       // Validate consultation ID is not zero or invalid
-      const consultationId = $page.params.id;
       if (!consultationId || consultationId === '0' || isNaN(Number(consultationId))) {
-        throw new Error('Invalid consultation ID');
+        console.error(`Invalid consultation ID: ${consultationId}`);
+        error = 'Invalid consultation ID. Redirecting to dashboard...';
+        
+        // Redirect after a small delay
+        setTimeout(() => {
+          goto('/dashboard');
+        }, 2000);
+        
+        return;
       }
       
       // Get user data from localStorage
       const userData = localStorage.getItem('user');
+      console.log("User data from localStorage:", userData ? "Found" : "Not found");
+      
       if (!userData) {
+        console.error("No user data in localStorage");
         goto('/login');
         return;
       }
       
       user = JSON.parse(userData);
       userRole = user.role;
+      console.log(`User role: ${userRole}`);
       
       const token = localStorage.getItem('token');
+      console.log("Token from localStorage:", token ? "Found" : "Not found");
+      
       if (!token) {
+        console.error("No token in localStorage");
         goto('/login');
         return;
       }
@@ -102,19 +117,30 @@
       console.log(`API URL: ${BACKEND_URL}/api/consultations/${consultationId}`);
       
       try {
+        // Skip the health check and go directly to fetching the consultation
         const response = await fetch(`${BACKEND_URL}/api/consultations/${consultationId}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
+        }).catch(error => {
+          console.error("Network error fetching consultation:", error);
+          throw new Error("Network error: Unable to fetch consultation details. Please check your internet connection.");
         });
         
         // Log the raw response for debugging
-        const responseText = await response.text();
-        console.log('Raw API response:', responseText);
+        let responseText;
+        try {
+          responseText = await response.text();
+          console.log('Raw API response:', responseText);
+        } catch (textError) {
+          console.error('Error reading response text:', textError);
+          throw new Error('Failed to read response from server');
+        }
         
         if (!response.ok) {
-          throw new Error(`API responded with status: ${response.status}. Response: ${responseText}`);
+          console.error(`API error status: ${response.status}`);
+          throw new Error(`API responded with status: ${response.status}. Response: ${responseText || 'No response text'}`);
         }
         
         try {
@@ -124,11 +150,12 @@
           
           // Validate consultation object
           if (!consultation || !consultation.id) {
+            console.error("Invalid consultation data:", consultation);
             throw new Error('Invalid consultation data received');
           }
         } catch (parseError) {
           console.error('JSON parse error:', parseError);
-          throw new Error('Failed to parse consultation data');
+          throw new Error('Failed to parse consultation data: ' + parseError.message);
         }
       
       } catch (fetchError) {
@@ -136,47 +163,95 @@
         throw new Error(`Failed to load consultation details: ${fetchError.message}`);
       }
       
-      // Fetch doctor information
-      const doctorResponse = await fetch(`${BACKEND_URL}/api/doctors/${consultation.doctor_id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (doctorResponse.ok) {
-        doctor = await doctorResponse.json();
-      }
-      
-      // Fetch patient information if user is a doctor
-      if (userRole === 'doctor') {
-        const patientResponse = await fetch(`${BACKEND_URL}/api/patients/${consultation.patient_id}`, {
+      // Successfully loaded the consultation, continue with the rest of the data
+      try {
+        // Fetch doctor information (non-blocking)
+        console.log(`Fetching doctor with ID: ${consultation.doctor_id}`);
+        fetch(`${BACKEND_URL}/api/doctors/${consultation.doctor_id}`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
+        }).then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          return null;
+        }).then(data => {
+          if (data) {
+            doctor = data;
+            console.log('Doctor data:', doctor);
+          }
+        }).catch(error => {
+          console.error('Error fetching doctor:', error);
         });
         
-        if (patientResponse.ok) {
-          patient = await patientResponse.json();
+        // Fetch patient information if user is a doctor (non-blocking)
+        if (userRole === 'doctor') {
+          console.log(`Fetching patient with ID: ${consultation.patient_id}`);
+          fetch(`${BACKEND_URL}/api/patients/${consultation.patient_id}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }).then(response => {
+            if (response.ok) {
+              return response.json();
+            }
+            return null;
+          }).then(data => {
+            if (data) {
+              patient = data;
+              console.log('Patient data:', patient);
+            }
+          }).catch(error => {
+            console.error('Error fetching patient:', error);
+          });
         }
+        
+        // Check if the user has permission to view this consultation
+        if (
+          (userRole === 'patient' && user.id !== consultation.patient_id) ||
+          (userRole === 'doctor' && user.id !== consultation.doctor_id)
+        ) {
+          console.error("Permission denied - user ID doesn't match consultation participant");
+          throw new Error('You do not have permission to view this consultation');
+        }
+        
+        // Non-blocking operations for optional data
+        fetchConsultationDetails(consultationId).catch(error => {
+          console.error('Error in fetchConsultationDetails:', error);
+          // Non-fatal, continue
+        });
+        
+        if (consultation && consultation.id) {
+          fetchPaymentInfo(consultation.id).catch(error => {
+            console.error('Error in fetchPaymentInfo:', error);
+            // Non-fatal, continue
+          });
+        }
+        
+        console.log("Main consultation data loaded successfully");
+        
+        // Since we have the main consultation data now, we can show the page
+        clearTimeout(loadingTimeout);
+        loading = false;
+        
+      } catch (secondaryError) {
+        console.error('Error in secondary data loading:', secondaryError);
+        // If this is a permission error, throw it up
+        if (secondaryError.message.includes('permission')) {
+          throw secondaryError;
+        }
+        // Otherwise, we still have the main consultation data, so we can continue
       }
-      
-      // Check if the user has permission to view this consultation
-      if (
-        (userRole === 'patient' && user.id !== consultation.patient_id) ||
-        (userRole === 'doctor' && user.id !== consultation.doctor_id)
-      ) {
-        throw new Error('You do not have permission to view this consultation');
-      }
-      
-      // Fetch consultation details
-      await fetchConsultationDetails(consultationId);
       
     } catch (e) {
-      console.error('Error:', e);
+      console.error('Error in onMount:', e);
       error = e.message || 'An unexpected error occurred';
     } finally {
+      clearTimeout(loadingTimeout);
+      console.log("Setting loading to false");
       loading = false;
     }
   });
@@ -184,8 +259,11 @@
   async function fetchConsultationDetails(consultationId) {
     try {
       loadingDetails = true;
+      console.log("Starting fetchConsultationDetails");
+      
       const token = localStorage.getItem('token');
       if (!token) {
+        console.error("No token available for fetchConsultationDetails");
         throw new Error('Authentication required');
       }
       
@@ -197,7 +275,12 @@
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
+      }).catch(error => {
+        console.error("Network error fetching consultation details:", error);
+        throw new Error("Network error: Unable to fetch consultation details. Please check your internet connection.");
       });
+      
+      console.log("Details response status:", response.status);
       
       // If details don't exist yet (404), that's okay - just means none have been created
       if (response.status === 404) {
@@ -207,6 +290,7 @@
       }
       
       if (!response.ok) {
+        console.error("API error fetching details:", response.status);
         throw new Error(`Failed to fetch consultation details: ${response.statusText}`);
       }
       
@@ -229,6 +313,37 @@
       detailsError = e instanceof Error ? e.message : 'Failed to load consultation details';
     } finally {
       loadingDetails = false;
+      console.log("Details loading complete");
+    }
+  }
+  
+  async function fetchPaymentInfo(consultationId) {
+    try {
+      loadingPayment = true;
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      const response = await fetch(`${BACKEND_URL}/api/payments/consultation/${consultationId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      // If payment record exists, store it
+      if (response.ok) {
+        paymentInfo = await response.json();
+        console.log('Fetched payment info:', paymentInfo);
+        
+        // Update consultation payment status based on payment info
+        if (paymentInfo && paymentInfo.status === 'completed') {
+          consultation.is_paid = true;
+        }
+      }
+    } catch (e) {
+      console.error('Error fetching payment info:', e);
+    } finally {
+      loadingPayment = false;
     }
   }
   
@@ -293,6 +408,73 @@
     }
   }
   
+  async function makePayment() {
+    processingPayment = true;
+    paymentError = '';
+    
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      // Create payment using the Payment model structure
+      const paymentPayload = {
+        amount: Number(consultation.fee),
+        status: 'completed',
+        payment_date: new Date().toISOString(),
+        consultation_id: consultation.id,
+        home_care_visit_id: 0 // Default value for consultation payments
+      };
+      
+      const paymentResponse = await fetch(`${BACKEND_URL}/api/payments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(paymentPayload)
+      });
+      
+      if (!paymentResponse.ok) {
+        const errorData = await paymentResponse.json();
+        throw new Error(errorData.message || 'Payment processing failed');
+      }
+      
+      // Get the payment information
+      const paymentData = await paymentResponse.json();
+      paymentInfo = paymentData;
+      
+      // Update consultation payment status
+      const updateResponse = await fetch(`${BACKEND_URL}/api/consultations/${consultation.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          is_paid: true
+        })
+      });
+      
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update consultation payment status');
+      }
+      
+      // Update the consultation in our state
+      consultation.is_paid = true;
+      
+      // Close payment modal
+      showPaymentModal = false;
+      
+    } catch (e) {
+      paymentError = e instanceof Error ? e.message : 'Failed to process payment';
+      console.error('Payment error:', e);
+    } finally {
+      processingPayment = false;
+    }
+  }
+  
   function startEditDetails() {
     if (consultationDetails) {
       requestDetails = consultationDetails.request_details || '';
@@ -342,72 +524,40 @@
     }
   }
   
-  async function makePayment() {
-    processingPayment = true;
-    paymentError = '';
-    
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        throw new Error('Authentication required');
-      }
-      
-      // Create payment
-      const paymentPayload = {
-        amount: Number(consultation.fee),
-        status: 'completed',
-        payment_date: new Date().toISOString(),
-        consultation_id: consultation.id
-      };
-      
-      const paymentResponse = await fetch(`${BACKEND_URL}/api/payments`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(paymentPayload)
-      });
-      
-      if (!paymentResponse.ok) {
-        const errorData = await paymentResponse.json();
-        throw new Error(errorData.message || 'Payment processing failed');
-      }
-      
-      // Update consultation payment status
-      const updateResponse = await fetch(`${BACKEND_URL}/api/consultations/${consultation.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          is_paid: true
-        })
-      });
-      
-      if (!updateResponse.ok) {
-        throw new Error('Failed to update consultation payment status');
-      }
-      
-      // Update the consultation in our state
-      consultation.is_paid = true;
-      
-      // Close payment modal
-      showPaymentModal = false;
-      
-    } catch (e) {
-      paymentError = e instanceof Error ? e.message : 'Failed to process payment';
-      console.error('Payment error:', e);
-    } finally {
-      processingPayment = false;
+  function getPaymentStatusText(status) {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'Payment Completed';
+      case 'pending':
+        return 'Payment Pending';
+      case 'refunded':
+        return 'Payment Refunded';
+      case 'failed':
+        return 'Payment Failed';
+      default:
+        return 'No Payment';
+    }
+  }
+  
+  function getPaymentStatusClass(status) {
+    switch (status?.toLowerCase()) {
+      case 'completed':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'pending':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'refunded':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'failed':
+        return 'bg-red-500/20 text-red-300 border-red-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   }
 </script>
 
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl mx-auto">
-    {#if loading}
+    {#if loading && !bypassLoading}
       <div class="flex justify-center items-center h-64" in:fade>
         <div class="w-10 h-10 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
         <span class="ml-3 text-white">Loading consultation details...</span>
@@ -483,10 +633,10 @@
               <h2 class="text-lg font-semibold text-white mb-4">Doctor</h2>
               <div class="flex items-center">
                 <img 
-                  src={doctor.profile_picture_url || '/images/default-avatar.png'} 
+                  src={getImageSrc(doctor.profile_picture_url)}
                   alt={doctor.name}
                   class="w-12 h-12 rounded-full object-cover"
-                  on:error={e => e.target.src = '/images/default-avatar.png'}
+                  on:error={(e) => e.target.src = defaultAvatarPlaceholder}
                 />
                 <div class="ml-4">
                   <div class="text-white font-medium">Dr. {doctor.name}</div>
@@ -501,10 +651,10 @@
               <h2 class="text-lg font-semibold text-white mb-4">Patient</h2>
               <div class="flex items-center">
                 <img 
-                  src={patient.profile_picture_url || '/images/default-avatar.png'} 
+                  src={getImageSrc(patient.profile_picture_url)}
                   alt={patient.name}
                   class="w-12 h-12 rounded-full object-cover"
-                  on:error={e => e.target.src = '/images/default-avatar.png'}
+                  on:error={(e) => e.target.src = defaultAvatarPlaceholder}
                 />
                 <div class="ml-4">
                   <div class="text-white font-medium">{patient.name}</div>
@@ -814,6 +964,17 @@
               </div>
             {/if}
 
+            {#if paymentInfo && paymentInfo.status}
+              <div class="mb-4 p-3 rounded-lg border text-sm {getPaymentStatusClass(paymentInfo.status)}">
+                {getPaymentStatusText(paymentInfo.status)}
+                {#if paymentInfo.payment_date}
+                  <div class="mt-1 text-xs opacity-80">
+                    Date: {formatDateTime(paymentInfo.payment_date)}
+                  </div>
+                {/if}
+              </div>
+            {/if}
+
             <div class="space-y-4">
               <div class="bg-white/5 rounded-lg p-4 border border-white/10">
                 <div class="flex justify-between items-center">
@@ -838,20 +999,27 @@
                 </div>
               </div>
 
-              <button
-                class="w-full glass-button-primary py-3 mt-4"
-                on:click={makePayment}
-                disabled={processingPayment}
-              >
-                {#if processingPayment}
-                  <span class="flex items-center justify-center">
-                    <div class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                    Processing...
-                  </span>
-                {:else}
-                  Pay ${consultation.fee.toFixed(2)}
-                {/if}
-              </button>
+              <!-- Only show payment button if not already paid or refunded -->
+              {#if !paymentInfo || (paymentInfo.status !== 'completed' && paymentInfo.status !== 'refunded')}
+                <button
+                  class="w-full glass-button-primary py-3 mt-4"
+                  on:click={makePayment}
+                  disabled={processingPayment}
+                >
+                  {#if processingPayment}
+                    <span class="flex items-center justify-center">
+                      <div class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Processing...
+                    </span>
+                  {:else}
+                    Pay ${consultation.fee.toFixed(2)}
+                  {/if}
+                </button>
+              {:else if paymentInfo.status === 'completed'}
+                <div class="text-center text-green-300 font-medium mt-4">
+                  Payment completed successfully
+                </div>
+              {/if}
               
               <p class="text-gray-400 text-xs text-center mt-4">
                 Your payment information is secure and encrypted.
@@ -860,12 +1028,50 @@
           </div>
         </div>
       {/if}
+    {:else}
+      <div class="glass-card p-6 text-center" in:fade>
+        <Icon icon="mdi:alert-circle" class="text-6xl text-yellow-400 mb-4" />
+        <h2 class="text-xl font-semibold text-white mb-2">No Consultation Data</h2>
+        <p class="text-gray-300 mb-6">No consultation data is available. This may be due to a server issue.</p>
+        <a href="/dashboard" class="glass-button">
+          Return to Dashboard
+        </a>
+      </div>
     {/if}
   </div>
 </div>
 
-<button on:click={startConsultation}>Start Consultation</button>
-<button on:click={completeConsultation}>Complete Consultation</button>
+<!-- Add debugging buttons during development -->
+<div class="fixed bottom-4 right-4 flex space-x-2 z-50">
+  <button 
+    class="bg-blue-500 text-white p-2 rounded"
+    on:click={() => {
+      bypassLoading = true;
+      console.log("Bypassed loading state");
+    }}
+  >
+    Bypass Loading
+  </button>
+  
+  <button 
+    class="bg-red-500 text-white p-2 rounded"
+    on:click={() => {
+      console.log({
+        loading,
+        bypassLoading,
+        error,
+        consultation,
+        doctor,
+        patient,
+        consultationDetails,
+        paymentInfo,
+        BACKEND_URL
+      });
+    }}
+  >
+    Debug State
+  </button>
+</div>
 
 <style>
   .glass-card {

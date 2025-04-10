@@ -1,9 +1,1 @@
-import tailwindcss from 'tailwindcss';
-import autoprefixer from 'autoprefixer';
-
-export default {
-  plugins: [
-    tailwindcss,
-    autoprefixer
-  ]
-};
+// The file has been removed entirely to avoid conflict with postcss.config.cjs

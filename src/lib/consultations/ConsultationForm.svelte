@@ -8,7 +8,6 @@
   import Icon from '@iconify/svelte';
   import { t } from '$lib/i18n';
   
-  // Define interface for consultation details matching the backend structure
   interface ConsultationDetails {
     id?: number;
     consultation_id: number;
@@ -24,22 +23,20 @@
   export let doctorId: string;
   export let doctorName: string;
   export let consultationFee: number;
-  export let initialMessage: string = ''; // Optional initial message
+  export let initialMessage: string = '';
 
   const dispatch = createEventDispatcher();
   let loading = false;
   let error = '';
-  let flowStep = 1; // 1: Confirm, 2: Details, 3: Optional message
+  let flowStep = 1;
 
-  // Fields for consultation details with complete structure
   let requestDetails = '';
   let symptoms = '';
-  let diagnosis = ''; // Additional field (will be empty for patient submissions)
-  let prescription = ''; // Additional field (will be empty for patient submissions)
-  let notes = ''; // Additional field (will be empty for patient submissions)
-  let followUpDate = ''; // Additional field (will be empty for patient submissions)
+  let diagnosis = '';
+  let prescription = '';
+  let notes = '';
+  let followUpDate = '';
   
-  // Get patient ID from auth store properly
   $: isAuthenticated = $authStore.isAuthenticated;
   $: patientId = $authStore.user?.id;
 
@@ -49,11 +46,9 @@
 
   async function handleSubmit() {
     if (flowStep === 1) {
-      // Move to details step
       flowStep = 2;
       return;
     } else if (flowStep === 2) {
-      // Move to optional message step
       flowStep = 3;
       return;
     }
@@ -66,10 +61,6 @@
         throw new Error('Please log in first to book a consultation.');
       }
 
-      // Add more detailed logging
-      console.log(`Creating consultation with doctor ID: ${doctorId} for patient ID: ${patientId}`);
-      
-      // Validate inputs before making API call
       if (!doctorId || isNaN(Number(doctorId))) {
         throw new Error('Invalid doctor ID');
       }
@@ -82,130 +73,182 @@
         throw new Error('Invalid consultation fee');
       }
       
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token is missing. Please log in again.');
+      }
+      
+      console.log('STEP 1: Creating consultation with the StartConsultation endpoint');
+      
       const consultationPayload = {
         patient_id: Number(patientId),
         doctor_id: Number(doctorId),
-        status: 'requested', // Changed from 'pending' to match the database enum
+        status: 'requested',
+        started_at: new Date().toISOString(),
         fee: Number(consultationFee),
-        is_paid: false // Mark consultation as unpaid initially
+        is_paid: false 
       };
-
-      // Use BACKEND_URL directly instead of API_CONFIG
-      console.log('Submitting consultation with payload:', consultationPayload);
-      console.log(`API endpoint: ${BACKEND_URL}/api/consultations`);
-
-      // Make the API request with expanded error handling
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          throw new Error('Authentication token is missing. Please log in again.');
-        }
+      
+      console.log('Consultation payload:', consultationPayload);
+      
+      const response = await fetch(`${BACKEND_URL}/api/consultations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(consultationPayload)
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to create consultation: ${response.status}. ${errorText}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('Consultation created successfully:', responseData);
+      
+      let consultationId = responseData.id;
+      console.log(`Consultation ID from response: ${consultationId}`);
+      
+      if (consultationId === 0) {
+        console.warn('Server returned ID=0, attempting to find the real ID');
         
-        // STEP 1: BOOK - Create the basic consultation with a simpler approach
-        console.log('STEP 1: Creating consultation...');
-        const consultationResponse = await fetch(`${BACKEND_URL}/api/consultations`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(consultationPayload)
-        });
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
-        if (!consultationResponse.ok) {
-          const errorText = await consultationResponse.text();
-          throw new Error(`Failed to create consultation: ${consultationResponse.status}. ${errorText}`);
-        }
+        const listResponse = await fetch(
+          `${BACKEND_URL}/api/consultations?patient_id=${patientId}&doctor_id=${doctorId}&limit=5`, 
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
         
-        const consultationData = await consultationResponse.json();
-        console.log('Consultation created successfully:', consultationData);
-        
-        // STEP 2: Add consultation details - using a more direct approach
-        if (requestDetails.trim() || symptoms.trim()) {
-          console.log('Adding consultation details');
+        if (listResponse.ok) {
+          const consultations = await listResponse.json();
           
-          // Simplify the payload to focus only on required fields
-          const detailsPayload = {
-            consultation_id: consultationData.id,
-            request_details: requestDetails.trim() || '',
-            symptoms: symptoms.trim() || ''
-          };
-          
-          try {
-            const detailsResponse = await fetch(`${BACKEND_URL}/api/consultations/${consultationData.id}/details`, {
+          if (Array.isArray(consultations) && consultations.length > 0) {
+            const sortedConsultations = consultations.sort((a, b) => {
+              return new Date(b.started_at).getTime() - new Date(a.started_at).getTime();
+            });
+            
+            const latestConsultation = sortedConsultations[0];
+            if (latestConsultation && latestConsultation.id) {
+              consultationId = latestConsultation.id;
+              console.log(`Found latest consultation ID: ${consultationId}`);
+            }
+          }
+        }
+      }
+      
+      if (!consultationId && consultationId !== 0) {
+        throw new Error('Failed to get a valid consultation ID');
+      }
+      
+      localStorage.setItem('lastConsultationId', String(consultationId));
+      
+      if (consultationId > 0 && (requestDetails.trim() || symptoms.trim())) {
+        console.log('STEP 2: Adding consultation details');
+        
+        const detailsPayload = {
+          consultation_id: consultationId,
+          request_details: requestDetails.trim() || '',
+          symptoms: symptoms.trim() || '',
+          diagnosis: '',
+          prescription: '',
+          notes: ''
+        };
+        
+        console.log('Details payload:', detailsPayload);
+        
+        try {
+          const detailsResponse = await fetch(
+            `${BACKEND_URL}/api/consultations/${consultationId}/details`, 
+            {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify(detailsPayload)
-            });
-            
-            const detailsText = await detailsResponse.text();
-            console.log(`Details API response (${detailsResponse.status}):`, detailsText);
-            
-            if (!detailsResponse.ok) {
-              console.error('Failed to create consultation details:', detailsText);
             }
-          } catch (detailsError) {
-            console.error('Error creating consultation details:', detailsError);
-          }
-        }
-        
-        // STEP 3: Add initial message if provided
-        if (initialMessage.trim()) {
-          console.log('Sending initial message');
+          );
           
-          try {
-            const messagePayload = {
-              consultation_id: consultationData.id,
-              sender_type: 'patient',
-              sender_id: Number(patientId),
-              message: initialMessage.trim(),
-              sent_at: new Date().toISOString(),
-              is_read: false
-            };
-            
-            const messageResponse = await fetch(`${BACKEND_URL}/api/chat/messages`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(messagePayload)
-            });
-            
-            const messageText = await messageResponse.text();
-            console.log(`Message API response (${messageResponse.status}):`, messageText);
-            
-            if (!messageResponse.ok) {
-              console.error('Failed to send initial message:', messageText);
-            }
-          } catch (messageError) {
-            console.error('Error sending initial message:', messageError);
+          const detailsResult = await detailsResponse.text();
+          console.log('Details creation result:', detailsResult);
+          
+          if (!detailsResponse.ok) {
+            console.warn(`Failed to create details: ${detailsResponse.status}. Continuing anyway.`);
+          } else {
+            console.log('Consultation details created successfully');
           }
+        } catch (detailsError) {
+          console.warn('Error creating consultation details:', detailsError);
         }
-        
-        // Finish up and redirect
-        console.log('Consultation booking complete, redirecting to consultation page');
-        dispatch('consultationCreated', { consultation: consultationData });
-        show = false;
-        
-        // Wait a short moment to ensure all API calls have completed
-        setTimeout(() => {
-          window.location.href = `/consultations/${consultationData.id}`;
-        }, 500);
-        
-      } catch (apiError) {
-        console.error('API error:', apiError);
-        throw apiError;
       }
-
-    } catch (e: any) {
+      
+      if (consultationId > 0 && initialMessage.trim()) {
+        console.log('STEP 3: Sending initial message');
+        
+        const messagePayload = {
+          consultation_id: consultationId,
+          sender_type: 'patient',
+          sender_id: Number(patientId),
+          message: initialMessage.trim(),
+          sent_at: new Date().toISOString(),
+          is_read: false
+        };
+        
+        console.log('Message payload:', messagePayload);
+        
+        try {
+          const messageResponse = await fetch(`${BACKEND_URL}/api/chat/messages`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(messagePayload)
+          });
+          
+          if (!messageResponse.ok) {
+            const messageErrorText = await messageResponse.text();
+            console.warn(`Message creation warning: ${messageResponse.status}. ${messageErrorText}`);
+          } else {
+            console.log('Initial message sent successfully');
+          }
+        } catch (messageError) {
+          console.warn('Error sending initial message:', messageError);
+        }
+      }
+      
+      console.log(`Completing Book → Chat → Pay flow with consultation ID: ${consultationId}`);
+      
+      const finalConsultation = {
+        ...responseData,
+        id: consultationId
+      };
+      
+      dispatch('consultationCreated', { consultation: finalConsultation });
+      
+      show = false;
+      
+      setTimeout(() => {
+        if (consultationId === 0) {
+          console.warn('Redirecting to dashboard because ID is still 0');
+          window.location.href = '/dashboard';
+        } else {
+          const chatUrl = `/consultations/${consultationId}`;
+          console.log(`Redirecting to: ${chatUrl}`);
+          window.location.href = chatUrl;
+        }
+      }, 500);
+      
+    } catch (e) {
       console.error('Consultation submission error:', e);
-      error = e.responseText 
-        ? `Error: ${e.message}. Server response: ${e.responseText.substring(0, 100)}...`
-        : e.message || 'An unexpected error occurred';
+      error = e instanceof Error ? e.message : 'An unexpected error occurred';
       loading = false;
     }
   }
@@ -258,12 +301,9 @@
       {/if}
 
       {#if isAuthenticated}
-        <!-- Scrollable content area -->
         <div class="overflow-y-auto flex-grow pr-1 consultation-scroll-container">
-          <!-- Consultation Booking Form -->
           <form on:submit|preventDefault={handleSubmit} class="space-y-4">
             {#if flowStep === 1}
-              <!-- Step 1: Consultation Confirmation -->
               <div class="bg-white/5 rounded-lg p-4 border border-white/10">
                 <div class="flex justify-between items-center">
                   <span class="text-gray-300">Consultation Fee</span>
@@ -271,7 +311,6 @@
                 </div>
               </div>
               
-              <!-- How it works section -->
               <div class="space-y-3 bg-blue-500/10 p-4 rounded-lg border border-blue-500/20">
                 <h3 class="font-medium text-blue-300">How It Works - Book → Chat → Pay</h3>
                 <ol class="list-decimal list-inside space-y-1 text-gray-300 text-sm">
@@ -284,7 +323,6 @@
                 </p>
               </div>
             {:else if flowStep === 2}
-              <!-- Step 2: Consultation Details -->
               <div>
                 <label for="requestDetails" class="block text-sm font-medium text-gray-300 mb-1">
                   Reason for Consultation
@@ -313,7 +351,6 @@
                 </p>
               </div>
               
-              <!-- Visible fields for additional consultation details -->
               <div>
                 <label for="diagnosis" class="block text-sm font-medium text-gray-300 mb-1">
                   Diagnosis (Optional)
@@ -362,7 +399,6 @@
                 />
               </div>
             {:else}
-              <!-- Step 3: Initial Message -->
               <div>
                 <label for="initialMessage" class="block text-sm font-medium text-gray-300 mb-1">
                   Initial Message to Doctor (Optional)
@@ -381,7 +417,6 @@
           </form>
         </div>
 
-        <!-- Fixed footer with buttons -->
         <div class="flex justify-end space-x-3 pt-4 mt-4 border-t border-white/10">
           {#if flowStep > 1}
             <button
@@ -435,7 +470,6 @@
     @apply text-gray-400;
   }
 
-  /* Custom scrollbar for textarea */
   textarea {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
@@ -459,7 +493,6 @@
     padding-right: 0 !important;
   }
 
-  /* Custom scrollbar for form container */
   .consultation-scroll-container {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
@@ -478,11 +511,8 @@
     border-radius: 3px;
   }
 
-  /* Reduce height of text areas */
   textarea {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
-
-  /* ...existing scrollbar styles... */
 </style>
